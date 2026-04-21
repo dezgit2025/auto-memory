@@ -70,9 +70,31 @@ Dim Name                   Zone     Score  Detail
 - **Schema-aware** — validates expected schema on every call, fails fast on drift
 - **Telemetry** — ring buffer of last 100 invocations for concurrency monitoring
 
-## For Copilot CLI Agent Integration
+## Agent Integration
 
-Add the discovery-ladder instructions block to `~/.copilot/copilot-instructions.md`. See `UPGRADE-COPILOT-CLI.md` for upgrade procedures.
+To enable your AI agent to automatically recall past sessions, copy the template from [`copilot-instructions-template.md`](copilot-instructions-template.md) into your Copilot CLI instruction file:
+
+```bash
+# Create the file if it doesn't exist
+mkdir -p ~/.copilot
+touch ~/.copilot/copilot-instructions.md
+
+# Append the template
+cat copilot-instructions-template.md >> ~/.copilot/copilot-instructions.md
+```
+
+### What is `~/.copilot/copilot-instructions.md`?
+
+Copilot CLI reads this file at the start of every session. It tells the agent what tools to use and what context to gather. By adding auto-memory instructions, the agent will automatically check your session history before each prompt — so it always knows what you were working on.
+
+### Verify integration
+
+```bash
+# In a Copilot CLI session, ask:
+"Run auto-memory health and show me the output"
+```
+
+See [`UPGRADE-COPILOT-CLI.md`](UPGRADE-COPILOT-CLI.md) for schema validation after Copilot CLI upgrades.
 
 ## License
 
