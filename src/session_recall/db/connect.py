@@ -31,4 +31,5 @@ def connect_ro(db_path: str) -> sqlite3.Connection:
             last_err = e
             if "locked" not in str(e).lower() and "busy" not in str(e).lower():
                 raise
+    print("error: database is locked — another session-recall process may be running", file=sys.stderr)
     raise SystemExit(3)

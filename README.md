@@ -1,6 +1,7 @@
 # auto-memory
 
 > **Your AI coding agent never forgets.**
+> Built by [Desi Villanueva](https://github.com/dezgit2025)
 
 Progressive session disclosure CLI for GitHub Copilot CLI. Queries your local `~/.copilot/session-store.db` to recall what you worked on across sessions — so your agent always has context.
 

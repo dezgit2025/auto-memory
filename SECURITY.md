@@ -5,7 +5,7 @@
 If you discover a security vulnerability, please report it responsibly:
 
 1. **Do NOT open a public issue**
-2. Email: [create a GitHub Security Advisory](../../security/advisories/new)
+2. **Report via** [GitHub Security Advisory](../../security/advisories/new)
 
 We will respond within 48 hours and work with you to understand and address the issue.
 
