@@ -1,25 +1,30 @@
 # Contributing to auto-memory
 
-## Setup
+Thanks for your interest in contributing! Whether it's a bug fix, docs improvement, or new feature — all contributions are welcome.
+
+## Quick Start
 
 ```bash
-git clone <repo>
+git clone https://github.com/dezgit2025/auto-memory.git
 cd auto-memory
-uv pip install -e ".[dev]"
+pip install -e ".[dev]"
+pytest src/session_recall/tests/ -q
 ```
 
-## Run Tests
+## Good First Issues
 
-```bash
-pytest src/session_recall/tests/ -v
-```
+Look for issues labeled [`good first issue`](https://github.com/dezgit2025/auto-memory/labels/good%20first%20issue) — these are scoped and beginner-friendly. Documentation fixes and typo corrections are always welcome too.
 
-## Code Style
+## Code Style (preferred, not enforced)
 
-- Each file ≤80 lines
-- One function per file (or tightly coupled group of 2-3)
-- stdlib only — no external dependencies
-- Use relative imports within the package
+We prefer small, focused files:
+
+- **≤80 lines per file** when practical
+- **One function per file** (or a tightly coupled group of 2-3)
+- **stdlib only** — no external runtime dependencies
+- **Relative imports** within the package
+
+These are guidelines, not gates. Don't let style concerns stop you from submitting a PR — we'll work through it together in review.
 
 ## Adding a Subcommand
 
@@ -33,3 +38,16 @@ pytest src/session_recall/tests/ -v
 1. Create `src/session_recall/health/dim_your_dim.py` with `def check() -> dict`
 2. Return `{"name", "score", "zone", "detail", "hint"}`
 3. Import and add to `DIMS` list in `commands/health.py`
+
+## PR Checklist
+
+Before submitting:
+
+- [ ] Tests pass: `pytest src/session_recall/tests/ -q`
+- [ ] Lint passes: `ruff check src/`
+- [ ] No new runtime dependencies added
+- [ ] Docs updated if behavior changed
+
+## Questions?
+
+Open an issue or start a discussion — happy to help.

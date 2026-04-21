@@ -3,11 +3,25 @@
 > **Your AI coding agent never forgets.**
 > Built by [Desi Villanueva](https://github.com/dezgit2025)
 
+[![PyPI](https://img.shields.io/pypi/v/auto-memory)](https://pypi.org/project/auto-memory/)
+[![CI](https://github.com/dezgit2025/auto-memory/actions/workflows/test.yml/badge.svg)](https://github.com/dezgit2025/auto-memory/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
+
 Progressive session disclosure CLI for GitHub Copilot CLI. Queries your local `~/.copilot/session-store.db` to recall what you worked on across sessions — so your agent always has context.
 
 ## Why
 
 Copilot CLI stores session history locally but has no built-in way to query it. `session-recall` gives you (and the agent) structured access to past sessions, files, and checkpoints — enabling progressive context recall without MCP servers or hooks.
+
+## How it compares
+
+| Approach | Dependencies | Writes to DB | Setup | Agent-native |
+|----------|-------------|-------------|-------|-------------|
+| **auto-memory** | None (stdlib) | ❌ Read-only | `pip install` | ✅ Instruction-file |
+| MCP server | Node.js runtime | Varies | Server config | ❌ Protocol layer |
+| Custom hooks | Varies | Often yes | Hook scripts | ❌ Event-driven |
+| Manual grep | None | ❌ | None | ❌ Manual |
 
 ## Install
 
@@ -76,6 +90,35 @@ Dim Name                   Zone     Score  Detail
 Installation includes wiring auto-memory into `~/.copilot/copilot-instructions.md` so your agent runs session recall automatically. See [`deploy/install.md`](deploy/install.md) for setup.
 
 See [`UPGRADE-COPILOT-CLI.md`](UPGRADE-COPILOT-CLI.md) for schema validation after Copilot CLI upgrades.
+
+## FAQ
+
+**Is it safe? Does it modify my session data?**
+No. auto-memory is strictly read-only. It never writes to `~/.copilot/session-store.db`.
+
+**Does it work with Claude Code, Cursor, or Aider?**
+Yes — any agent that supports instruction files can use session-recall. See `copilot-instructions-template.md` for integration patterns.
+
+**What happens when Copilot CLI updates its schema?**
+Run `session-recall schema-check` to validate. The tool fails fast on schema drift rather than returning bad data. See [UPGRADE-COPILOT-CLI.md](UPGRADE-COPILOT-CLI.md).
+
+**Does it need an internet connection?**
+No. Everything is local SQLite queries against your existing session store.
+
+## Roadmap
+
+- [ ] PyPI package publishing
+- [ ] CI with GitHub Actions (pytest + ruff matrix)
+- [ ] Session diffing (what changed between sessions)
+- [ ] Export sessions to markdown
+- [ ] Optional MCP server wrapper for IDE integration
+- [ ] Richer health dimensions (token usage, context efficiency)
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and guidelines. Issues, PRs, and docs improvements are welcome.
+
+⭐ **If auto-memory saved you time, [star the repo](https://github.com/dezgit2025/auto-memory) and share it with someone who lives in their terminal.**
 
 ## Disclaimer
 
