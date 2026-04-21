@@ -1,6 +1,6 @@
 """Tests for health/dim_disclosure.py — three-state tier, transitions, sample gates."""
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import pytest
 from session_recall.health import dim_disclosure
 
@@ -12,7 +12,7 @@ def _write_entries(tmp_path, entries, monkeypatch):
 
 
 def _ts(offset_min=0):
-    return (datetime.utcnow() - timedelta(minutes=offset_min)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return (datetime.now(timezone.utc) - timedelta(minutes=offset_min)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def test_all_legacy_entries_returns_calibrating(tmp_path, monkeypatch):

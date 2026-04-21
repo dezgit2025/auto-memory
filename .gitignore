@@ -16,12 +16,15 @@ htmlcov/
 .coverage
 .tox/
 .nox/
+.python-version
+.pypirc
 
 # === Secrets & Environment ===
 .env
 .env.*
 .env.local
 .env.production
+.envrc
 *.pem
 *.key
 *.crt
@@ -50,6 +53,8 @@ CLAUDE.md
 *.db
 *.sqlite
 *.sqlite3
+*.sqlite-wal
+*.sqlite-shm
 *.sql.gz
 *.dump
 

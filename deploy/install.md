@@ -77,7 +77,7 @@ Search `~/.copilot/copilot-instructions.md` for the string `Progressive Session 
 
 Append this exact block to the end of `~/.copilot/copilot-instructions.md`:
 
-```markdown
+````markdown
 ## Progressive Session Recall — RUN FIRST ON EVERY PROMPT
 
 **Run `session-recall` FIRST on every prompt before doing anything else.** It costs ~50 tokens and prevents expensive blind searches.
@@ -99,7 +99,7 @@ session-recall schema-check             # validate DB schema (run after Copilot 
 
 Only use filesystem tools (grep, glob, find) if session-recall returns nothing useful.
 If `session-recall` errors, continue silently — it's a convenience, not a blocker.
-```
+````
 
 ## Verify Installation
 
