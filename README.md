@@ -1,6 +1,9 @@
 # auto-memory
 
-> **Your AI coding agent never forgets.**
+## Your AI coding agent has amnesia. Here's the fix.
+
+*~1,900 lines of Python. Zero dependencies. Saves you an hour a day.*
+
 > Built by [Desi Villanueva](https://github.com/dezgit2025)
 
 [![PyPI](https://img.shields.io/pypi/v/auto-memory)](https://pypi.org/project/auto-memory/)
@@ -26,11 +29,85 @@ session-recall health          # 9-dimension health dashboard
 
 ---
 
-Progressive session disclosure CLI for AI coding agents. Queries your local `~/.copilot/session-store.db` to recall what you worked on across sessions — so your agent always has context.
+## The Problem
 
-## Why
+Every AI coding agent ships with a big number on the box. 200K tokens. Sounds massive. Here's what actually happens:
 
-Copilot CLI stores session history locally but has no built-in way to query it. `session-recall` gives you (and the agent) structured access to past sessions, files, and checkpoints — enabling progressive context recall without MCP servers or hooks.
+```
+200,000  tokens — context window (theoretical max)
+120,000  tokens — effective limit before context rot kicks in (~60%)
+ -65,000  tokens — MCP tools
+ -25,000  tokens — instruction files
+=========
+ ~30,000  tokens — what you ACTUALLY have before quality degrades
+```
+
+LLMs don't degrade gracefully — once you cross roughly **60% of the context window**, the model starts losing coherence. The industry calls it "lost in the middle": attention goes to the beginning (instructions) and the end (recent turns), but your actual working context in the middle gets progressively fuzzier.
+
+I timed it over a week: **68 minutes per day** lost to re-orientation after compactions and new sessions.
+
+> It's a **death spiral of diminishing context** — each compaction leaves the agent slightly dumber, which burns more tokens explaining things, which triggers the next compaction sooner.
+
+### The Compaction Tax
+
+Every 20–30 turns, the context warning hits and you get two bad choices: ignore it and watch the agent hallucinate, or run `/compact` and watch it lobotomize itself into a tidy two-paragraph summary of a 30-minute investigation. Either way you lose five minutes re-narrating your own project back to the agent like it's a new hire. That's not a workflow — that's a hamster wheel.
+
+## The 200x ROI
+
+Here's the cost comparison that made me build this:
+
+| Operation | Tokens | What you get |
+|-----------|--------|-------------|
+| `grep -r "auth" src/` | ~5,000-10,000 | 500 results, mostly irrelevant |
+| `find . -name "*.py"` | ~2,000 | Every Python file, no context |
+| Agent re-orientation | ~2,000 | You re-explaining yesterday |
+| **`auto-memory files --json --limit 10`** | **~50** | **Exactly the 10 files you touched yesterday** |
+
+**50 tokens vs 10,000 — a 200x improvement.**
+
+## Before & After
+
+**Before auto-memory** — new session on a project:
+
+```
+You: Fix the failing test in the auth module
+
+Agent: Let me explore the project structure...
+       $ find . -name "*.py" | head -50           ← 2K tokens
+       $ grep -r "test.*auth" tests/              ← 5K tokens
+       $ cat tests/test_auth.py                    ← 3K tokens
+       $ cat src/auth/handler.py                   ← 2K tokens
+       I see several test files. Which test is failing?
+
+You: The one we were working on yesterday, the token refresh edge case
+
+Agent: Let me search for that...
+       $ grep -r "refresh" tests/                  ← 4K tokens
+       ...
+```
+
+Total: ~16K tokens burned, 8 minutes elapsed, agent still isn't oriented.
+
+**After auto-memory** — same scenario:
+
+```
+You: Fix the failing test in the auth module
+
+Agent: [auto-recall: auto-memory files --json --limit 10]
+       → src/auth/refresh.py, tests/test_refresh_edge_cases.py,
+         src/auth/token_store.py (last touched 14h ago)
+
+       [auto-recall: auto-memory list --json --limit 3]
+       → Yesterday: "Fixed token refresh race condition, one edge case
+         test still failing on expired token + network timeout combo"
+
+       I can see from your last session that test_refresh_edge_cases.py
+       has a failing test for the expired token + network timeout case.
+       Let me look at that specific test...
+       $ cat tests/test_refresh_edge_cases.py      ← 1K tokens (targeted)
+```
+
+Total: ~1.1K tokens, 30 seconds, agent is immediately productive.
 
 ## How it compares
 
@@ -41,43 +118,70 @@ Copilot CLI stores session history locally but has no built-in way to query it. 
 | Custom hooks | Varies | Often yes | Hook scripts | ❌ Event-driven |
 | Manual grep | None | ❌ | None | ❌ Manual |
 
-## Install
+## Mental Model: RAM vs Disk
 
-Tell your AI agent:
+- **Context window = RAM.** Fast, limited, clears on restart.
+- **session-store.db = Disk.** Persistent, searchable, grows forever.
 
-> Read `deploy/install.md` and follow every step.
+auto-memory is the **page fault handler** — it pulls exact facts from disk in ~50 tokens when the agent needs them.
 
-Or run manually:
+**It's not unlimited context. It's unlimited context *recall*.** In practice, same thing.
 
-```bash
-./install.sh
+## Design
+
+```
+┌─────────────────────────────────────────────────┐
+│  copilot-instructions.md                        │
+│  "Run auto-memory FIRST on every prompt"         │
+└──────────────────┬──────────────────────────────┘
+                   │ agent reads instruction
+                   ▼
+┌─────────────────────────────────────────────────┐
+│  auto-memory CLI                                │
+│  (pure Python, zero deps, read-only)            │
+└──────────────────┬──────────────────────────────┘
+                   │ SELECT ... FROM sessions
+                   ▼
+┌─────────────────────────────────────────────────┐
+│  ~/.copilot/session-store.db                    │
+│  (SQLite + FTS5, owned by Copilot CLI binary)   │
+└─────────────────────────────────────────────────┘
 ```
 
-See [`deploy/install.md`](deploy/install.md) for full instructions, agent integration, and troubleshooting.
+- **Zero dependencies** — stdlib only (sqlite3, json, argparse)
+- **Read-only** — never writes to `~/.copilot/session-store.db`
+- **WAL-safe** — exponential backoff retry on SQLITE_BUSY (50→150→450ms)
+- **Schema-aware** — validates expected schema on every call, fails fast on drift
+- **Telemetry** — ring buffer of last 100 invocations for concurrency monitoring
 
 ## Usage
 
+Progressive disclosure — most prompts never get past Tier 1.
+
+**Tier 1 — Cheap scan (~50 tokens).** Usually enough.
+
 ```bash
-# List recent sessions for current repo
-session-recall list --json
+session-recall files --json --limit 10
+session-recall list --json --limit 5
+```
 
-# Show details for a session (prefix match)
-session-recall show f662 --json
+**Tier 2 — Focused recall (~200 tokens).** When Tier 1 isn't enough.
 
-# Full-text search across turns
-session-recall search "SQLITE_BUSY" --json
+```bash
+session-recall search "specific term" --json
+```
 
-# Recently touched files
-session-recall files --json
+**Tier 3 — Full session detail (~500 tokens).** Only when investigating something specific.
 
-# Recent checkpoints
-session-recall checkpoints --json
+```bash
+session-recall show <session-id> --json
+```
 
-# 9-dimension health check
-session-recall health
+**Operational commands:**
 
-# Validate DB schema (run after Copilot CLI upgrades)
-session-recall schema-check
+```bash
+session-recall health          # 9-dimension health dashboard
+session-recall schema-check    # validate DB schema after Copilot CLI upgrades
 ```
 
 ## Health Check
@@ -96,14 +200,6 @@ Dim Name                   Zone     Score  Detail
  9  Progressive Disclosure  ⚪ CALIBRATING  —  Collecting baseline (n=42/200)
 ```
 
-## Design
-
-- **Zero dependencies** — stdlib only (sqlite3, json, argparse)
-- **Read-only** — never writes to `~/.copilot/session-store.db`
-- **WAL-safe** — exponential backoff retry on SQLITE_BUSY (50→150→450ms)
-- **Schema-aware** — validates expected schema on every call, fails fast on drift
-- **Telemetry** — ring buffer of last 100 invocations for concurrency monitoring
-
 ## Agent Integration
 
 auto-memory works with **any agent that supports instruction files** — GitHub Copilot CLI, Claude Code, Cursor, Aider, Windsurf, and more. Installation wires session-recall into your agent's instruction file so it runs context recall automatically.
@@ -112,28 +208,23 @@ See [`deploy/install.md`](deploy/install.md) for setup and [`copilot-instruction
 
 See [`UPGRADE-COPILOT-CLI.md`](UPGRADE-COPILOT-CLI.md) for schema validation after Copilot CLI upgrades.
 
+## What This Isn't
+
+- **Not a vector database** — no embeddings, SQLite FTS5 only.
+- **Not cross-machine sync** — local only.
+- **Not a replacement for project documentation** — recalls *what you did*, not *how the system works*.
+
 ## FAQ
 
 **Is it safe? Does it modify my session data?**
 No. auto-memory is strictly read-only. It never writes to `~/.copilot/session-store.db`.
 
-**Does it work with Claude Code, Cursor, or Aider?**
-Yes — any agent that supports instruction files can use session-recall. See `copilot-instructions-template.md` for integration patterns.
-
 **What happens when Copilot CLI updates its schema?**
 Run `session-recall schema-check` to validate. The tool fails fast on schema drift rather than returning bad data. See [UPGRADE-COPILOT-CLI.md](UPGRADE-COPILOT-CLI.md).
 
-**Does it need an internet connection?**
-No. Everything is local SQLite queries against your existing session store.
-
 ## Roadmap
 
-- [ ] PyPI package publishing
-- [ ] CI with GitHub Actions (pytest + ruff matrix)
-- [ ] Session diffing (what changed between sessions)
-- [ ] Export sessions to markdown
-- [ ] Optional MCP server wrapper for IDE integration
-- [ ] Richer health dimensions (token usage, context efficiency)
+See [ROADMAP.md](ROADMAP.md).
 
 ## Contributing
 
