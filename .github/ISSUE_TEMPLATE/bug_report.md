@@ -17,11 +17,19 @@ Steps to reproduce:
 **Expected behavior**
 What you expected to happen.
 
+**Actual behavior**
+What actually happened (include error messages if any).
+
 **Environment**
 - OS: [e.g. macOS 15, Ubuntu 24.04]
 - Python version: [e.g. 3.12]
 - auto-memory version: [e.g. 0.1.0]
 - Copilot CLI version: [e.g. 1.0.17]
 
+**session-recall health output**
+```
+Paste output of: session-recall health
+```
+
 **Additional context**
-Paste any error output, health check results, or schema-check output.
+Any other relevant details.

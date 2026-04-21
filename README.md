@@ -7,8 +7,26 @@
 [![CI](https://github.com/dezgit2025/auto-memory/actions/workflows/test.yml/badge.svg)](https://github.com/dezgit2025/auto-memory/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](pyproject.toml)
+[![Tests](https://img.shields.io/badge/tests-90%20passed-brightgreen)]()
 
-Progressive session disclosure CLI for GitHub Copilot CLI. Queries your local `~/.copilot/session-store.db` to recall what you worked on across sessions — so your agent always has context.
+**Zero-dependency CLI that turns Copilot CLI's local SQLite into instant recall — no MCP server, no hooks, read-only, schema-checked. ~50 tokens per prompt.**
+
+**Works with:** GitHub Copilot CLI · Claude Code · Cursor · Aider · Windsurf · any instruction-file agent
+
+---
+
+### Quickstart
+
+```bash
+pip install auto-memory        # or: ./install.sh
+session-recall list --json     # see your recent sessions
+session-recall health          # 9-dimension health dashboard
+```
+
+---
+
+Progressive session disclosure CLI for AI coding agents. Queries your local `~/.copilot/session-store.db` to recall what you worked on across sessions — so your agent always has context.
 
 ## Why
 
@@ -75,6 +93,7 @@ Dim Name                   Zone     Score  Detail
  6  Repo Coverage          🟢 GREEN  10.0  8 sessions for owner/repo
  7  Concurrency            🟢 GREEN  10.0  busy=0.0%, p95=48ms
  8  E2E Probe              🟢 GREEN  10.0  list→show OK
+ 9  Progressive Disclosure  ⚪ CALIBRATING  —  Collecting baseline (n=42/200)
 ```
 
 ## Design
@@ -87,7 +106,9 @@ Dim Name                   Zone     Score  Detail
 
 ## Agent Integration
 
-Installation includes wiring auto-memory into `~/.copilot/copilot-instructions.md` so your agent runs session recall automatically. See [`deploy/install.md`](deploy/install.md) for setup.
+auto-memory works with **any agent that supports instruction files** — GitHub Copilot CLI, Claude Code, Cursor, Aider, Windsurf, and more. Installation wires session-recall into your agent's instruction file so it runs context recall automatically.
+
+See [`deploy/install.md`](deploy/install.md) for setup and [`copilot-instructions-template.md`](copilot-instructions-template.md) for integration patterns.
 
 See [`UPGRADE-COPILOT-CLI.md`](UPGRADE-COPILOT-CLI.md) for schema validation after Copilot CLI upgrades.
 
@@ -118,7 +139,9 @@ No. Everything is local SQLite queries against your existing session store.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and guidelines. Issues, PRs, and docs improvements are welcome.
 
-⭐ **If auto-memory saved you time, [star the repo](https://github.com/dezgit2025/auto-memory) and share it with someone who lives in their terminal.**
+⭐ **If auto-memory saved you time, [star the repo](https://github.com/dezgit2025/auto-memory)** — it's the best way to help others find it.
+
+🔗 **Share it:** *"Zero-dependency CLI that gives your AI coding agent session memory. Read-only, schema-checked, ~50 tokens per prompt."* → [github.com/dezgit2025/auto-memory](https://github.com/dezgit2025/auto-memory)
 
 ## Disclaimer
 

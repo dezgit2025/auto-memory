@@ -28,4 +28,4 @@ jobs:
         run: ruff check src/
 
       - name: Run tests
-        run: pytest src/session_recall/tests/ -q
+        run: pytest src/ -q
