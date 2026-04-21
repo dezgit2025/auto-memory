@@ -39,9 +39,9 @@ Every AI coding agent ships with a big number on the box. 200K tokens. Sounds ma
 200,000  tokens — context window (theoretical max)
 120,000  tokens — effective limit before context rot kicks in (~60%)
  -65,000  tokens — MCP tools
- -25,000  tokens — instruction files
+ -10,000  tokens — instruction files
 =========
- ~30,000  tokens — what you ACTUALLY have before quality degrades
+ ~45,000  tokens — what you ACTUALLY have before quality degrades
 ```
 
 LLMs don't degrade gracefully — once you cross roughly **60% of the context window**, the model starts losing coherence. The industry calls it "lost in the middle": attention goes to the beginning (instructions) and the end (recent turns), but your actual working context in the middle gets progressively fuzzier.
