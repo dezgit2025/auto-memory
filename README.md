@@ -24,9 +24,10 @@
 
 ```bash
 pip install auto-memory        # or: ./install.sh
-session-recall list --json     # see your recent sessions
-session-recall health          # 9-dimension health dashboard
+session-recall health          # verify it works
 ```
+
+Point your agent at [`deploy/install.md`](deploy/install.md) and let it cook. 🍳
 
 ---
 
