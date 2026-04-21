@@ -7,10 +7,10 @@ Added `--days N` flag to `search`, `files`, and `checkpoints` commands. `list` a
 ### Usage
 
 ```bash
-auto-memory list --days 2        # sessions from last 2 days
-auto-memory search mcp --days 5  # search only last 5 days
-auto-memory files --days 7       # files touched in last 7 days
-auto-memory checkpoints --days 3 # checkpoints from last 3 days
+session-recall list --days 2        # sessions from last 2 days
+session-recall search mcp --days 5  # search only last 5 days
+session-recall files --days 7       # files touched in last 7 days
+session-recall checkpoints --days 3 # checkpoints from last 3 days
 ```
 
 ### Implementation
@@ -35,7 +35,7 @@ Full suite: **49/49 passing** (31 existing + 18 new).
 
 ## 2026-04-17 — FTS5 Query Sanitization
 
-**7 bugs fixed** in `auto-memory search`:
+**7 bugs fixed** in `session-recall search`:
 
 ### 🔴 Critical — 5 crash bugs
 

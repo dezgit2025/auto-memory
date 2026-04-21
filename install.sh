@@ -3,7 +3,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
-echo "Installing auto-memory..."
+echo "Installing session-recall..."
 
 if command -v uv >/dev/null 2>&1; then
     echo "Using uv..."
@@ -18,5 +18,5 @@ fi
 
 echo ""
 echo "Installed. Verify with:"
-echo "  which auto-memory"
-echo "  auto-memory schema-check"
+echo "  which session-recall"
+echo "  session-recall schema-check"
