@@ -16,7 +16,7 @@
 **Zero-dependency CLI that turns Copilot CLI's local SQLite into instant recall — no MCP server, no hooks, read-only, schema-checked. ~50 tokens per prompt.**
 
 **Works with:** GitHub Copilot CLI  
-**Coming soon:** Claude Code · Cursor · Codex · any instruction-file agent
+**Coming soon:** Claude Code · Cursor · Codex 
 
 ---
 
@@ -156,6 +156,22 @@ auto-memory is the **page fault handler** — it pulls exact facts from disk in 
 - **Telemetry** — ring buffer of last 100 invocations for concurrency monitoring
 
 ## Usage
+
+### Try these prompts with your agent
+
+Once installed, just talk naturally — the agent uses session-recall automatically:
+
+```
+"Fix the failing test we were working on yesterday"
+"Search recent sessions about fixing the db connection bug"
+"What files did I touch in the auth module last week?"
+"Pick up where we left off on the API refactor"
+"Show me what I was doing before I ran /compact"
+```
+
+No special syntax. The agent reads your session history and gets oriented in seconds instead of minutes.
+
+### How it works under the hood
 
 Progressive disclosure — most prompts never get past Tier 1.
 
