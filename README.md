@@ -15,7 +15,8 @@
 
 **Zero-dependency CLI that turns Copilot CLI's local SQLite into instant recall — no MCP server, no hooks, read-only, schema-checked. ~50 tokens per prompt.**
 
-**Works with:** GitHub Copilot CLI · Claude Code · Cursor · Aider · Windsurf · any instruction-file agent
+**Works with:** GitHub Copilot CLI  
+**Coming soon:** Claude Code · Cursor · Aider · Windsurf · any instruction-file agent
 
 ---
 
