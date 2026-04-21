@@ -6,25 +6,15 @@ _Generated: 2026-04-21 from parallel fleet review (security, viral-readiness, co
 
 ## 🚨 BLOCKERS — Fix before going public
 
-### 1. Real identity in git history
-Git history contains real name/email on every commit:
-- `Desi Villanueva <217994822+dezgit2025@users.noreply.github.com>` (most commits)
-- `desi <desi4k@gmail.com>` (commits `627ce7b`, `7d41c4f`)
+### 1. ~~Real identity in git history~~ ✅ DONE
+~~Git history contains real name/email on every commit.~~
+**Fixed:** Used `git filter-repo --mailmap` to unify all 13 commits under `Desi Villanueva <217994822+dezgit2025@users.noreply.github.com>`. The 2 commits using `desi <desi4k@gmail.com>` were rewritten.
 
-**Fix options:**
-- **Recommended** (since repo isn't public yet): squash-rewrite to a single initial commit under intended public identity, or use `git filter-repo` to rewrite author/committer:
-  ```bash
-  git filter-repo --mailmap mailmap.txt
-  ```
-- Decide now whether launching as "Dez Blanchfield" or "Desi Villanueva" — keep it consistent everywhere.
+### 2. ~~README says "8-dimension health check" but code has 9~~ ✅ DONE
+**Fixed:** Updated README.md line 43 to "9-dimension health check".
 
-### 2. README says "8-dimension health check" but code has 9
-- `README.md:43` vs `src/session_recall/commands/health.py` / `__main__.py:67`
-- Update README to "9-dimension" and regenerate the sample health output block.
-
-### 3. `CHANGELOG.md` is in `.gitignore` but exists in repo
-- `.gitignore:82` — remove that line or delete the file.
-- It's tracked, so it ships, but git will ignore future edits in some workflows — confusing.
+### 3. `CHANGELOG.md` is in `.gitignore` but exists in repo — ✅ NO ACTION NEEDED
+**Verified:** `CHANGELOG.md` is in `.gitignore` and is NOT tracked by git. The `.gitignore` rule is working correctly.
 
 ---
 
@@ -32,16 +22,16 @@ Git history contains real name/email on every commit:
 
 | # | Item | Fix |
 |---|------|-----|
-| 1 | **Owner's name (Dez) is NOT in the README** | Add byline `> Built by [Dez Blanchfield](https://github.com/...)` under the tagline |
-| 2 | `SECURITY.md` says "Email:" but links GitHub Security Advisory | Reword to "Report via GitHub Security Advisory" |
-| 3 | Silent DB lock failure | `db/connect.py:17-34` exits code 3 with no stderr message |
-| 4 | `deploy/install.md:78-102` has nested fenced code blocks | Will render broken on GitHub |
-| 5 | `pyproject.toml` metadata is minimal | Add `readme`, `urls` (homepage/repo/issues), `keywords`, `classifiers`, `authors` |
-| 6 | No CI workflow | Add `.github/workflows/test.yml` — matrix Python 3.10/3.11/3.12, pytest + ruff |
-| 7 | Unpinned dev deps | Pin `pytest>=8`, `ruff>=0.6` in `pyproject.toml` |
-| 8 | 881 pytest deprecation warnings | `datetime.utcnow()` in `health/dim_disclosure.py:113-115` → `datetime.now(timezone.utc)` |
-| 9 | `.gitignore` missing patterns | Add `*.sqlite-wal`, `*.sqlite-shm`, `.envrc`, `.python-version`, `.pypirc` |
-| 10 | CHANGELOG uses dates not semver | Switch to `## [0.1.0] - YYYY-MM-DD` + `## [Unreleased]` sections |
+| 1 | ~~Owner's name not in README~~ | ✅ Added byline `> Built by [Desi Villanueva](https://github.com/dezgit2025)` |
+| 2 | ~~`SECURITY.md` says "Email:"~~ | ✅ Reworded to "**Report via** GitHub Security Advisory" |
+| 3 | ~~Silent DB lock failure~~ | ✅ Added stderr message before `sys.exit(3)` in `db/connect.py` |
+| 4 | ~~Nested fenced code blocks~~ | ✅ Fixed with 4-backtick outer fence in `deploy/install.md` |
+| 5 | ~~`pyproject.toml` metadata minimal~~ | ✅ Added authors, readme, urls, keywords, classifiers |
+| 6 | No CI workflow | 🔲 TODO: Add `.github/workflows/test.yml` — matrix Python 3.10/3.11/3.12, pytest + ruff |
+| 7 | ~~Unpinned dev deps~~ | ✅ Pinned `pytest>=8`, `ruff>=0.6` |
+| 8 | ~~881 pytest deprecation warnings~~ | ✅ Fixed `utcnow()` in source + test files — 0 warnings now |
+| 9 | ~~`.gitignore` missing patterns~~ | ✅ Added `*.sqlite-wal`, `*.sqlite-shm`, `.envrc`, `.python-version`, `.pypirc` |
+| 10 | CHANGELOG uses dates not semver | 🔲 TODO: Switch to `## [0.1.0] - YYYY-MM-DD` + `## [Unreleased]` sections |
 
 **Good news — no leaked secrets.** Scanned for `sk-`, `ghp_`, `AKIA`, `xoxb-`, `Bearer`, `password=`, `api_key`, `SAS=`, etc. — clean across working tree AND git history. No unsafe SQL or path traversal. 90/90 tests passing. Zero-deps claim verified.
 
@@ -55,7 +45,7 @@ Git history contains real name/email on every commit:
 # auto-memory
 
 > **Your AI coding agent never forgets.**
-> Built by [Dez Blanchfield](https://github.com/YOUR_HANDLE)
+> Built by [Desi Villanueva](https://github.com/dezgit2025)
 
 [![PyPI](https://img.shields.io/pypi/v/auto-memory)](https://pypi.org/project/auto-memory/)
 [![CI](https://github.com/OWNER/auto-memory/actions/workflows/test.yml/badge.svg)](...)
@@ -104,16 +94,16 @@ The "one function per file / ≤80 lines" rules are internal style, but will sca
 
 ## 📋 Prioritized Top-10 Checklist
 
-1. Rewrite git history to unify identity (or squash)
-2. Add "Built by Dez Blanchfield" byline to README
-3. Fix README "8 → 9" health dimension mismatch
-4. Remove `CHANGELOG.md` from `.gitignore`
-5. Add badges + GIF/asciinema to README hero
-6. Fix `deploy/install.md` nested code fence
-7. Flesh out `pyproject.toml` metadata (urls, keywords, classifiers, authors)
-8. Add `.github/workflows/test.yml` for CI
-9. Fix `datetime.utcnow()` deprecation in `dim_disclosure.py`
-10. Add CODE_OF_CONDUCT, ISSUE_TEMPLATE, PR template, dependabot
+1. ~~Rewrite git history to unify identity~~ ✅
+2. ~~Add "Built by Desi Villanueva" byline to README~~ ✅
+3. ~~Fix README "8 → 9" health dimension mismatch~~ ✅
+4. ~~`CHANGELOG.md` `.gitignore` status~~ ✅ (verified — working correctly)
+5. Add badges + GIF/asciinema to README hero 🔲
+6. ~~Fix `deploy/install.md` nested code fence~~ ✅
+7. ~~Flesh out `pyproject.toml` metadata~~ ✅
+8. Add `.github/workflows/test.yml` for CI 🔲
+9. ~~Fix `datetime.utcnow()` deprecation~~ ✅
+10. Add CODE_OF_CONDUCT, ISSUE_TEMPLATE, PR template, dependabot 🔲
 
 ---
 
