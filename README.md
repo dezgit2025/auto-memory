@@ -27,7 +27,7 @@ pip install auto-memory        # or: git clone + ./install.sh
 session-recall health          # verify it works
 ```
 
-Point your agent at [`deploy/install.md`](deploy/install.md) and let it cook. 🍳
+Now give your agent a memory. Point it at [`deploy/install.md`](deploy/install.md) and let it cook. 🍳
 
 ---
 
