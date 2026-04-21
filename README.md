@@ -159,14 +159,15 @@ auto-memory is the **page fault handler** — it pulls exact facts from disk in 
 
 ### Try these prompts with your agent
 
-Once installed, just talk naturally — the agent uses session-recall automatically:
+ Once wired into your agent's instruction file, session-recall runs on every prompt — giving the agent your recent files and sessions as context before it does anything else.
+
 
 ```
-"Fix the failing test we were working on yesterday"
 "Search recent sessions about fixing the db connection bug"
-"What files did I touch in the auth module last week?"
+"Check past 5 days sessions for latest plans?"
 "Pick up where we left off on the API refactor"
-"Show me what I was doing before I ran /compact"
+"search recent sessions for last 10 files we modified"
+"search sessions for the db migration bug"
 ```
 
 No special syntax. The agent reads your session history and gets oriented in seconds instead of minutes.
