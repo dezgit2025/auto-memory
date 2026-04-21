@@ -6,6 +6,7 @@
 
 > Built by [Desi Villanueva](https://github.com/dezgit2025)
 
+[![PyPI](https://img.shields.io/pypi/v/auto-memory)](https://pypi.org/project/auto-memory/)
 [![CI](https://github.com/dezgit2025/auto-memory/actions/workflows/test.yml/badge.svg)](https://github.com/dezgit2025/auto-memory/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
@@ -22,8 +23,7 @@
 ### Quickstart
 
 ```bash
-git clone https://github.com/dezgit2025/auto-memory.git
-cd auto-memory && ./install.sh
+pip install auto-memory        # or: git clone + ./install.sh
 session-recall health          # verify it works
 ```
 
