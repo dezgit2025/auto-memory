@@ -28,7 +28,7 @@ def connect_ro(db_path: str) -> Union[sqlite3.Connection, "JSONLStoreAdapter"]:
         return JSONLStoreAdapter()
 
     # Neither format found
-    print(f"error: no session data found", file=sys.stderr)
+    print("error: no session data found", file=sys.stderr)
     print(f"  tried: {db_path}", file=sys.stderr)
     print(f"  tried: {session_dir}", file=sys.stderr)
     sys.exit(4)
@@ -37,7 +37,6 @@ def connect_ro(db_path: str) -> Union[sqlite3.Connection, "JSONLStoreAdapter"]:
 def _connect_sqlite(db_path: str) -> sqlite3.Connection:
     """Connect to SQLite database."""
     RETRY_DELAYS_MS = [50, 150, 450]
-    last_err: Exception | None = None
 
     for delay in [0] + RETRY_DELAYS_MS:
         if delay:
@@ -55,7 +54,6 @@ def _connect_sqlite(db_path: str) -> sqlite3.Connection:
             conn.execute("PRAGMA query_only = ON")
             return conn
         except sqlite3.OperationalError as e:
-            last_err = e
             if "locked" not in str(e).lower() and "busy" not in str(e).lower():
                 raise
 

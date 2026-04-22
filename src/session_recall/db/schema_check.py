@@ -14,8 +14,6 @@ def schema_check(conn) -> list[str]:
 
     Works with both SQLite Connection and JSONLStoreAdapter.
     """
-    problems: list[str] = []
-
     # Check if this is a JSONL store adapter
     if hasattr(conn, 'store'):
         return _schema_check_jsonl(conn.store)

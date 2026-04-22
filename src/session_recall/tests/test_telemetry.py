@@ -1,6 +1,5 @@
 """Tests for util/telemetry.py — new tier/query_hash/window fields + backward compat."""
 import json
-from pathlib import Path
 import pytest
 from session_recall.util import telemetry
 

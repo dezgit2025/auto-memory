@@ -1,5 +1,4 @@
 """Tests for FTS5 query sanitization in search command."""
-import pytest
 from session_recall.commands.search import sanitize_fts5_query
 
 

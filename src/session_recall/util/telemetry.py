@@ -1,6 +1,7 @@
 """Telemetry ring buffer for session-recall invocations."""
 import hashlib
-import json, time
+import json
+import time
 from pathlib import Path
 
 _TELEMETRY_PATH = None

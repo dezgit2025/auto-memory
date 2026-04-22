@@ -4,7 +4,6 @@ Parses events.jsonl from ~/.copilot/session-state/{sessionId}/events.jsonl
 and provides a query interface mimicking the SQLite schema.
 """
 import json
-import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Optional

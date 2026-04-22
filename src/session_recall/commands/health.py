@@ -1,5 +1,4 @@
 """Health check orchestrator — run all 9 dimensions and report."""
-import sys
 from ..health.scoring import overall_score
 from ..health import (dim_freshness, dim_schema, dim_latency, dim_corpus,
                       dim_summary_coverage, dim_repo_coverage, dim_concurrency,
@@ -31,7 +30,7 @@ def run(args) -> int:
         print("-" * 70)
         print(f"    {'Overall':<22s}        {score:5.1f}")
         if hints:
-            print(f"\n💡 Hints:")
+            print("\n💡 Hints:")
             for h in hints[:3]:
                 print(f"   • {h}")
         print()

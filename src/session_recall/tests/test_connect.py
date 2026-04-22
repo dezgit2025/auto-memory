@@ -21,8 +21,13 @@ def test_connect_success():
         os.unlink(path)
 
 
-def test_connect_missing_db():
-    """Missing DB file exits with code 4."""
+def test_connect_missing_db(tmp_path, monkeypatch):
+    """Missing DB and no JSONL store exits with code 4."""
+    # Mock home directory to avoid JSONL fallback
+    fake_home = tmp_path / "home"
+    fake_home.mkdir()
+    monkeypatch.setenv("HOME", str(fake_home))
+    
     with pytest.raises(SystemExit) as exc:
         connect_ro("/nonexistent/path/fake.db")
     assert exc.value.code == 4

@@ -3,7 +3,6 @@ import sqlite3
 import tempfile
 import os
 import json
-import sys
 from unittest.mock import patch
 from io import StringIO
 from types import SimpleNamespace
