@@ -13,7 +13,6 @@ def connect_ro(db_path: str) -> sqlite3.Connection:
     if not pathlib.Path(db_path).exists():
         print(f"error: database not found: {db_path}", file=sys.stderr)
         sys.exit(4)
-    last_err: Exception | None = None
     for delay in [0] + RETRY_DELAYS_MS:
         if delay:
             time.sleep(delay * random.uniform(0.8, 1.2) / 1000)
@@ -28,7 +27,6 @@ def connect_ro(db_path: str) -> sqlite3.Connection:
             conn.execute("PRAGMA query_only = ON")
             return conn
         except sqlite3.OperationalError as e:
-            last_err = e
             if "locked" not in str(e).lower() and "busy" not in str(e).lower():
                 raise
     print("error: database is locked — another session-recall process may be running", file=sys.stderr)

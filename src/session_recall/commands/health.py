@@ -109,7 +109,7 @@ def run(args) -> int:
         print("-" * 70)
         print(f"    {'Overall':<22s}        {score:5.1f}")
         if hints:
-            print(f"\n💡 Hints:")
+            print("\n💡 Hints:")
             for h in hints[:3]:
                 print(f"   • {h}")
         print()

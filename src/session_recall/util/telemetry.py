@@ -1,6 +1,7 @@
 """Telemetry ring buffer for session-recall invocations."""
 import hashlib
-import json, time
+import json
+import time
 from pathlib import Path
 
 _TELEMETRY_PATH = None
@@ -40,10 +41,14 @@ def record(cmd: str, duration_ms: int, busy_hits: int = 0,
             "exit_code": exit_code, "schema_ok": schema_ok,
         }
         # Only include non-None optional fields — keeps legacy schema clean
-        if tier is not None: entry["tier"] = tier
-        if query_hash is not None: entry["query_hash"] = query_hash
-        if session_id_prefix is not None: entry["session_id_prefix"] = session_id_prefix
-        if window_tier is not None: entry["window_tier"] = window_tier
+        if tier is not None:
+            entry["tier"] = tier
+        if query_hash is not None:
+            entry["query_hash"] = query_hash
+        if session_id_prefix is not None:
+            entry["session_id_prefix"] = session_id_prefix
+        if window_tier is not None:
+            entry["window_tier"] = window_tier
         entries.append(entry)
         entries = entries[-500:]  # Ring buffer: 100 → 500
         path.parent.mkdir(parents=True, exist_ok=True)

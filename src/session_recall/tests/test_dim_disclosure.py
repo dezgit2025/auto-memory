@@ -1,7 +1,6 @@
 """Tests for health/dim_disclosure.py — three-state tier, transitions, sample gates."""
 import json
 from datetime import datetime, timedelta, timezone
-import pytest
 from session_recall.health import dim_disclosure
 
 

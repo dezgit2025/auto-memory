@@ -201,7 +201,10 @@ session-recall show <session-id> --json
 ```bash
 session-recall health          # 9-dimension health dashboard
 session-recall schema-check    # validate DB schema after Copilot CLI upgrades
+session-recall repos           # discovered repositories/workspaces across providers
 ```
+
+`session-recall` now supports multi-storage discovery for current Copilot CLI layouts, including session-state sources when legacy `session-store.db` is absent.
 
 ## Health Check
 

@@ -4,7 +4,6 @@ import sqlite3
 import tempfile
 import os
 import json
-import sys
 from unittest.mock import patch
 from io import StringIO
 from types import SimpleNamespace
@@ -101,7 +100,7 @@ def test_list_respects_limit():
             args = SimpleNamespace(repo=None, limit=1, days=30, json=True)
             buf = StringIO()
             with patch("sys.stdout", buf):
-                code = run(args)
+                run(args)
             output = json.loads(buf.getvalue())
             assert output["count"] == 1
     finally:
@@ -124,7 +123,7 @@ def test_list_json_shape():
             args = SimpleNamespace(repo="all", limit=10, days=30, json=True)
             buf = StringIO()
             with patch("sys.stdout", buf):
-                code = run(args)
+                run(args)
             output = json.loads(buf.getvalue())
             assert "repo" in output
             assert "count" in output
