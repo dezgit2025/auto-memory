@@ -1,6 +1,7 @@
 """Copilot CLI backend — delegates to existing SQLite command modules."""
 from __future__ import annotations
 import pathlib
+import sys
 from typing import Optional
 
 from .base import SessionBackend
@@ -17,11 +18,21 @@ class CopilotBackend(SessionBackend):
     def is_available(self) -> bool:
         return pathlib.Path(DB_PATH).exists()
 
+    def _check_schema(self, conn) -> bool:
+        """Return True if schema is broken (log problems). False means OK to proceed."""
+        problems = schema_check(conn)
+        if problems:
+            print("schema drift detected:", file=sys.stderr)
+            for p in problems:
+                print(f"  - {p}", file=sys.stderr)
+            return True
+        return False
+
     def list_sessions(self, *, repo: Optional[str] = None, limit: int = 10, days: int = 30) -> list[dict]:
         from ..commands.list_sessions import _QUERY_REPO, _QUERY_ALL
         conn = connect_ro(DB_PATH)
         try:
-            if schema_check(conn):
+            if self._check_schema(conn):
                 return []
             days_arg = f"-{days} days"
             if repo and repo != "all":
@@ -49,7 +60,7 @@ class CopilotBackend(SessionBackend):
         from ..commands.files import _BASE
         conn = connect_ro(DB_PATH)
         try:
-            if schema_check(conn):
+            if self._check_schema(conn):
                 return []
             date_filter = " AND sf.first_seen_at >= datetime('now', ?)"
             date_param = (f"-{days} days",)

@@ -54,14 +54,21 @@ def find_project_dir(cwd: str) -> pathlib.Path | None:
     return candidate if candidate.exists() else None
 
 
+def _safe_mtime(p: pathlib.Path) -> float:
+    try:
+        return p.stat().st_mtime
+    except OSError:
+        return 0.0
+
+
 def list_session_files(project_dir: pathlib.Path | None = None) -> list[pathlib.Path]:
     """List all .jsonl session files, optionally filtered to one project."""
     if project_dir:
-        return sorted(project_dir.glob("*.jsonl"), key=lambda p: p.stat().st_mtime, reverse=True)
+        return sorted(project_dir.glob("*.jsonl"), key=_safe_mtime, reverse=True)
     if not CC_PROJECTS_DIR.exists():
         return []
     files = []
     for d in CC_PROJECTS_DIR.iterdir():
         if d.is_dir():
             files.extend(d.glob("*.jsonl"))
-    return sorted(files, key=lambda p: p.stat().st_mtime, reverse=True)
+    return sorted(files, key=_safe_mtime, reverse=True)

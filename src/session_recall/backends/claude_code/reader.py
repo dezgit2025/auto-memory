@@ -26,18 +26,16 @@ def _extract_text(content) -> str:
 
 def iter_records(path: pathlib.Path) -> Iterator[dict]:
     """Yield parsed JSON objects from a JSONL file, skipping malformed lines."""
-    try:
-        with open(path, encoding="utf-8", errors="replace") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    yield json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-    except OSError:
-        return
+    # OSError propagates to caller so build_index can count and warn about unreadable files
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                yield json.loads(line)
+            except json.JSONDecodeError:
+                continue
 
 
 def parse_session(path: pathlib.Path) -> dict | None:
@@ -58,7 +56,7 @@ def parse_session(path: pathlib.Path) -> dict | None:
     first_ts = None
     last_ts = None
     turns = []
-    files: set[str] = set()
+    files: dict[str, str] = {}  # file_path -> tool_name
     last_prompt = None
 
     pending_user: str | None = None
@@ -108,11 +106,9 @@ def parse_session(path: pathlib.Path) -> dict | None:
                         inp = block.get("input", {})
                         # Read/Write/Edit tools have file_path or path
                         fp = inp.get("file_path") or inp.get("path")
-                        if fp and isinstance(fp, str):
-                            files.add(fp)
                         tool_name = block.get("name", "")
-                        if fp:
-                            files.add(fp)
+                        if fp and isinstance(fp, str):
+                            files.setdefault(fp, tool_name)
             if pending_user is not None:
                 turns.append({
                     "user": pending_user,
@@ -140,7 +136,7 @@ def parse_session(path: pathlib.Path) -> dict | None:
         "files_count": len(files),
         "summary": summary[:200],
         "turns": turns,
-        "files": [{"file_path": fp, "tool_name": ""} for fp in files],
+        "files": [{"file_path": fp, "tool_name": tn} for fp, tn in files.items()],
     }
 
 

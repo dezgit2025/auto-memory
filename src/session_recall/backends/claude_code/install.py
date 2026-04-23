@@ -92,7 +92,7 @@ def detect_surfaces() -> list[Surface]:
     return surfaces
 
 
-_HOOK_COMMAND = "session-recall --backend claude list --json --limit 5"
+_HOOK_COMMAND = "session-recall list --json --limit 5"
 _HOOK_BLOCK = {
     "matcher": "",
     "hooks": [{"type": "command", "command": _HOOK_COMMAND}]
@@ -108,8 +108,13 @@ def wire_hooks(settings_path: pathlib.Path, *, dry_run: bool = False) -> dict:
     if settings_path.exists():
         try:
             data = json.loads(settings_path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            data = {}
+        except json.JSONDecodeError as e:
+            raise ValueError(
+                f"{settings_path} contains invalid JSON — fix it before running --setup.\n"
+                f"  Parse error: {e}"
+            ) from e
+        except OSError as e:
+            raise OSError(f"Cannot read {settings_path}: {e}") from e
 
     hooks = data.setdefault("hooks", {})
     ss_hooks = hooks.setdefault("SessionStart", [])
@@ -123,7 +128,9 @@ def wire_hooks(settings_path: pathlib.Path, *, dry_run: bool = False) -> dict:
     ss_hooks.append(_HOOK_BLOCK)
 
     if not dry_run:
-        settings_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        tmp = settings_path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        tmp.replace(settings_path)
 
     return {
         "changed": True,

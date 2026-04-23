@@ -17,6 +17,15 @@ class ClaudeCodeBackend(SessionBackend):
     def _ensure_index(self) -> None:
         if not _idx.INDEX_PATH.exists():
             _idx.build_index()
+            return
+        # File exists but may be empty from a previously failed build — check for sentinel
+        conn = _idx._open()
+        try:
+            last_run = _idx._get_meta(conn, "last_run_epoch")
+        finally:
+            conn.close()
+        if not last_run:
+            _idx.build_index()
 
     def list_sessions(self, *, repo=None, limit=10, days=30) -> list[dict]:
         self._ensure_index()

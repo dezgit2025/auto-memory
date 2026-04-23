@@ -29,7 +29,11 @@ def run(args) -> int:
 
     if setup or dry_run:
         settings_path = pathlib.Path.home() / ".claude" / "settings.json"
-        hook_result = wire_hooks(settings_path, dry_run=dry_run)
+        try:
+            hook_result = wire_hooks(settings_path, dry_run=dry_run)
+        except (ValueError, OSError) as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
         result["hook_setup"] = hook_result
         if not getattr(args, "json", False):
             action = hook_result["action"]

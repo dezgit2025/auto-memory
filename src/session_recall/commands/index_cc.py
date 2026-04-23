@@ -22,23 +22,44 @@ def run(args) -> int:
         }
         if exists:
             import sqlite3
+            conn = None
             try:
                 conn = sqlite3.connect(str(INDEX_PATH))
                 row = conn.execute("SELECT COUNT(*) as n FROM cc_sessions").fetchone()
                 data["indexed_sessions"] = row[0] if row else 0
-                conn.close()
-            except Exception:
-                data["indexed_sessions"] = "unknown"
+            except sqlite3.DatabaseError as e:
+                data["indexed_sessions"] = "error"
+                data["index_error"] = str(e)
+                print(f"warning: could not read index: {e}", file=sys.stderr)
+            finally:
+                if conn:
+                    conn.close()
         output(data, json_mode=getattr(args, "json", False))
         return 0
 
     rebuild = getattr(args, "rebuild", False)
     print(f"{'Rebuilding' if rebuild else 'Updating'} Claude Code session index...", file=sys.stderr)
 
-    stats = build_index(rebuild=rebuild, verbose=True)
+    try:
+        stats = build_index(rebuild=rebuild, verbose=True)
+    except PermissionError as e:
+        print(f"error: permission denied writing index — {e}", file=sys.stderr)
+        return 1
+    except OSError as e:
+        import errno
+        if e.errno == errno.ENOSPC:
+            print(f"error: disk full — cannot write index to {INDEX_PATH}", file=sys.stderr)
+        else:
+            print(f"error: I/O error building index — {e}", file=sys.stderr)
+        return 1
+    except Exception as e:
+        print(f"error: index build failed — {e}", file=sys.stderr)
+        return 1
+
     data = {
         "indexed": stats["indexed"],
         "skipped": stats["skipped"],
+        "errors": stats.get("errors", 0),
         "total_files": stats["total"],
         "index_path": str(INDEX_PATH),
     }
