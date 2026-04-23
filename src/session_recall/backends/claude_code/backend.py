@@ -65,18 +65,12 @@ class ClaudeCodeBackend(SessionBackend):
         return _idx.query_show(session_id, turns=turns)
 
     def health(self) -> dict:
-        from .detect import list_projects
-        projects = list_projects()
-        total_sessions = sum(p["session_count"] for p in projects)
-        index_exists = _idx.INDEX_PATH.exists()
-        score = 8.0 if (index_exists and total_sessions > 5) else (4.0 if total_sessions > 0 else 0.0)
-        return {
-            "score": score,
-            "zone": "GREEN" if score >= 8 else ("AMBER" if score >= 5 else "RED"),
-            "dimensions": [
-                {"name": "index_exists", "score": 10.0 if index_exists else 0.0,
-                 "detail": str(_idx.INDEX_PATH) if index_exists else "run cc-index to build"},
-                {"name": "project_count", "score": min(10.0, total_sessions / 10),
-                 "detail": f"{len(projects)} projects, {total_sessions} sessions"},
-            ]
-        }
+        from .health import (dim_index, dim_freshness, dim_corpus,
+                             dim_latency, dim_coverage, dim_surfaces)
+        from .health.scoring import overall_score
+        dims = [dim_index, dim_freshness, dim_corpus, dim_latency, dim_coverage, dim_surfaces]
+        results = [d.check() for d in dims]
+        score = overall_score(results)
+        zones = [r.get("zone", "GREEN") for r in results]
+        zone = "RED" if "RED" in zones else ("AMBER" if "AMBER" in zones else "GREEN")
+        return {"score": score, "zone": zone, "dimensions": results}

@@ -13,14 +13,16 @@
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](pyproject.toml)
 [![Tests](https://img.shields.io/badge/tests-90%20passed-brightgreen)]()
 
-**Zero-dependency CLI that turns Copilot CLI's local SQLite into instant recall — no MCP server, no hooks, read-only, schema-checked. ~50 tokens per prompt.**
+**Zero-dependency CLI that gives your AI coding agent instant session recall — no MCP server, read-only, schema-checked. ~50 tokens per prompt.**
 
-**Works with:** GitHub Copilot CLI  
-**Coming soon:** Claude Code · Cursor · Codex 
+**Works with:** GitHub Copilot CLI · Claude Code  
+**Coming soon:** Cursor · Codex
 
 ---
 
 ### Quickstart
+
+**Copilot CLI (existing):**
 
 ```bash
 pip install auto-memory        # or: git clone + ./install.sh
@@ -28,6 +30,16 @@ session-recall health          # verify it works
 ```
 
 Now give your agent a memory. Point it at [`deploy/install.md`](deploy/install.md) and let it cook. 🍳
+
+**Claude Code (new):**
+
+```bash
+pip install auto-memory
+session-recall cc-index        # build the local session index
+session-recall install-mode --setup   # wire SessionStart hook into ~/.claude/settings.json
+```
+
+That's it. Every new Claude Code conversation gets the last ~50 tokens of session context injected automatically.
 
 ---
 
@@ -131,6 +143,8 @@ auto-memory is the **page fault handler** — it pulls exact facts from disk in 
 
 ## Design
 
+**Copilot CLI backend:**
+
 ```
 ┌─────────────────────────────────────────────────┐
 │  copilot-instructions.md                        │
@@ -150,11 +164,34 @@ auto-memory is the **page fault handler** — it pulls exact facts from disk in 
 └─────────────────────────────────────────────────┘
 ```
 
+**Claude Code backend:**
+
+```
+┌─────────────────────────────────────────────────┐
+│  ~/.claude/settings.json                        │
+│  SessionStart hook → injects ~50-token context  │
+└──────────────────┬──────────────────────────────┘
+                   │ hook fires on every new session
+                   ▼
+┌─────────────────────────────────────────────────┐
+│  auto-memory CLI                                │
+│  (pure Python, zero deps)                       │
+└──────────────────┬──────────────────────────────┘
+                   │ SELECT ... FROM FTS5 index
+                   ▼
+┌─────────────────────────────────────────────────┐
+│  ~/.claude/.sr-index.db                         │
+│  (SQLite FTS5, built by auto-memory from        │
+│   ~/.claude/projects/ JSONL session files)      │
+└─────────────────────────────────────────────────┘
+```
+
 - **Zero dependencies** — stdlib only (sqlite3, json, argparse)
-- **Read-only** — never writes to `~/.copilot/session-store.db`
+- **Read-only on source data** — never writes to `~/.copilot/session-store.db` or Claude Code's JSONL files
 - **WAL-safe** — exponential backoff retry on SQLITE_BUSY (50→150→450ms)
 - **Schema-aware** — validates expected schema on every call, fails fast on drift
 - **Telemetry** — ring buffer of last 100 invocations for concurrency monitoring
+- **Backend auto-detection** — uses Copilot DB if present, falls back to `~/.claude/projects/` automatically
 
 ## Usage
 
@@ -203,6 +240,70 @@ session-recall health          # 9-dimension health dashboard
 session-recall schema-check    # validate DB schema after Copilot CLI upgrades
 ```
 
+## Claude Code Backend
+
+auto-memory now includes a first-class Claude Code backend that reads `~/.claude/projects/` JSONL session files and builds a local SQLite FTS5 index at `~/.claude/.sr-index.db`.
+
+### Quick setup (2 steps)
+
+```bash
+# 1. Build the local session index from ~/.claude/projects/ JSONL files
+session-recall cc-index
+
+# 2. Wire a SessionStart hook into ~/.claude/settings.json
+session-recall install-mode --setup
+```
+
+After step 2, every new Claude Code conversation automatically receives ~50 tokens of recent session context — no `copilot-instructions.md` needed.
+
+### Index commands
+
+```bash
+session-recall cc-index                 # build / update the index (incremental)
+session-recall cc-index --rebuild       # force a full rebuild from scratch
+session-recall cc-index --status        # show index freshness and session count
+```
+
+The index lives at `~/.claude/.sr-index.db`. It is owned and written exclusively by auto-memory — Claude Code's JSONL files are never modified.
+
+### Hook installation
+
+```bash
+session-recall install-mode             # detect Claude Code surfaces (CLI, VS Code, JetBrains, Desktop)
+session-recall install-mode --setup     # wire SessionStart hook automatically
+session-recall install-mode --dry-run   # preview changes before applying
+```
+
+`--setup` adds a `SessionStart` hook entry to `~/.claude/settings.json`. The hook runs `session-recall list --json --limit 3` at the start of each conversation and injects the result as context (~50 tokens). No instruction file changes are required.
+
+### Using the Claude Code backend on query commands
+
+```bash
+# Auto-detection: uses Claude Code backend if ~/.claude/projects/ exists
+session-recall list --json --limit 10
+session-recall files --days 7
+session-recall search "auth refactor"
+
+# Explicit backend flag
+session-recall --backend claude list --json --limit 10
+session-recall --backend claude files --days 7
+session-recall --backend claude search "auth refactor"
+session-recall --backend claude show SESSION_ID
+session-recall --backend claude health
+
+# Force Copilot backend even if Claude Code is also installed
+session-recall --backend copilot list --json --limit 10
+```
+
+**Backend auto-detection rules:**
+
+| Condition | Backend selected |
+|-----------|-----------------|
+| `~/.copilot/session-store.db` exists | `copilot` |
+| `~/.claude/projects/` exists (no Copilot DB) | `claude` |
+| Both exist | `copilot` (pass `--backend claude` to override) |
+| Neither exists | Error with setup instructions |
+
 ## Health Check
 
 ```
@@ -236,10 +337,13 @@ See [`UPGRADE-COPILOT-CLI.md`](UPGRADE-COPILOT-CLI.md) for schema validation aft
 ## FAQ
 
 **Is it safe? Does it modify my session data?**
-No. auto-memory is strictly read-only. It never writes to `~/.copilot/session-store.db`.
+No. auto-memory is strictly read-only on your agent's session data. It never writes to `~/.copilot/session-store.db` or Claude Code's JSONL files under `~/.claude/projects/`. The only file auto-memory writes is its own index at `~/.claude/.sr-index.db`.
 
 **What happens when Copilot CLI updates its schema?**
 Run `session-recall schema-check` to validate. The tool fails fast on schema drift rather than returning bad data. See [UPGRADE-COPILOT-CLI.md](UPGRADE-COPILOT-CLI.md).
+
+**Can I use both Copilot CLI and Claude Code at the same time?**
+Yes. Use `--backend copilot` or `--backend claude` to query either one explicitly. Without the flag, auto-memory picks whichever DB it finds first (Copilot takes priority if both are present).
 
 ## Roadmap
 
