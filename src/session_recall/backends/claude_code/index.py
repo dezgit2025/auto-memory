@@ -31,7 +31,9 @@ _DDL_STATEMENTS = [
 ]
 
 
-def _open(path: pathlib.Path = INDEX_PATH) -> sqlite3.Connection:
+def _open(path: pathlib.Path | None = None) -> sqlite3.Connection:
+    if path is None:
+        path = INDEX_PATH
     path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(path))
     conn.row_factory = sqlite3.Row

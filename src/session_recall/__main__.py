@@ -84,28 +84,100 @@ def main() -> None:
         parser.print_help()
         sys.exit(1)
 
+    _backend_name = getattr(args, "backend", None)
     exit_code = 1
     if args.command == "list":
-        from .commands.list_sessions import run
-        exit_code = run(args)
+        if _backend_name == "claude":
+            from .backends import get_backend
+            from .util.format_output import output
+            b = get_backend("claude")
+            repo = getattr(args, "repo", None)
+            data = b.list_sessions(
+                repo=repo,
+                limit=getattr(args, "limit", None) or 10,
+                days=getattr(args, "days", None) or 30,
+            )
+            output({"repo": repo or "all", "count": len(data), "sessions": data},
+                   json_mode=getattr(args, "json", False))
+            exit_code = 0
+        else:
+            from .commands.list_sessions import run
+            exit_code = run(args)
     elif args.command == "schema-check":
-        from .commands.schema_check_cmd import run
-        exit_code = run(args)
+        if _backend_name == "claude":
+            print("'schema-check' is not available for the Claude backend.", file=sys.stderr)
+            exit_code = 1
+        else:
+            from .commands.schema_check_cmd import run
+            exit_code = run(args)
     elif args.command == "files":
-        from .commands.files import run
-        exit_code = run(args)
+        if _backend_name == "claude":
+            from .backends import get_backend
+            from .util.format_output import output
+            b = get_backend("claude")
+            repo = getattr(args, "repo", None)
+            data = b.list_files(
+                repo=repo,
+                limit=getattr(args, "limit", None) or 20,
+                days=getattr(args, "days", None) or 30,
+            )
+            output({"repo": repo or "all", "count": len(data), "files": data},
+                   json_mode=getattr(args, "json", False))
+            exit_code = 0
+        else:
+            from .commands.files import run
+            exit_code = run(args)
     elif args.command == "checkpoints":
-        from .commands.checkpoints import run
-        exit_code = run(args)
+        if _backend_name == "claude":
+            print("'checkpoints' is not available for the Claude backend.", file=sys.stderr)
+            exit_code = 1
+        else:
+            from .commands.checkpoints import run
+            exit_code = run(args)
     elif args.command == "show":
-        from .commands.show_session import run
-        exit_code = run(args)
+        if _backend_name == "claude":
+            from .backends import get_backend
+            from .util.format_output import output
+            b = get_backend("claude")
+            result = b.show_session(args.session_id, turns=getattr(args, "turns", None))
+            if result is None:
+                print("session not found", file=sys.stderr)
+                exit_code = 1
+            else:
+                output(result, json_mode=getattr(args, "json", False))
+                exit_code = 0
+        else:
+            from .commands.show_session import run
+            exit_code = run(args)
     elif args.command == "search":
-        from .commands.search import run
-        exit_code = run(args)
+        if _backend_name == "claude":
+            from .backends import get_backend
+            from .util.format_output import output
+            b = get_backend("claude")
+            repo = getattr(args, "repo", None)
+            data = b.search(
+                args.query,
+                repo=repo,
+                limit=getattr(args, "limit", None) or 10,
+                days=getattr(args, "days", None) or 30,
+            )
+            output({"query": args.query, "count": len(data), "results": data},
+                   json_mode=getattr(args, "json", False))
+            exit_code = 0
+        else:
+            from .commands.search import run
+            exit_code = run(args)
     elif args.command == "health":
-        from .commands.health import run
-        exit_code = run(args)
+        if _backend_name == "claude":
+            from .backends import get_backend
+            from .util.format_output import output
+            b = get_backend("claude")
+            data = b.health()
+            output(data, json_mode=getattr(args, "json", False))
+            exit_code = 0
+        else:
+            from .commands.health import run
+            exit_code = run(args)
     elif args.command == "cc-index":
         from .commands.index_cc import run
         exit_code = run(args)
