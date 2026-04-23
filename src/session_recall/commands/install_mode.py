@@ -60,8 +60,8 @@ def run(args) -> int:
         claude_md = _pl.Path(project_path_arg) if project_path_arg else _pl.Path.cwd() / "CLAUDE.md"
         try:
             proj_result = write_claude_md(claude_md, dry_run=dry_run)
-        except OSError as e:
-            print(f"error: {e}", file=sys.stderr)
+        except (OSError, ValueError, UnicodeDecodeError) as e:
+            print(f"error writing {claude_md}: {e}", file=sys.stderr)
             return 1
 
         result["claude_md"] = proj_result
@@ -79,7 +79,7 @@ def run(args) -> int:
         for s in surfaces:
             icon = "✓" if s.detected else "✗"
             print(f"  {icon} {s.name:12} {s.note}")
-        if not setup and not dry_run:
+        if not setup and not dry_run and not project and not project_path_arg:
             print("\nRun with --setup to wire SessionStart hooks automatically.")
 
     output(result, json_mode=getattr(args, "json", False))

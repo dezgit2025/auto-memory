@@ -30,6 +30,19 @@ def get_backend(name: str | None = None) -> SessionBackend:
             b = cls()
             if b.is_available() or name == "claude":
                 return b
+    if name == "aider" or name is None:
+        from .aider import AiderBackend
+        b = AiderBackend()
+        if b.is_available() or name == "aider":
+            return b
+    if name == "cursor" or name is None:
+        try:
+            from .cursor import CursorBackend
+            b = CursorBackend()
+            if b.is_available() or name == "cursor":
+                return b
+        except ImportError:
+            pass
     # fallback
     return CopilotBackend()
 

@@ -1,5 +1,6 @@
 """AllBackend — fans out queries to every available backend and merges results."""
 from __future__ import annotations
+import sys
 from typing import Optional
 from .base import SessionBackend
 
@@ -12,17 +13,23 @@ class AllBackend(SessionBackend):
         self._load()
 
     def _load(self) -> None:
-        from .copilot import CopilotBackend
-        b = CopilotBackend()
-        if b.is_available():
-            self._backends.append(b)
-        try:
-            from .claude_code import ClaudeCodeBackend
-            b2 = ClaudeCodeBackend()
-            if b2.is_available():
-                self._backends.append(b2)
-        except ImportError:
-            pass
+        for _name, _mod, _cls in [
+            ("copilot", ".copilot", "CopilotBackend"),
+            ("claude",  ".claude_code", "ClaudeCodeBackend"),
+            ("aider",   ".aider",  "AiderBackend"),
+            ("cursor",  ".cursor", "CursorBackend"),
+        ]:
+            try:
+                import importlib
+                mod = importlib.import_module(_mod, package=__package__)
+                cls = getattr(mod, _cls)
+                b = cls()
+                if b.is_available():
+                    self._backends.append(b)
+            except ImportError:
+                pass
+            except Exception as e:
+                print(f"warning: {_cls} failed to initialise — skipping. {e}", file=sys.stderr)
 
     @property
     def name(self) -> str:
@@ -35,12 +42,15 @@ class AllBackend(SessionBackend):
         seen: set[str] = set()
         merged = []
         for b in self._backends:
-            for s in b.list_sessions(repo=repo, limit=limit, days=days):
-                key = _session_key(s)
-                if key not in seen:
-                    seen.add(key)
-                    s["_backend"] = b.name
-                    merged.append(s)
+            try:
+                for s in b.list_sessions(repo=repo, limit=limit, days=days):
+                    key = _session_key(s)
+                    if key not in seen:
+                        seen.add(key)
+                        s["_backend"] = b.name
+                        merged.append(s)
+            except Exception as e:
+                print(f"warning: {b.name} backend error in list_sessions — {e}", file=sys.stderr)
         merged.sort(key=lambda s: s.get("created_at") or s.get("date") or "", reverse=True)
         return merged[:limit]
 
@@ -48,12 +58,15 @@ class AllBackend(SessionBackend):
         seen: set[str] = set()
         merged = []
         for b in self._backends:
-            for f in b.list_files(repo=repo, limit=limit, days=days):
-                key = f.get("file_path", "")
-                if key not in seen:
-                    seen.add(key)
-                    f["_backend"] = b.name
-                    merged.append(f)
+            try:
+                for f in b.list_files(repo=repo, limit=limit, days=days):
+                    key = f.get("file_path", "")
+                    if key not in seen:
+                        seen.add(key)
+                        f["_backend"] = b.name
+                        merged.append(f)
+            except Exception as e:
+                print(f"warning: {b.name} backend error in list_files — {e}", file=sys.stderr)
         merged.sort(key=lambda f: f.get("date") or "", reverse=True)
         return merged[:limit]
 
@@ -61,39 +74,52 @@ class AllBackend(SessionBackend):
         seen: set[str] = set()
         merged = []
         for b in self._backends:
-            for r in b.search(query, repo=repo, limit=limit, days=days):
-                key = r.get("session_id", "") + r.get("source_type", "")
-                if key not in seen:
-                    seen.add(key)
-                    r["_backend"] = b.name
-                    merged.append(r)
+            try:
+                for r in b.search(query, repo=repo, limit=limit, days=days):
+                    key = r.get("session_id", "") + r.get("source_type", "")
+                    if key not in seen:
+                        seen.add(key)
+                        r["_backend"] = b.name
+                        merged.append(r)
+            except Exception as e:
+                print(f"warning: {b.name} backend error in search — {e}", file=sys.stderr)
         return merged[:limit]
 
     def show_session(self, session_id: str, *, turns=None) -> Optional[dict]:
-        # show is backend-scoped — try each backend until one returns a result
         for b in self._backends:
-            result = b.show_session(session_id, turns=turns)
-            if result:
-                result["_backend"] = b.name
-                return result
+            try:
+                result = b.show_session(session_id, turns=turns)
+                if result:
+                    result["_backend"] = b.name
+                    return result
+            except Exception as e:
+                print(f"warning: {b.name} backend error in show_session — {e}", file=sys.stderr)
         return None
 
     def health(self) -> dict:
         all_dims = []
-        scores = []
+        per_backend = []
         for b in self._backends:
-            h = b.health()
-            for d in h.get("dimensions", []):
-                d["_backend"] = b.name
-                all_dims.append(d)
-            scores.append(h.get("score", 0.0))
-        avg = round(sum(scores) / len(scores), 1) if scores else 0.0
-        zone = "GREEN" if avg >= 8 else ("AMBER" if avg >= 5 else "RED")
-        return {"score": avg, "zone": zone, "backends": [b.name for b in self._backends], "dimensions": all_dims}
+            try:
+                h = b.health()
+                for d in h.get("dimensions", []):
+                    d["_backend"] = b.name
+                    all_dims.append(d)
+                per_backend.append({"backend": b.name, "score": h.get("score", 0.0),
+                                    "zone": h.get("zone", "RED")})
+            except Exception as e:
+                print(f"warning: {b.name} backend error in health — {e}", file=sys.stderr)
+                per_backend.append({"backend": b.name, "score": 0.0, "zone": "RED"})
+        # Use minimum score — zone reflects the weakest backend
+        scores = [x["score"] for x in per_backend]
+        score = round(min(scores), 1) if scores else 0.0
+        zone = "RED" if score < 5 else ("AMBER" if score < 8 else "GREEN")
+        return {"score": score, "zone": zone,
+                "backends": per_backend, "dimensions": all_dims}
 
 
 def _session_key(s: dict) -> str:
-    """Deduplicate sessions by (repository, summary prefix, date)."""
+    """Deduplicate by (repository, summary prefix, date). Lossy by design."""
     repo = s.get("repository", "")
     summary = (s.get("summary") or "")[:40]
     date = (s.get("created_at") or s.get("date") or "")[:10]

@@ -19,10 +19,12 @@ TIER_MAP = {
     "list": 1, "files": 1, "checkpoints": 1,   # Tier 1 — cheap scan
     "search": 2,                                  # Tier 2 — focused search
     "show": 3,                                    # Tier 3 — deep dive
+    "export": 3,                                  # Tier 3 — export sessions
     "health": 0, "schema-check": 0,              # Tier 0 — meta/ops
     "calibrate": 0,                               # Tier 0 — meta (Phase 4)
     "cc-index": 0,                                # Tier 0 — Claude Code index
     "install-mode": 0,                            # Tier 0 — install/hook setup
+    "prune": 0,                                   # Tier 0 — prune old index entries
 }
 
 
@@ -30,7 +32,7 @@ def main() -> None:
     telemetry.init(TELEMETRY_PATH)
     t0 = time.monotonic()
     parser = argparse.ArgumentParser(prog="auto-memory", description="Query Copilot CLI session history")
-    parser.add_argument("--backend", choices=["copilot", "claude", "all"], default=None,
+    parser.add_argument("--backend", choices=["copilot", "claude", "aider", "cursor", "all"], default=None,
                         help="Session backend (default: auto-detect)")
     sub = parser.add_subparsers(dest="command")
 
@@ -83,6 +85,21 @@ def main() -> None:
     p_im.add_argument("--project-path", default=None,
                       help="Path to CLAUDE.md (default: ./CLAUDE.md)")
 
+    p_exp = sub.add_parser("export", help="Export sessions to markdown or JSON")
+    p_exp.add_argument("--format", choices=["md", "json"], default="md")
+    p_exp.add_argument("--output", default=None, help="Output file (default: stdout)")
+    p_exp.add_argument("--session", default=None, help="Specific session ID to export")
+    p_exp.add_argument("--repo", default=None)
+    p_exp.add_argument("--days", type=int, default=30)
+    p_exp.add_argument("--limit", type=int, default=20)
+    p_exp.add_argument("--backend", default=None)  # local override (not the global flag)
+
+    p_prune = sub.add_parser("prune", help="Remove old sessions from the Claude Code index")
+    p_prune.add_argument("--days", type=int, default=90,
+                         help="Remove sessions not seen in last N days (default: 90)")
+    p_prune.add_argument("--dry-run", action="store_true")
+    p_prune.add_argument("--json", action="store_true")
+
     args = parser.parse_args()
     if not args.command:
         parser.print_help()
@@ -90,8 +107,9 @@ def main() -> None:
 
     _backend_name = getattr(args, "backend", None)
     exit_code = 1
+    _non_copilot_backends = ("claude", "aider", "cursor", "all", None)
     if args.command == "list":
-        if _backend_name in ("claude", "all"):
+        if _backend_name in _non_copilot_backends:
             from .backends import get_backend
             from .util.format_output import output
             b = get_backend(_backend_name)
@@ -108,14 +126,14 @@ def main() -> None:
             from .commands.list_sessions import run
             exit_code = run(args)
     elif args.command == "schema-check":
-        if _backend_name in ("claude", "all"):
+        if _backend_name in _non_copilot_backends:
             print(f"'schema-check' is not available for the {_backend_name} backend.", file=sys.stderr)
             exit_code = 1
         else:
             from .commands.schema_check_cmd import run
             exit_code = run(args)
     elif args.command == "files":
-        if _backend_name in ("claude", "all"):
+        if _backend_name in _non_copilot_backends:
             from .backends import get_backend
             from .util.format_output import output
             b = get_backend(_backend_name)
@@ -132,14 +150,14 @@ def main() -> None:
             from .commands.files import run
             exit_code = run(args)
     elif args.command == "checkpoints":
-        if _backend_name in ("claude", "all"):
+        if _backend_name in _non_copilot_backends:
             print(f"'checkpoints' is not available for the {_backend_name} backend.", file=sys.stderr)
             exit_code = 1
         else:
             from .commands.checkpoints import run
             exit_code = run(args)
     elif args.command == "show":
-        if _backend_name in ("claude", "all"):
+        if _backend_name in _non_copilot_backends:
             from .backends import get_backend
             from .util.format_output import output
             b = get_backend(_backend_name)
@@ -154,7 +172,7 @@ def main() -> None:
             from .commands.show_session import run
             exit_code = run(args)
     elif args.command == "search":
-        if _backend_name in ("claude", "all"):
+        if _backend_name in _non_copilot_backends:
             from .backends import get_backend
             from .util.format_output import output
             b = get_backend(_backend_name)
@@ -172,7 +190,7 @@ def main() -> None:
             from .commands.search import run
             exit_code = run(args)
     elif args.command == "health":
-        if _backend_name in ("claude", "all"):
+        if _backend_name in _non_copilot_backends:
             from .backends import get_backend
             from .util.format_output import output
             b = get_backend(_backend_name)
@@ -187,6 +205,12 @@ def main() -> None:
         exit_code = run(args)
     elif args.command == "install-mode":
         from .commands.install_mode import run
+        exit_code = run(args)
+    elif args.command == "export":
+        from .commands.export import run
+        exit_code = run(args)
+    elif args.command == "prune":
+        from .commands.prune import run
         exit_code = run(args)
     else:
         print(f"'{args.command}' not yet implemented. Coming in Phase 2.", file=sys.stderr)

@@ -33,7 +33,11 @@ def detect_surfaces() -> list[Surface]:
     vscode_ext_dir = home / ".vscode" / "extensions"
     vscode_found = None
     if vscode_ext_dir.exists():
-        for d in vscode_ext_dir.iterdir():
+        try:
+            entries = list(vscode_ext_dir.iterdir())
+        except OSError:
+            entries = []
+        for d in entries:
             if d.name.startswith("anthropics.claude-code"):
                 vscode_found = str(d)
                 break
@@ -54,13 +58,20 @@ def detect_surfaces() -> list[Surface]:
         jb_base = home / ".config" / "JetBrains"
     jb_found = None
     if jb_base and jb_base.exists():
-        for ide_dir in jb_base.iterdir():
-            plugins_dir = ide_dir / "plugins"
-            if plugins_dir.exists():
-                for p in plugins_dir.iterdir():
-                    if "claude" in p.name.lower():
-                        jb_found = str(p)
-                        break
+        try:
+            ide_dirs = list(jb_base.iterdir())
+        except OSError:
+            ide_dirs = []
+        for ide_dir in ide_dirs:
+            try:
+                plugins_dir = ide_dir / "plugins"
+                if plugins_dir.exists():
+                    for p in plugins_dir.iterdir():
+                        if "claude" in p.name.lower():
+                            jb_found = str(p)
+                            break
+            except OSError:
+                pass
             if jb_found:
                 break
     surfaces.append(Surface(
@@ -73,13 +84,21 @@ def detect_surfaces() -> list[Surface]:
     desktop_found = None
     if sys.platform == "win32":
         local_app = pathlib.Path(os.environ.get("LOCALAPPDATA", home / "AppData" / "Local"))
-        for d in local_app.iterdir() if local_app.exists() else []:
+        try:
+            local_entries = list(local_app.iterdir()) if local_app.exists() else []
+        except OSError:
+            local_entries = []
+        for d in local_entries:
             if "claude" in d.name.lower():
                 desktop_found = str(d)
                 break
     elif sys.platform == "darwin":
         apps = pathlib.Path("/Applications")
-        for d in (apps.iterdir() if apps.exists() else []):
+        try:
+            app_entries = list(apps.iterdir()) if apps.exists() else []
+        except OSError:
+            app_entries = []
+        for d in app_entries:
             if "claude" in d.name.lower():
                 desktop_found = str(d)
                 break
@@ -129,8 +148,21 @@ def wire_hooks(settings_path: pathlib.Path, *, dry_run: bool = False) -> dict:
 
     if not dry_run:
         tmp = settings_path.with_suffix(".tmp")
-        tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
-        tmp.replace(settings_path)
+        try:
+            tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
+            try:
+                tmp.replace(settings_path)
+            except PermissionError as e:
+                raise OSError(
+                    f"Cannot update {settings_path}: file is locked by another process. "
+                    f"Close any tool that has it open and retry.\n  {e}"
+                ) from e
+        finally:
+            if tmp.exists():
+                try:
+                    tmp.unlink()
+                except OSError:
+                    pass
 
     return {
         "changed": True,
@@ -176,7 +208,20 @@ def write_claude_md(claude_md_path: pathlib.Path, *, dry_run: bool = False) -> d
         return {"action": "dry_run", "path": str(claude_md_path), "block": _CLAUDE_MD_BLOCK}
 
     tmp = claude_md_path.with_suffix(".tmp")
-    tmp.write_text(new_content, encoding="utf-8")
-    tmp.replace(claude_md_path)
+    try:
+        tmp.write_text(new_content, encoding="utf-8")
+        try:
+            tmp.replace(claude_md_path)
+        except PermissionError as e:
+            raise OSError(
+                f"Cannot update {claude_md_path}: file is locked by another process. "
+                f"Close any editor that has it open and retry.\n  {e}"
+            ) from e
+    finally:
+        if tmp.exists():
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
     action = "updated" if existing else "written"
     return {"action": action, "path": str(claude_md_path)}
