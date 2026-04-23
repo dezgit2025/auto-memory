@@ -17,6 +17,9 @@ def _get_claude_backend():
 
 def get_backend(name: str | None = None) -> SessionBackend:
     """Return a backend instance. name=None → auto-detect."""
+    if name == "all":
+        from .all import AllBackend
+        return AllBackend()
     if name == "copilot" or name is None:
         b = CopilotBackend()
         if b.is_available() or name == "copilot":
@@ -31,4 +34,4 @@ def get_backend(name: str | None = None) -> SessionBackend:
     return CopilotBackend()
 
 
-__all__ = ["SessionBackend", "CopilotBackend", "get_backend"]
+__all__ = ["SessionBackend", "CopilotBackend", "get_backend", "AllBackend"]

@@ -138,3 +138,45 @@ def wire_hooks(settings_path: pathlib.Path, *, dry_run: bool = False) -> dict:
         "action": "dry_run" if dry_run else "wired",
         "hook_command": _HOOK_COMMAND,
     }
+
+
+_SENTINEL = "<!-- session-recall -->"
+
+_CLAUDE_MD_BLOCK = """{sentinel}
+## Session Recall — run on every new conversation
+
+Run `session-recall list --json --limit 5` at the start of every session
+to recall recent context for this repository (~50 tokens).
+
+Use `session-recall search "<topic>" --json` to find specific past work.
+Use `session-recall show <session-id> --json` for full session detail.
+
+If session-recall is not installed or errors, continue silently.
+{sentinel}""".format(sentinel=_SENTINEL)
+
+
+def write_claude_md(claude_md_path: pathlib.Path, *, dry_run: bool = False) -> dict:
+    """
+    Append (or update) the session-recall block in a CLAUDE.md file.
+    Returns {"action": "written"|"updated"|"already_present"|"dry_run", "path": str}.
+    """
+    existing = ""
+    if claude_md_path.exists():
+        try:
+            existing = claude_md_path.read_text(encoding="utf-8")
+        except OSError as e:
+            raise OSError(f"Cannot read {claude_md_path}: {e}") from e
+
+    if _SENTINEL in existing:
+        return {"action": "already_present", "path": str(claude_md_path)}
+
+    new_content = existing.rstrip("\n") + ("\n\n" if existing else "") + _CLAUDE_MD_BLOCK + "\n"
+
+    if dry_run:
+        return {"action": "dry_run", "path": str(claude_md_path), "block": _CLAUDE_MD_BLOCK}
+
+    tmp = claude_md_path.with_suffix(".tmp")
+    tmp.write_text(new_content, encoding="utf-8")
+    tmp.replace(claude_md_path)
+    action = "updated" if existing else "written"
+    return {"action": action, "path": str(claude_md_path)}

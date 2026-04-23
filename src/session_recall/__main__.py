@@ -30,7 +30,7 @@ def main() -> None:
     telemetry.init(TELEMETRY_PATH)
     t0 = time.monotonic()
     parser = argparse.ArgumentParser(prog="auto-memory", description="Query Copilot CLI session history")
-    parser.add_argument("--backend", choices=["copilot", "claude"], default=None,
+    parser.add_argument("--backend", choices=["copilot", "claude", "all"], default=None,
                         help="Session backend (default: auto-detect)")
     sub = parser.add_subparsers(dest="command")
 
@@ -78,6 +78,10 @@ def main() -> None:
     p_im = sub.add_parser("install-mode", help="Detect Claude Code surfaces and configure hooks")
     p_im.add_argument("--setup", action="store_true")
     p_im.add_argument("--dry-run", action="store_true")
+    p_im.add_argument("--project", action="store_true",
+                      help="Write session-recall block into CLAUDE.md in current directory")
+    p_im.add_argument("--project-path", default=None,
+                      help="Path to CLAUDE.md (default: ./CLAUDE.md)")
 
     args = parser.parse_args()
     if not args.command:
@@ -87,10 +91,10 @@ def main() -> None:
     _backend_name = getattr(args, "backend", None)
     exit_code = 1
     if args.command == "list":
-        if _backend_name == "claude":
+        if _backend_name in ("claude", "all"):
             from .backends import get_backend
             from .util.format_output import output
-            b = get_backend("claude")
+            b = get_backend(_backend_name)
             repo = getattr(args, "repo", None)
             data = b.list_sessions(
                 repo=repo,
@@ -104,17 +108,17 @@ def main() -> None:
             from .commands.list_sessions import run
             exit_code = run(args)
     elif args.command == "schema-check":
-        if _backend_name == "claude":
-            print("'schema-check' is not available for the Claude backend.", file=sys.stderr)
+        if _backend_name in ("claude", "all"):
+            print(f"'schema-check' is not available for the {_backend_name} backend.", file=sys.stderr)
             exit_code = 1
         else:
             from .commands.schema_check_cmd import run
             exit_code = run(args)
     elif args.command == "files":
-        if _backend_name == "claude":
+        if _backend_name in ("claude", "all"):
             from .backends import get_backend
             from .util.format_output import output
-            b = get_backend("claude")
+            b = get_backend(_backend_name)
             repo = getattr(args, "repo", None)
             data = b.list_files(
                 repo=repo,
@@ -128,17 +132,17 @@ def main() -> None:
             from .commands.files import run
             exit_code = run(args)
     elif args.command == "checkpoints":
-        if _backend_name == "claude":
-            print("'checkpoints' is not available for the Claude backend.", file=sys.stderr)
+        if _backend_name in ("claude", "all"):
+            print(f"'checkpoints' is not available for the {_backend_name} backend.", file=sys.stderr)
             exit_code = 1
         else:
             from .commands.checkpoints import run
             exit_code = run(args)
     elif args.command == "show":
-        if _backend_name == "claude":
+        if _backend_name in ("claude", "all"):
             from .backends import get_backend
             from .util.format_output import output
-            b = get_backend("claude")
+            b = get_backend(_backend_name)
             result = b.show_session(args.session_id, turns=getattr(args, "turns", None))
             if result is None:
                 print("session not found", file=sys.stderr)
@@ -150,10 +154,10 @@ def main() -> None:
             from .commands.show_session import run
             exit_code = run(args)
     elif args.command == "search":
-        if _backend_name == "claude":
+        if _backend_name in ("claude", "all"):
             from .backends import get_backend
             from .util.format_output import output
-            b = get_backend("claude")
+            b = get_backend(_backend_name)
             repo = getattr(args, "repo", None)
             data = b.search(
                 args.query,
@@ -168,10 +172,10 @@ def main() -> None:
             from .commands.search import run
             exit_code = run(args)
     elif args.command == "health":
-        if _backend_name == "claude":
+        if _backend_name in ("claude", "all"):
             from .backends import get_backend
             from .util.format_output import output
-            b = get_backend("claude")
+            b = get_backend(_backend_name)
             data = b.health()
             output(data, json_mode=getattr(args, "json", False))
             exit_code = 0

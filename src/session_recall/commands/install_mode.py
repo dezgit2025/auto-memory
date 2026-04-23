@@ -46,6 +46,34 @@ def run(args) -> int:
                 print(f"✓ SessionStart hook added to {settings_path}", file=sys.stderr)
                 print(f"  Command: {hook_result['hook_command']}", file=sys.stderr)
 
+    project = getattr(args, "project", False)
+    project_path_arg = getattr(args, "project_path", None)
+
+    if project or project_path_arg:
+        import pathlib as _pl
+        try:
+            from ..backends.claude_code.install import write_claude_md
+        except ImportError as e:
+            print(f"error: Claude Code backend unavailable: {e}", file=sys.stderr)
+            return 1
+
+        claude_md = _pl.Path(project_path_arg) if project_path_arg else _pl.Path.cwd() / "CLAUDE.md"
+        try:
+            proj_result = write_claude_md(claude_md, dry_run=dry_run)
+        except OSError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+
+        result["claude_md"] = proj_result
+        action = proj_result["action"]
+        if not getattr(args, "json", False):
+            if action == "already_present":
+                print(f"✓ CLAUDE.md already has session-recall block: {claude_md}")
+            elif action == "dry_run":
+                print(f"[dry-run] Would write session-recall block to {claude_md}")
+            else:
+                print(f"✓ session-recall block {action}: {claude_md}")
+
     if not getattr(args, "json", False):
         print(f"\nClaude Code surfaces ({len(detected_names)}/{len(surfaces)} detected):")
         for s in surfaces:
