@@ -31,6 +31,30 @@ Now give your agent a memory. Point it at [`deploy/install.md`](deploy/install.m
 
 ---
 
+### 🪟 Windows (WSL2) — Enable the Session Store. (IF MISSING)
+
+> **On Windows 11 + WSL2** (Suggested method of using on Windows install WSL2), IF Copilot CLI doesn't create `session-store.db`   
+> You must enable it first — otherwise you'll get `error: database not found`.
+
+### Missing Session Store Error Workaround— Enable the Session Store. 
+Inside any Copilot CLI session, run:
+
+```
+/experimental
+```
+
+Select **SESSION_STORE** to enable it. This turns on the SQLite-based session store for cross-session history, file tracking, and search.
+
+Verify it worked:
+
+```bash
+ls ~/.copilot/session-store.db    # should exist after your next session
+```
+
+> **Note:** This is a one-time setup. Once enabled, the session store persists across all future sessions.
+
+---
+
 ## The Problem
 
 Every AI coding agent ships with a big number on the box. 200K tokens. Sounds massive. Here's what actually happens:

@@ -19,6 +19,36 @@ pipx --version   # fallback 1
 pip --version     # fallback 2
 ```
 
+### Windows (WSL2) — Enable the Session Store
+
+On Windows 11 + WSL2, Copilot CLI does not create `session-store.db` by default. You must enable the experimental session store first.
+
+1. Start a Copilot CLI session:
+
+```bash
+copilot
+```
+
+2. Inside the session, run the slash command:
+
+```
+/experimental
+```
+
+3. Select **SESSION_STORE** to enable it. This turns on:
+   - SQLite-based session store for cross-session history
+   - File tracking and full-text search
+
+4. Exit and verify:
+
+```bash
+ls ~/.copilot/session-store.db
+```
+
+The file should now exist. If not, start and complete one full Copilot CLI session, then check again.
+
+> **This is a one-time setup.** Once enabled, the session store persists across all future sessions.
+
 ## Install
 
 ### Step 1 — Clone or navigate to the repo
@@ -114,6 +144,21 @@ session-recall schema-check    # must exit 0
 If `session-recall list --json` returns zero sessions, that is normal on a fresh install — Copilot CLI needs at least one completed session first.
 
 ## Troubleshooting
+
+### `error: database not found` (Windows/WSL2)
+
+Copilot CLI has not created the session store database yet. On WSL2, this requires enabling an experimental feature:
+
+1. Run `copilot` to start a session
+2. Run `/experimental` inside the session
+3. Enable **SESSION_STORE**
+4. Complete at least one session, then verify:
+
+```bash
+ls ~/.copilot/session-store.db
+```
+
+If the file still doesn't exist after enabling, try starting a new Copilot CLI session — the database is created on first use after enabling.
 
 ### `command not found: session-recall`
 
