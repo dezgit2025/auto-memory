@@ -30,6 +30,8 @@ Issues = "https://github.com/dezgit2025/auto-memory/issues"
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6"]
+mcp = ["mcp>=1.0"]
+all = ["mcp>=1.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
