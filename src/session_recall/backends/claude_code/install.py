@@ -48,7 +48,7 @@ def _detect_vscode(home: pathlib.Path) -> Surface:
     ext_dir = home / ".vscode" / "extensions"
     found = _find_first(
         _safe_iterdir(ext_dir),
-        lambda d: d.name.startswith("anthropics.claude-code"),
+        lambda d: d.name.startswith("anthropic.claude-code"),
     )
     return Surface(
         "vscode",
