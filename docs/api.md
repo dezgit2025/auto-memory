@@ -495,7 +495,7 @@ flag is supplied.
     {
       "surface": "vscode",
       "detected": true,
-      "path": "/home/user/.vscode/extensions/anthropics.claude-code-1.0.0",
+      "path": "/home/user/.vscode/extensions/anthropic.claude-code-1.0.0",
       "note": "VS Code extension"
     },
     {
