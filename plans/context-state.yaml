@@ -1,0 +1,23 @@
+current_task: "PR #11 ready for merge → tag v0.2.0 → PyPI publish"
+status: "active"
+next_steps:
+  - "Merge PR #11 to main"
+  - "Tag v0.2.0 and push to trigger PyPI publish"
+  - "Verify pip install --upgrade auto-memory gets 0.2.0"
+  - "Post MS Teams + LinkedIn announcements"
+verified_state:
+  - "171 tests passing locally"
+  - "CI green on Python 3.10/3.11/3.12"
+  - "Lint clean (ruff)"
+  - "PR #11 open, CI passing"
+  - "PyPI Trusted Publisher configured"
+key_files:
+  package_config: "pyproject.toml"
+  provider_discovery: "src/session_recall/providers/discovery.py"
+  file_backends: "src/session_recall/providers/file/"
+  cli_provider: "src/session_recall/providers/copilot_cli/"
+  config: "src/session_recall/config.py"
+  ci_publish: ".github/workflows/publish.yml"
+  changelog: "CHANGELOG.md"
+  install_guide: "deploy/install.md"
+last_saved: "2026-04-28T16:31:51-04:00"
