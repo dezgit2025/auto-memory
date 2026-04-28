@@ -76,6 +76,7 @@ Desktop.ini
 
 # === Project-specific ===
 .session-recall-stats.json
+.perf/
 uv.lock
 plans/
 
