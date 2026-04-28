@@ -6,10 +6,11 @@ import json
 from pathlib import Path
 
 from session_recall.providers.copilot_cli import CopilotCliProvider
-from session_recall.providers.file_backends import (
+from session_recall.providers.file import (
     VSCodeProvider,
     _extract_role,
     _extract_text,
+    _is_wsl,
 )
 
 
@@ -54,7 +55,7 @@ def test_cli_fallback_reads_session_state(monkeypatch, tmp_path: Path) -> None:
     )
 
     monkeypatch.setattr(
-        "session_recall.providers.copilot_cli.detect_repo_for_cwd",
+        "session_recall.providers.copilot_cli._labels.detect_repo_for_cwd",
         lambda cwd: "owner/repo",
     )
 
@@ -158,7 +159,7 @@ def test_cli_fallback_uses_tool_path_to_infer_repository(
     )
 
     monkeypatch.setattr(
-        "session_recall.providers.copilot_cli.detect_repo_for_cwd",
+        "session_recall.providers.copilot_cli._labels.detect_repo_for_cwd",
         lambda cwd: (
             "dezgit2025/auto-memory"
             if cwd == "/work/auto-memory/src" or cwd == "/work/auto-memory"
@@ -233,8 +234,8 @@ def test_vscode_provider_includes_results_when_repo_filter_is_set(
     sessions = provider.list_sessions(repo="owner/repo", limit=5, days=None)
 
     assert len(sessions) == 1
-    assert sessions[0]["provider"] == "vscode"
-    assert sessions[0]["summary"].startswith("Continue API refactor")
+    assert sessions[0]["provider"] == "vsc"
+    assert "Continue API refactor" in sessions[0]["summary"]
 
 
 def test_vscode_provider_skips_pathological_jsonl_lines(tmp_path: Path) -> None:
@@ -252,3 +253,17 @@ def test_vscode_provider_skips_pathological_jsonl_lines(tmp_path: Path) -> None:
 
     assert len(sessions) == 1
     assert sessions[0]["turns_count"] == 1
+
+
+def test_vscode_provider_includes_wsl_server_path() -> None:
+    provider = VSCodeProvider()
+    wsl_path = Path.home() / ".vscode-server" / "data" / "User" / "workspaceStorage"
+    assert wsl_path in provider._roots
+
+
+def test_is_wsl_returns_false_when_proc_version_missing(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "builtins.open",
+        lambda *a, **kw: (_ for _ in ()).throw(OSError("No such file")),
+    )
+    assert _is_wsl() is False

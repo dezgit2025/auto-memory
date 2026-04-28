@@ -33,6 +33,13 @@ def run(args) -> int:
     checkpoints = sorted(checkpoints, key=lambda c: c.get("date") or "", reverse=True)[
         :limit
     ]
+
+    # Strip provider field when single-provider (reduces token overhead)
+    _provider_ids = {r.get("provider") for r in checkpoints if "provider" in r}
+    if len(_provider_ids) <= 1:
+        for r in checkpoints:
+            r.pop("provider", None)
+
     output(
         {"repo": repo or "all", "count": len(checkpoints), "checkpoints": checkpoints},
         json_mode=getattr(args, "json", False),

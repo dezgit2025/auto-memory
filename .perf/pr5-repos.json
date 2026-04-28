@@ -1,0 +1,167 @@
+{
+  "count": 20,
+  "days": 30,
+  "include_local": false,
+  "repositories": [
+    {
+      "repository": "dezgit2025/md2docx",
+      "session_count": 217,
+      "last_seen": "2026-04-07T02:14:56.951Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "dezgit2025/ade",
+      "session_count": 54,
+      "last_seen": "2026-04-22T10:36:51.995Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "unknown",
+      "session_count": 48,
+      "last_seen": "2026-04-22T19:41:35.814Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "dezgit2025/oclaw-vm",
+      "session_count": 44,
+      "last_seen": "2026-04-22T02:09:26.227Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "dezgit2025/work-brain",
+      "session_count": 15,
+      "last_seen": "2026-04-21T21:09:14.634Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "dezgit2025/remote-control",
+      "session_count": 8,
+      "last_seen": "2026-04-08T04:44:18.985Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "dezgit2025/AzureOps",
+      "session_count": 7,
+      "last_seen": "2026-04-19T04:21:47.952Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "dezgit2025/auto-memory",
+      "session_count": 4,
+      "last_seen": "2026-04-25T22:54:01.860Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "dezgit2025/openclaw_vm_code",
+      "session_count": 3,
+      "last_seen": "2026-04-03T07:14:54.189Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "dezgit2025/Claude_Agentic_Workflow",
+      "session_count": 3,
+      "last_seen": "2026-04-06T02:16:38.356Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "chauncygu/collection-claude-code-source-code",
+      "session_count": 2,
+      "last_seen": "2026-04-01T05:00:45.013Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "github/copilot-cli",
+      "session_count": 2,
+      "last_seen": "2026-04-17T00:35:32.606Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "dezgit2025/the-startup",
+      "session_count": 1,
+      "last_seen": "2026-03-31T17:00:27.751Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "dezgit2025/agent-memory-tuning",
+      "session_count": 1,
+      "last_seen": "2026-04-01T01:19:03.607Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "dezgit2025/meta-harness",
+      "session_count": 1,
+      "last_seen": "2026-04-04T02:43:54.996Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "Yeachan-Heo/oh-my-codex",
+      "session_count": 1,
+      "last_seen": "2026-04-05T06:02:59.905Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "different-ai/openwork",
+      "session_count": 1,
+      "last_seen": "2026-04-05T08:40:11.945Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "CopilotKit/open-multi-agent-canvas",
+      "session_count": 1,
+      "last_seen": "2026-04-06T23:14:11.456Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "blacksmithgu/obsidian-dataview",
+      "session_count": 1,
+      "last_seen": "2026-04-15T16:25:47.359Z",
+      "providers": [
+        "cli"
+      ]
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "session_count": 1,
+      "last_seen": "2026-04-17T17:47:02.300Z",
+      "providers": [
+        "cli"
+      ]
+    }
+  ]
+}

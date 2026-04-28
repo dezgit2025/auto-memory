@@ -38,6 +38,15 @@ def run(args) -> int:
         print(f"error: {e}", file=sys.stderr)
         return 2
 
+    cli_providers = [p for p in providers if p.provider_id == "cli"]
+    if cli_providers and hasattr(cli_providers[0], "schema_problems"):
+        problems = cli_providers[0].schema_problems()
+        if problems:
+            print("❌ Schema drift:", file=sys.stderr)
+            for p in problems:
+                print(f"   - {p}", file=sys.stderr)
+            return 2
+
     sessions: list[dict] = []
     for provider in providers:
         sessions.extend(provider.list_sessions(repo="all", limit=limit, days=days))
@@ -73,6 +82,14 @@ def run(args) -> int:
     )
     for row in rows:
         row["providers"] = sorted(row["providers"])
+
+    # Strip providers field when single-provider (reduces token overhead)
+    _all_prov: set[str] = set()
+    for row in rows:
+        _all_prov.update(row.get("providers", []))
+    if len(_all_prov) <= 1:
+        for row in rows:
+            row.pop("providers", None)
 
     payload = {
         "count": len(rows),

@@ -106,7 +106,7 @@ def test_search_falls_back_to_all_scope_when_scoped_is_empty():
                 "summary": "can you fix the broken skills?",
                 "repository": "unknown",
                 "date": "2026-04-22",
-                "content": "can you fix the broken skills?",
+                "excerpt": "can you fix the broken skills?",
             }
         ],
     )

@@ -45,6 +45,10 @@ class StorageProvider(ABC):
     ) -> dict | None:
         """Return a single session payload, or None when not found."""
 
+    def uses_jsonl_scan(self) -> bool:
+        """True if this provider walks JSONL files (vs. queries SQLite)."""
+        return False
+
     def schema_problems(self) -> list[str]:
         """Return schema validation issues if meaningful for this provider."""
         return []

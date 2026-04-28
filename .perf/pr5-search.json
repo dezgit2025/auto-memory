@@ -1,0 +1,57 @@
+{
+  "query": "test",
+  "repo": "dezgit2025/auto-memory",
+  "count": 5,
+  "results": [
+    {
+      "provider": "cli",
+      "session_id": "087b3a06",
+      "session_id_full": "087b3a06-570f-4477-a6c4-11ba11cf3c37",
+      "source_type": "turn",
+      "summary": "Fleet deployed: review \u25cf Saved to polish/findings.md. Includes blockers, warnings, viral-growth sugg...",
+      "repository": "dezgit2025/auto-memory",
+      "date": "2026-04-21",
+      "content": "what did u test?\nI ran the project's existing test suite:\n\n```\npython3 -m pytest src/ -q --tb=short\n```\n\n**Result:** 90 passed, 0 warnings (after the `utcnow` fix in both source and test files).\n\nThat validates the existing tests still pass \u2014 but I did **not** write new tests for the changes. The 8 fixes were docs/config/one-liner code changes:\n\n- **Docs only (no test needed):** README byline, SECURITY.md wording, install.md fences, pyproject.toml metadata, .gitignore patterns\n- **Config only:**"
+    },
+    {
+      "provider": "cli",
+      "session_id": "087b3a06",
+      "session_id_full": "087b3a06-570f-4477-a6c4-11ba11cf3c37",
+      "source_type": "turn",
+      "summary": "Fleet deployed: review \u25cf Saved to polish/findings.md. Includes blockers, warnings, viral-growth sugg...",
+      "repository": "dezgit2025/auto-memory",
+      "date": "2026-04-21",
+      "content": "\u2524\n  \u2502 6  \u2502 .github/workflows/test.yml CI                            \u2502 \ud83d\udd32 Warning \u2502\n  \u251c\u2500what this?\nIt's a **GitHub Actions CI workflow** \u2014 a YAML file that automatically runs your tests (`pytest`) and linter (`ruff`) on every push/PR. Without it, there's no automated check that code works before merging.\n\nIt would go in `.github/workflows/test.yml` and test across Python 3.10/3.11/3.12. Want me to create it?"
+    },
+    {
+      "provider": "cli",
+      "session_id": "087b3a06",
+      "session_id_full": "087b3a06-570f-4477-a6c4-11ba11cf3c37",
+      "source_type": "turn",
+      "summary": "Fleet deployed: review \u25cf Saved to polish/findings.md. Includes blockers, warnings, viral-growth sugg...",
+      "repository": "dezgit2025/auto-memory",
+      "date": "2026-04-21",
+      "content": "Fleet deployed: fix Unpinned dev deps \u2502 Pin pytest>=8, ruff>=0.6 in pyproject.toml \u2502 \u251c\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524 \u2502 8 \u2502 881 pytest deprecation warnings \u2502 datetime.utcnow() in health/dim_disclosure.py:113-115 \u2192 datetime.now(timezone.utc) \u2502 \u251c\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ufffd\ufffd\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"
+    },
+    {
+      "provider": "cli",
+      "session_id": "125733dd",
+      "session_id_full": "125733dd-4bb3-46a1-af5c-6d3679cd1b79",
+      "source_type": "turn",
+      "summary": "search recent sessions for last 10 files we modified",
+      "repository": "dezgit2025/auto-memory",
+      "date": "2026-04-21",
+      "content": "search recent sessions for last 10 files we modified\nHere are the **last 10 modified files** (only 3 found in this repo's session history):\n\n| # | File | Action | Date | Session |\n|---|------|--------|------|---------|\n| 1 | `polish/findings.md` | edit | 2026-04-21 | Fleet review |\n| 2 | `src/session_recall/tests/test_dim_disclosure.py` | edit | 2026-04-21 | Fleet review |\n| 3 | `README.md` | edit | 2026-04-21 | Fleet review |\n\nAll 3 were from today's fleet review session. The session store only"
+    },
+    {
+      "provider": "cli",
+      "session_id": "125733dd",
+      "session_id_full": "125733dd-4bb3-46a1-af5c-6d3679cd1b79",
+      "source_type": "turn",
+      "summary": "search recent sessions for last 10 files we modified",
+      "repository": "dezgit2025/auto-memory",
+      "date": "2026-04-21",
+      "content": "[\ud83d\udcf7 copilot-image-7f2119.png] --- here the wordpress code -- <em>~1,900 lines of Python. Zero dependencies. Saves you an hour a day.</em>\n\n<strong><a href=\"https://github.com/dezgit2025/auto-memory\" target=\"_blank\" rel=\"noopener\">GitHub \u2192</a></strong>\u00a0\u00b7\u00a0<code>pip install auto-memory</code>\n\n<strong>Your AI coding agent already remembers everything \u2014 it just can't read its own memory.</strong>\n<h2>The Context Window Is a Lie</h2>\nEvery AI coding agent ships with a big number on the box. 200K token"
+    }
+  ]
+}

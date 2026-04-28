@@ -1,0 +1,47 @@
+{
+  "query": "test",
+  "repo": "dezgit2025/auto-memory",
+  "count": 5,
+  "results": [
+    {
+      "session_id": "087b3a06",
+      "session_id_full": "087b3a06-570f-4477-a6c4-11ba11cf3c37",
+      "source_type": "turn",
+      "summary": "Fleet deployed: review \u25cf Saved to polish/findings.md. Includes blockers, warnings, viral-growth sugg...",
+      "date": "2026-04-21",
+      "excerpt": "what did u test?\nI ran the project's existing test suite:\n\n```\npython3 -m pytest src/ -q --tb=short\n```\n\n**Result:** 90 passed, 0 warnings (after the `utcnow` fix in both source and test files).\n\nThat"
+    },
+    {
+      "session_id": "087b3a06",
+      "session_id_full": "087b3a06-570f-4477-a6c4-11ba11cf3c37",
+      "source_type": "turn",
+      "summary": "Fleet deployed: review \u25cf Saved to polish/findings.md. Includes blockers, warnings, viral-growth sugg...",
+      "date": "2026-04-21",
+      "excerpt": "\u2524\n  \u2502 6  \u2502 .github/workflows/test.yml CI                            \u2502 \ud83d\udd32 Warning \u2502\n  \u251c\u2500what this?\nIt's a **GitHub Actions CI workflow** \u2014 a YAML file that automatically runs your tests (`pytest`) and l"
+    },
+    {
+      "session_id": "087b3a06",
+      "session_id_full": "087b3a06-570f-4477-a6c4-11ba11cf3c37",
+      "source_type": "turn",
+      "summary": "Fleet deployed: review \u25cf Saved to polish/findings.md. Includes blockers, warnings, viral-growth sugg...",
+      "date": "2026-04-21",
+      "excerpt": "Fleet deployed: fix Unpinned dev deps \u2502 Pin pytest>=8, ruff>=0.6 in pyproject.toml \u2502 \u251c\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"
+    },
+    {
+      "session_id": "125733dd",
+      "session_id_full": "125733dd-4bb3-46a1-af5c-6d3679cd1b79",
+      "source_type": "turn",
+      "summary": "search recent sessions for last 10 files we modified",
+      "date": "2026-04-21",
+      "excerpt": "search recent sessions for last 10 files we modified\nHere are the **last 10 modified files** (only 3 found in this repo's session history):\n\n| # | File | Action | Date | Session |\n|---|------|--------"
+    },
+    {
+      "session_id": "125733dd",
+      "session_id_full": "125733dd-4bb3-46a1-af5c-6d3679cd1b79",
+      "source_type": "turn",
+      "summary": "search recent sessions for last 10 files we modified",
+      "date": "2026-04-21",
+      "excerpt": "[\ud83d\udcf7 copilot-image-7f2119.png] --- here the wordpress code -- <em>~1,900 lines of Python. Zero dependencies. Saves you an hour a day.</em>\n\n<strong><a href=\"https://github.com/dezgit2025/auto-memory\" ta"
+    }
+  ]
+}

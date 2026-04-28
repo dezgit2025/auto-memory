@@ -3,6 +3,13 @@
 import os
 from pathlib import Path
 
+
+def _truthy(name: str, default: str = "0") -> bool:
+    return os.environ.get(name, default).strip().lower() in ("1", "true", "yes", "on")
+
+
+ENABLE_FILE_BACKENDS = _truthy("SESSION_RECALL_ENABLE_FILE_BACKENDS")
+
 DB_PATH = os.environ.get(
     "SESSION_RECALL_DB",
     str(Path.home() / ".copilot" / "session-store.db"),
@@ -26,3 +33,6 @@ RETRY_DELAYS_MS = [50, 150, 450]
 MAX_RETRIES = len(RETRY_DELAYS_MS)
 
 EXPECTED_SCHEMA_VERSION = 1
+
+JSONL_DEFAULT_LOOKBACK_DAYS = int(os.environ.get("SESSION_RECALL_JSONL_DAYS", "5"))
+SQLITE_DEFAULT_LOOKBACK_DAYS = 30

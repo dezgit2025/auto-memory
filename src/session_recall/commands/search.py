@@ -7,6 +7,7 @@ from ..config import DB_PATH
 from ..providers.discovery import get_active_providers
 from ..util.detect_repo import detect_repo
 from ..util.format_output import output
+from ._lookback import resolve_days
 
 # FTS5 special chars that cause syntax errors when unquoted
 _FTS5_SPECIAL = re.compile(r'[.\-(){}[\]^~*:"+/\\@#$%&!?<>=|]')
@@ -37,7 +38,7 @@ def run(args) -> int:
     raw_query = args.query
     repo = getattr(args, "repo", None) or detect_repo()
     limit = getattr(args, "limit", None) or 5
-    days = getattr(args, "days", None)
+    user_days = getattr(args, "days", None)
 
     try:
         providers = get_active_providers(
@@ -69,17 +70,26 @@ def run(args) -> int:
 
     results = []
     for provider in providers:
-        results.extend(provider.search(raw_query, repo=repo, limit=limit, days=days))
+        effective_days = resolve_days(user_days, provider)
+        results.extend(provider.search(raw_query, repo=repo, limit=limit, days=effective_days))
 
     scope = repo or "all"
     if not results and repo and repo != "all":
         for provider in providers:
+            effective_days = resolve_days(user_days, provider)
             results.extend(
-                provider.search(raw_query, repo="all", limit=limit, days=days)
+                provider.search(raw_query, repo="all", limit=limit, days=effective_days)
             )
         scope = "all"
 
     results = sorted(results, key=lambda r: r.get("date") or "", reverse=True)[:limit]
+
+    # Strip provider field when single-provider (reduces token overhead)
+    _provider_ids = {r.get("provider") for r in results if "provider" in r}
+    if len(_provider_ids) <= 1:
+        for r in results:
+            r.pop("provider", None)
+
     data = {
         "query": raw_query,
         "repo": scope,

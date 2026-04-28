@@ -32,6 +32,13 @@ def run(args) -> int:
         files.extend(provider.recent_files(repo=repo, limit=limit, days=days))
 
     files = sorted(files, key=lambda f: f.get("date") or "", reverse=True)[:limit]
+
+    # Strip provider field when single-provider (reduces token overhead)
+    _provider_ids = {r.get("provider") for r in files if "provider" in r}
+    if len(_provider_ids) <= 1:
+        for r in files:
+            r.pop("provider", None)
+
     output(
         {"repo": repo or "all", "count": len(files), "files": files},
         json_mode=getattr(args, "json", False),

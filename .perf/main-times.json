@@ -1,0 +1,17 @@
+{
+  "list": {
+    "median_ms": 83.9,
+    "max_ms": 96.2,
+    "min_ms": 82.0
+  },
+  "files": {
+    "median_ms": 79.1,
+    "max_ms": 82.6,
+    "min_ms": 76.4
+  },
+  "search": {
+    "median_ms": 83.3,
+    "max_ms": 91.3,
+    "min_ms": 81.4
+  }
+}

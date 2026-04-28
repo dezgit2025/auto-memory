@@ -1,0 +1,97 @@
+{
+  "repo": "dezgit2025/auto-memory",
+  "count": 4,
+  "sessions": [
+    {
+      "provider": "cli",
+      "id_short": "0d60d561",
+      "id_full": "0d60d561-3c82-4989-b9f2-72f642dbf882",
+      "repository": "dezgit2025/auto-memory",
+      "branch": "main",
+      "summary": "Send Ping Request",
+      "date": "2026-04-25",
+      "created_at": "2026-04-25T22:54:01.860Z",
+      "turns_count": 3,
+      "files_count": 0
+    },
+    {
+      "provider": "cli",
+      "id_short": "10a488a9",
+      "id_full": "10a488a9-2fb6-4876-ad6d-b952e742dd11",
+      "repository": "dezgit2025/auto-memory",
+      "branch": "main",
+      "summary": "Add WSL2 Session Store Instructions",
+      "date": "2026-04-23",
+      "created_at": "2026-04-23T17:31:15.445Z",
+      "turns_count": 3,
+      "files_count": 0
+    },
+    {
+      "provider": "cli",
+      "id_short": "125733dd",
+      "id_full": "125733dd-4bb3-46a1-af5c-6d3679cd1b79",
+      "repository": "dezgit2025/auto-memory",
+      "branch": "main",
+      "summary": "search recent sessions for last 10 files we modified",
+      "date": "2026-04-21",
+      "created_at": "2026-04-21T06:45:22.074Z",
+      "turns_count": 31,
+      "files_count": 2
+    },
+    {
+      "provider": "cli",
+      "id_short": "087b3a06",
+      "id_full": "087b3a06-570f-4477-a6c4-11ba11cf3c37",
+      "repository": "dezgit2025/auto-memory",
+      "branch": "main",
+      "summary": "Fleet deployed: review \u25cf Saved to polish/findings.md. Includes blockers, warnings, viral-growth sugg...",
+      "date": "2026-04-21",
+      "created_at": "2026-04-21T06:14:47.371Z",
+      "turns_count": 14,
+      "files_count": 3
+    }
+  ],
+  "recent_files": [
+    {
+      "provider": "cli",
+      "file_path": "/Users/dez/Projects/auto-memory/docs/blog-why-auto-memory.md",
+      "tool_name": "edit",
+      "date": "2026-04-21",
+      "session_id": "125733dd",
+      "session_summary": "search recent sessions for last 10 files we modified"
+    },
+    {
+      "provider": "cli",
+      "file_path": "/Users/dez/Projects/auto-memory/README.md",
+      "tool_name": "edit",
+      "date": "2026-04-21",
+      "session_id": "125733dd",
+      "session_summary": "search recent sessions for last 10 files we modified"
+    },
+    {
+      "provider": "cli",
+      "file_path": "/Users/dez/Projects/auto-memory/polish/findings.md",
+      "tool_name": "edit",
+      "date": "2026-04-21",
+      "session_id": "087b3a06",
+      "session_summary": "Fleet deployed: review \u25cf Saved to polish/findings.md. Includes blockers, warnings, viral-growth sugg..."
+    },
+    {
+      "provider": "cli",
+      "file_path": "/Users/dez/Projects/auto-memory/src/session_recall/tests/test_dim_disclosure.py",
+      "tool_name": "edit",
+      "date": "2026-04-21",
+      "session_id": "087b3a06",
+      "session_summary": "Fleet deployed: review \u25cf Saved to polish/findings.md. Includes blockers, warnings, viral-growth sugg..."
+    },
+    {
+      "provider": "cli",
+      "file_path": "/Users/dez/Projects/auto-memory/README.md",
+      "tool_name": "edit",
+      "date": "2026-04-21",
+      "session_id": "087b3a06",
+      "session_summary": "Fleet deployed: review \u25cf Saved to polish/findings.md. Includes blockers, warnings, viral-growth sugg..."
+    }
+  ],
+  "scope_fallback_used": false
+}

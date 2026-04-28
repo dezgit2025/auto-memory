@@ -13,6 +13,10 @@
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](pyproject.toml)
 [![Tests](https://img.shields.io/badge/tests-90%20passed-brightgreen)]()
 
+### 🆕 What's New in v0.2.0
+
+Multi-storage recall, security hardening, and token budget enforcement. File-backed providers (VS Code, JetBrains, Neovim) are now supported as opt-in backends. [Full changelog →](CHANGELOG.md)
+
 **Zero-dependency CLI that turns Copilot CLI's local SQLite into instant recall — no MCP server, no hooks, read-only, schema-checked. ~50 tokens per prompt.**
 
 **Works with:** GitHub Copilot CLI  
@@ -23,7 +27,8 @@
 ### Quickstart
 
 ```bash
-pip install auto-memory        # or: git clone + ./install.sh
+pip install auto-memory           # or: git clone + ./install.sh
+pip install --upgrade auto-memory # upgrade to latest
 session-recall health          # verify it works
 ```
 
@@ -201,10 +206,50 @@ session-recall show <session-id> --json
 ```bash
 session-recall health          # 9-dimension health dashboard
 session-recall schema-check    # validate DB schema after Copilot CLI upgrades
-session-recall repos           # discovered repositories/workspaces across providers
+session-recall repos --json     # discovered repositories across providers
 ```
 
 `session-recall` now supports multi-storage discovery for current Copilot CLI layouts, including session-state sources when legacy `session-store.db` is absent.
+
+## Multi-Storage Recall
+
+By default, session-recall reads only from Copilot CLI's SQLite database. Enable file-backed providers to also recall sessions from VS Code, JetBrains, and Neovim:
+
+```bash
+export SESSION_RECALL_ENABLE_FILE_BACKENDS=1
+```
+
+### Supported Providers
+
+| Provider | Platforms | Auto-detected paths |
+|----------|-----------|-------------------|
+| **Copilot CLI** (always on) | All | `~/.copilot/session-store.db`, `~/.copilot/session-state/` |
+| **VS Code** (opt-in) | Linux, macOS, WSL | `~/.config/Code/...`, `~/Library/Application Support/Code/...`, `~/.vscode-server/...` |
+| **JetBrains** (opt-in) | Linux, macOS | `~/.config/JetBrains/`, `~/.config/github-copilot` |
+| **Neovim** (opt-in) | Linux, macOS | `~/.local/share/nvim/`, `~/.config/github-copilot` |
+
+### Lookback Defaults
+
+| Storage type | Default window | Override |
+|-------------|---------------|---------|
+| SQLite (Copilot CLI) | 30 days | `--days N` |
+| JSONL / file backends | 5 days | `--days N` or `SESSION_RECALL_JSONL_DAYS=N` |
+
+### Trust Model
+
+File-backed content is marked `_trust_level: "untrusted_third_party"` and wrapped in sentinel fences (`<<UNTRUSTED-FILE-BACKED-CONTENT>>`). CLI content is `_trust_level: "trusted_first_party"`. Downstream agents can use these markers to fence untrusted content.
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SESSION_RECALL_ENABLE_FILE_BACKENDS` | `0` | Set to `1` to enable VS Code/JetBrains/Neovim providers |
+| `SESSION_RECALL_JSONL_DAYS` | `5` | Default lookback for file-backed providers |
+| `SESSION_RECALL_DB` | `~/.copilot/session-store.db` | Override SQLite path |
+| `SESSION_RECALL_CLI_STATE_ROOT` | `~/.copilot/session-state` | Override JSONL state dir |
+| `SESSION_RECALL_VSCODE_STORAGE` | auto-detected | Override VS Code workspace path |
+| `SESSION_RECALL_JETBRAINS_ROOT` | auto-detected | Override JetBrains path |
+| `SESSION_RECALL_NEOVIM_ROOT` | auto-detected | Override Neovim path |
 
 ## Health Check
 

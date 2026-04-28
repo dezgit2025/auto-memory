@@ -6,13 +6,14 @@ from ..config import DB_PATH
 from ..providers.discovery import get_active_providers
 from ..util.detect_repo import detect_repo
 from ..util.format_output import output
+from ._lookback import resolve_days
 
 
 def run(args) -> int:
     """Execute the list subcommand. Returns exit code."""
     repo = args.repo or detect_repo()
-    limit = args.limit or 50
-    days = args.days or 30
+    limit = args.limit or 10
+    user_days = getattr(args, 'days', None)
     try:
         providers = get_active_providers(
             getattr(args, "provider", "cli"), db_path=DB_PATH
@@ -33,8 +34,9 @@ def run(args) -> int:
     sessions = []
     recent_files = []
     for provider in providers:
-        sessions.extend(provider.list_sessions(repo=repo, limit=limit, days=days))
-        recent_files.extend(provider.recent_files(repo=repo, limit=10, days=days))
+        effective_days = resolve_days(user_days, provider)
+        sessions.extend(provider.list_sessions(repo=repo, limit=limit, days=effective_days))
+        recent_files.extend(provider.recent_files(repo=repo, limit=10, days=effective_days))
 
     scope = repo or "all"
     scope_fallback_used = False
@@ -59,7 +61,8 @@ def run(args) -> int:
                 continue
             if filled >= limit:
                 break
-            candidates = provider.list_sessions(repo="all", limit=limit, days=days)
+            effective_days = resolve_days(user_days, provider)
+            candidates = provider.list_sessions(repo="all", limit=limit, days=effective_days)
             for candidate in candidates:
                 key = (
                     str(candidate.get("provider") or ""),
@@ -89,6 +92,13 @@ def run(args) -> int:
     recent_files = sorted(
         recent_files, key=lambda f: f.get("date") or "", reverse=True
     )[:10]
+
+    # Strip provider field when single-provider (reduces token overhead)
+    _all_records = sessions + recent_files
+    _provider_ids = {r.get("provider") for r in _all_records if "provider" in r}
+    if len(_provider_ids) <= 1:
+        for r in _all_records:
+            r.pop("provider", None)
 
     data = {
         "repo": scope,
