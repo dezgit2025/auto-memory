@@ -214,4 +214,6 @@ class _FileSessionProvider(StorageProvider):
 
 
 # Re-export for backward compatibility
+from ._parse_helpers import _extract_role, _extract_text  # noqa: F401, E402
+
 __all__ = ["_FileSessionProvider", "_extract_role", "_extract_text", "_best_summary"]

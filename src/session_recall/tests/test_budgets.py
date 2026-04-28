@@ -17,7 +17,6 @@ import sqlite3
 import subprocess
 import sys
 import time
-from pathlib import Path
 from statistics import median
 
 import pytest
