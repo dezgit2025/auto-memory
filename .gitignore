@@ -38,6 +38,7 @@ service-account*.json
 
 # === AI Agent / Copilot / Claude ===
 CLAUDE.md
+TASKS.md
 .claude/
 .copilot/
 .agent-memory/
