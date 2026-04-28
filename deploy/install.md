@@ -2,6 +2,8 @@
 
 auto-memory is a zero-dependency Python CLI that queries `~/.copilot/session-store.db` for progressive session recall. Install it once, wire it into Copilot CLI instructions, and every future agent session starts with full context.
 
+> **This guide installs auto-memory v0.2.0+**
+
 ## Prerequisites
 
 Verify these before proceeding. Stop and report if any fail.
@@ -88,6 +90,28 @@ session-recall schema-check
 
 If `which session-recall` returns nothing, see Troubleshooting below.
 
+## Upgrading from v0.1.0
+
+If already installed, upgrade with the same tool you used to install:
+
+```bash
+# PyPI install
+pip install --upgrade auto-memory
+
+# Editable install (from repo root)
+git pull origin main
+pip install -e .
+
+# Or re-run install.sh
+./install.sh
+```
+
+Verify upgrade:
+```bash
+python3 -c "from session_recall import __version__; print(__version__)"
+# Should print: 0.2.0
+```
+
 ## Agent Integration — Add to Copilot Instructions
 
 This step wires auto-memory into every future agent session by appending instructions to `~/.copilot/copilot-instructions.md`.
@@ -120,6 +144,7 @@ session-recall list --days 2 --json     # sessions from last 2 days
 session-recall search '<term>' --json   # full-text search
 session-recall search '<term>' --days 5 # search last 5 days only
 session-recall checkpoints --days 3     # checkpoints from last 3 days
+session-recall repos --json             # discovered repositories across providers
 session-recall show <id> --json         # drill into one session
 session-recall health --json            # 8-dimension health check
 session-recall schema-check             # validate DB schema (run after Copilot CLI upgrade)
@@ -142,6 +167,39 @@ session-recall schema-check    # must exit 0
 ```
 
 If `session-recall list --json` returns zero sessions, that is normal on a fresh install — Copilot CLI needs at least one completed session first.
+
+## Multi-Storage Configuration (Optional)
+
+By default, session-recall only reads from Copilot CLI's SQLite database. To also recall sessions from VS Code, JetBrains, or Neovim:
+
+```bash
+export SESSION_RECALL_ENABLE_FILE_BACKENDS=1
+```
+
+Add this to your shell profile (`~/.bashrc`, `~/.zshrc`, etc.) to persist it.
+
+### Provider paths (auto-detected)
+
+| Provider | Platform | Path |
+|----------|----------|------|
+| VS Code | Linux | `~/.config/Code/User/workspaceStorage` |
+| VS Code | macOS | `~/Library/Application Support/Code/User/workspaceStorage` |
+| VS Code | WSL | `~/.vscode-server/data/User/workspaceStorage` |
+| JetBrains | Linux/macOS | `~/.config/JetBrains/` + `~/.config/github-copilot` |
+| Neovim | Linux/macOS | `~/.local/share/nvim/` + `~/.config/github-copilot` |
+
+Override any path: `SESSION_RECALL_VSCODE_STORAGE=/custom/path`
+
+### Lookback defaults
+
+| Provider type | Default lookback | Override |
+|--------------|-----------------|---------|
+| SQLite (Copilot CLI) | 30 days | `--days N` |
+| JSONL/file backends | 5 days | `--days N` or `SESSION_RECALL_JSONL_DAYS=N` |
+
+### Trust model
+
+File-backed content is marked `_trust_level: "untrusted_third_party"` and wrapped in sentinel fences. Copilot CLI content is `_trust_level: "trusted_first_party"`.
 
 ## Troubleshooting
 

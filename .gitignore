@@ -84,7 +84,7 @@ tmp/
 temp/
 *.bak
 *.tmp
-CHANGELOG.md
+
 
 # Internal working docs
 polish/

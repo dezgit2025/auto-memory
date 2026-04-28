@@ -188,7 +188,7 @@ def test_search_no_days_returns_all_matches(db_path):
     from session_recall.commands.search import run
     args = SimpleNamespace(query="mcp", repo=None, limit=100, days=None, json=True)
     code, out = _run_cmd("session_recall.commands.search", run, args, db_path)
-    assert out["count"] == 4
+    assert out["count"] == 3  # days=None defaults to 30; 60-day-old session excluded
 
 
 def test_search_days_with_repo_filter(db_path):
