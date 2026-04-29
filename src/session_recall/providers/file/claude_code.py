@@ -27,9 +27,5 @@ class ClaudeCodeProvider(_FileSessionProvider):
         if root_override:
             roots = [Path(root_override).expanduser()]
         else:
-            roots = [
-                home / ".claude" / "projects",
-            ]
-        # ``*/*.jsonl`` only — exclude subagent transcripts under
-        # ``<slug>/subagents/`` which are tool-call children, not sessions.
+            roots = [home / ".claude" / "projects"]
         super().__init__("claude_code", roots, ["*/*.jsonl"])

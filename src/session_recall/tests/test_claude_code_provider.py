@@ -47,7 +47,7 @@ def fake_cc_root(tmp_path: Path) -> Path:
     subagents = project / "subagents"
     subagents.mkdir()
     (subagents / "agent-deadbeef.jsonl").write_text(
-        json.dumps({"type": "user", "message": "subagent stuff"}) + "\n",
+        json.dumps({"type": "user", "message": "subagent stuff"}),
         encoding="utf-8",
     )
 
@@ -75,9 +75,20 @@ def test_list_sessions_finds_both_top_level(fake_cc_root: Path):
     p = ClaudeCodeProvider(root_override=str(fake_cc_root))
     sessions = p.list_sessions(repo=None, limit=10, days=None)
     assert len(sessions) == 2
-    # Subagent file (under subagents/) must NOT be included
-    paths = [s.get("_path", "") for s in sessions]
-    assert all("subagents" not in pp for pp in paths)
+
+
+def test_list_sessions_excludes_subagent_files(fake_cc_root: Path):
+    """Subagent transcripts under <slug>/subagents/ must not surface as sessions.
+
+    ``list_sessions`` strips internal ``_``-prefixed keys so we can't peek at
+    the source file there — verify exclusion via ``recent_files`` which does
+    expose ``file_path``.
+    """
+    p = ClaudeCodeProvider(root_override=str(fake_cc_root))
+    files = p.recent_files(repo=None, limit=10, days=None)
+    assert all("subagents" not in f["file_path"] for f in files)
+    matched = [str(fp) for fp in p._iter_files()]
+    assert all("subagents" not in m for m in matched)
 
 
 def test_list_sessions_counts_turns(fake_cc_root: Path):
@@ -107,9 +118,87 @@ def test_recent_files_walks_top_level_only(fake_cc_root: Path):
 
 
 def test_default_root_is_dot_claude_projects(monkeypatch, tmp_path: Path):
-    """Without root_override, the provider points at ~/.claude/projects."""
-    monkeypatch.setenv("HOME", str(tmp_path))
-    monkeypatch.setenv("USERPROFILE", str(tmp_path))  # Windows
+    """Without root_override, the provider points at ~/.claude/projects.
+
+    Patches ``Path.home`` directly rather than env vars — env-var redirection
+    of ``Path.home()`` is unreliable across platforms and CPython versions.
+    """
+    monkeypatch.setattr(Path, "home", lambda: tmp_path)
     p = ClaudeCodeProvider()
-    expected = (Path.home() / ".claude" / "projects").resolve()
-    assert any(r.resolve() == expected for r in p._roots)
+    expected = tmp_path / ".claude" / "projects"
+    assert any(r == expected for r in p._roots)
+
+
+def test_extracts_text_from_nested_assistant_message(tmp_path: Path):
+    """Real CC assistant events have ``message: {role, content: [{type, text}, ...]}``.
+
+    The shared ``_extract_text`` recurses through the nested structure;
+    verify end-to-end that the inner text reaches the parsed turns.
+    """
+    root = tmp_path / "projects"
+    project = root / "C--test"
+    project.mkdir(parents=True)
+    session = project / "abcdef01-0000-0000-0000-000000000000.jsonl"
+    session.write_text(
+        "\n".join(
+            [
+                json.dumps({
+                    "type": "user",
+                    "message": "Plan the refactor",
+                    "timestamp": "2026-04-26T10:00:00Z",
+                }),
+                json.dumps({
+                    "type": "assistant",
+                    "message": {
+                        "role": "assistant",
+                        "content": [
+                            {"type": "text", "text": "Here is the plan"},
+                            {"type": "tool_use", "name": "Read", "input": {"file_path": "x"}},
+                        ],
+                    },
+                    "timestamp": "2026-04-26T10:00:05Z",
+                }),
+            ]
+        ),
+        encoding="utf-8",
+    )
+    p = ClaudeCodeProvider(root_override=str(root))
+    sessions = p.list_sessions(repo=None, limit=10, days=None)
+    assert len(sessions) == 1
+    assert sessions[0]["turns_count"] == 2
+
+
+def test_handles_empty_session_file(tmp_path: Path):
+    """A zero-byte JSONL file should produce a session with 0 turns, not crash."""
+    root = tmp_path / "projects"
+    project = root / "C--test"
+    project.mkdir(parents=True)
+    (project / "empty-0000-0000-0000-000000000000.jsonl").write_text("", encoding="utf-8")
+    p = ClaudeCodeProvider(root_override=str(root))
+    sessions = p.list_sessions(repo=None, limit=10, days=None)
+    assert len(sessions) == 1
+    assert sessions[0]["turns_count"] == 0
+
+
+def test_skips_malformed_lines_but_keeps_valid_ones(tmp_path: Path):
+    """Mixed valid/malformed JSONL — valid turns survive, malformed lines are skipped."""
+    root = tmp_path / "projects"
+    project = root / "C--test"
+    project.mkdir(parents=True)
+    session = project / "mixed-0000-0000-0000-000000000000.jsonl"
+    session.write_text(
+        "\n".join(
+            [
+                json.dumps({"type": "user", "message": "valid 1"}),
+                "{ this is not json at all",
+                json.dumps({"type": "assistant", "message": "valid 2"}),
+                "",
+                json.dumps({"type": "user", "message": "valid 3"}),
+            ]
+        ),
+        encoding="utf-8",
+    )
+    p = ClaudeCodeProvider(root_override=str(root))
+    sessions = p.list_sessions(repo=None, limit=10, days=None)
+    assert len(sessions) == 1
+    assert sessions[0]["turns_count"] == 3
