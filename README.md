@@ -329,6 +329,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and guidelines. Issues, PRs, an
 
 This is an independent open-source project. It is **not** affiliated with, endorsed by, or supported by Microsoft, GitHub, or any other company. There is no official support — use at your own risk. Contributions and issues are welcome on GitHub.
 
+## Contributors
+
+- [@jshessen](https://github.com/jshessen) — Multi-storage provider architecture ([PR #5](https://github.com/dezgit2025/auto-memory/pull/5))
+
 ## License
 
 MIT
