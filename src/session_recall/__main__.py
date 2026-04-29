@@ -49,7 +49,7 @@ def main() -> None:
     )
     p_list.add_argument(
         "--provider",
-        choices=["all", "cli", "vscode", "jetbrains", "neovim"],
+        choices=["all", "cli", "vscode", "jetbrains", "neovim", "claude_code"],
         default="all",
     )
     p_list.add_argument("--json", action="store_true")
@@ -58,7 +58,7 @@ def main() -> None:
     p_schema.add_argument("--json", action="store_true")
     p_schema.add_argument(
         "--provider",
-        choices=["all", "cli", "vscode", "jetbrains", "neovim"],
+        choices=["all", "cli", "vscode", "jetbrains", "neovim", "claude_code"],
         default="all",
     )
 
@@ -71,7 +71,7 @@ def main() -> None:
     )
     p_files.add_argument(
         "--provider",
-        choices=["all", "cli", "vscode", "jetbrains", "neovim"],
+        choices=["all", "cli", "vscode", "jetbrains", "neovim", "claude_code"],
         default="all",
     )
 
@@ -87,7 +87,7 @@ def main() -> None:
     )
     p_cp.add_argument(
         "--provider",
-        choices=["all", "cli", "vscode", "jetbrains", "neovim"],
+        choices=["all", "cli", "vscode", "jetbrains", "neovim", "claude_code"],
         default="all",
     )
 
@@ -104,7 +104,7 @@ def main() -> None:
     )
     p_repos.add_argument(
         "--provider",
-        choices=["all", "cli", "vscode", "jetbrains", "neovim"],
+        choices=["all", "cli", "vscode", "jetbrains", "neovim", "claude_code"],
         default="all",
     )
 
@@ -115,7 +115,7 @@ def main() -> None:
     p_show.add_argument("--full", action="store_true")
     p_show.add_argument(
         "--provider",
-        choices=["all", "cli", "vscode", "jetbrains", "neovim"],
+        choices=["all", "cli", "vscode", "jetbrains", "neovim", "claude_code"],
         default="all",
     )
 
@@ -129,7 +129,7 @@ def main() -> None:
     )
     p_search.add_argument(
         "--provider",
-        choices=["all", "cli", "vscode", "jetbrains", "neovim"],
+        choices=["all", "cli", "vscode", "jetbrains", "neovim", "claude_code"],
         default="all",
     )
 
@@ -139,7 +139,7 @@ def main() -> None:
     p_health.add_argument("--json", action="store_true")
     p_health.add_argument(
         "--provider",
-        choices=["all", "cli", "vscode", "jetbrains", "neovim"],
+        choices=["all", "cli", "vscode", "jetbrains", "neovim", "claude_code"],
         default="all",
     )
 
