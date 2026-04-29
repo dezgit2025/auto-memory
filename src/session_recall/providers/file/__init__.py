@@ -14,6 +14,10 @@ def __getattr__(name):
         from .neovim import NeovimProvider
 
         return NeovimProvider
+    if name == "ClaudeCodeProvider":
+        from .claude_code import ClaudeCodeProvider
+
+        return ClaudeCodeProvider
     if name == "_extract_role":
         from ._parse_helpers import _extract_role
 

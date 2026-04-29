@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 Format: [Keep a Changelog](https://keepachangelog.com/). Versioning: [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **Claude Code provider** — recall sessions from Anthropic Claude Code's
+  per-session JSONL files at `~/.claude/projects/<slug>/<session-uuid>.jsonl`.
+  Mirrors the existing VS Code / JetBrains / Neovim file-backed provider
+  pattern (~30-line subclass of `_FileSessionProvider`). Closes the
+  "Coming soon: Claude Code" gap in the v0.2.0 README.
+  - Provider id: `claude_code` (output short code: `cc`)
+  - Default root: `~/.claude/projects` (override via
+    `SESSION_RECALL_CLAUDE_CODE_ROOT`)
+  - Opt-in via `SESSION_RECALL_ENABLE_FILE_BACKENDS=1` (consistent with
+    the other file providers)
+  - Subagent transcripts (`<slug>/subagents/agent-*.jsonl`) are
+    intentionally excluded — they're tool-call children of the parent
+    session, not recall-worthy in their own right
+  - Compatible with CC's actual JSONL schema: events with `type`,
+    `message`, `timestamp`, `cwd`, `gitBranch`, `sessionId`, `uuid` keys.
+    The shared `_extract_role` / `_extract_text` helpers recurse through
+    both flat-string `message` and nested `message: {role, content: [...]}`
+    shapes without modification
+- 13 unit tests covering provider id / short-code, availability detection,
+  top-level vs subagent globbing, turn counting, default-root resolution
+  (via `monkeypatch.setattr` on `Path.home`), nested-message text
+  extraction, empty file handling, and malformed JSONL line skipping
+- `claude_code` added to the `--provider` argparse choices on all 8
+  CLI subcommands (`list`, `files`, `search`, `show`, `checkpoints`,
+  `repos`, `health`, `schema-check`)
+
 ## [0.2.0] — 2026-04-28
 
 ### Added
