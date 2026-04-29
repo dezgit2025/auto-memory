@@ -17,7 +17,12 @@ class _FileSessionProvider(StorageProvider):
     provider_name = "File Sessions"
     _MAX_PARSE_LINES = 5000
     _MAX_LINE_CHARS = 500_000
-    _PROVIDER_SHORT: dict[str, str] = {"vscode": "vsc", "jetbrains": "jb", "neovim": "nv"}
+    _PROVIDER_SHORT: dict[str, str] = {
+        "vscode": "vsc",
+        "jetbrains": "jb",
+        "neovim": "nv",
+        "claude_code": "cc",
+    }
 
     def __init__(
         self, provider_id: str, roots: list[Path], patterns: list[str]

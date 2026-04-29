@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ..config import (
+    CLAUDE_CODE_PROJECTS_ROOT,
     CLI_SESSION_STATE_ROOT,
     ENABLE_FILE_BACKENDS,
     JETBRAINS_SESSIONS_ROOT,
@@ -19,12 +20,18 @@ def discover_providers(db_path: str) -> list[StorageProvider]:
         CopilotCliProvider(db_path=db_path, state_root=CLI_SESSION_STATE_ROOT),
     ]
     if ENABLE_FILE_BACKENDS:
-        from .file import JetBrainsProvider, NeovimProvider, VSCodeProvider
+        from .file import (
+            ClaudeCodeProvider,
+            JetBrainsProvider,
+            NeovimProvider,
+            VSCodeProvider,
+        )
 
         candidates.extend([
             VSCodeProvider(root_override=VSCODE_WORKSPACE_STORAGE),
             JetBrainsProvider(root_override=JETBRAINS_SESSIONS_ROOT),
             NeovimProvider(root_override=NEOVIM_SESSIONS_ROOT),
+            ClaudeCodeProvider(root_override=CLAUDE_CODE_PROJECTS_ROOT),
         ])
     return [p for p in candidates if p.is_available()]
 
