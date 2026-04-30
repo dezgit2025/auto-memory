@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 Format: [Keep a Changelog](https://keepachangelog.com/). Versioning: [SemVer](https://semver.org/).
 
+## [0.3.0] — 2026-04-30
+
+### Added
+- **Per-provider health dimensions** — `session-recall health --provider <name>` now shows 4 sub-dimensions per backend (Path Discovery, File Inventory, Recent Activity, Trust Model) instead of a single session-count check
+- **Structured JSON health output** — `providers` dict in `--json` mode with per-provider dimensions for agent parsing (backward-compat: `dims` array preserved)
+- **Helpful error messages** — requesting a disabled backend now shows how to enable it (`export SESSION_RECALL_ENABLE_FILE_BACKENDS=1`) instead of a cryptic "unavailable" error
+- **Agent-runnable backend install guide** — `deploy/install-other-backends.md` walks agents through VS Code/JetBrains/Neovim setup with detection, confirmation prompts, idempotent shell snippets, troubleshooting, and rollback
+- **"Works With" matrix in README** — all 4 backends visible above Quickstart with direct links to setup guides
+- 26 new tests (13 unit + 7 integration + 6 E2E) — 197 total
+
+### Changed
+- README Health Check section expanded with per-provider examples, dimension table, JSON usage, and error guidance
+- `deploy/install.md` prerequisites no longer require Copilot CLI — VS Code/JetBrains/Neovim are listed as alternatives
+- `deploy/install-other-backends.md` verification steps use `health --provider` instead of `list --provider`
+
 ## [0.2.0] — 2026-04-28
 
 ### Added

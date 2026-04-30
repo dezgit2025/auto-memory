@@ -287,7 +287,11 @@ File-backed content is marked `_trust_level: "untrusted_third_party"` and wrappe
 
 ## Health Check
 
+`session-recall health` runs a multi-dimensional diagnostic. The core 9 dimensions check your Copilot CLI SQLite database:
+
 ```
+session-recall health
+
 Dim Name                   Zone     Score  Detail
 ----------------------------------------------------------------------
  1  DB Freshness           🟢 GREEN   8.0  15.8h old
@@ -301,9 +305,26 @@ Dim Name                   Zone     Score  Detail
  9  Progressive Disclosure  ⚪ CALIBRATING  —  Collecting baseline (n=42/200)
 ```
 
-### Per-Provider Health Check
+### Per-Provider Health
 
-Check individual backends with `--provider`:
+Use `--provider` to diagnose a specific backend. Each provider gets 4 sub-dimensions:
+
+| Dimension | What it checks |
+|-----------|---------------|
+| **Path Discovery** | Are the expected directories/DB files present on this machine? |
+| **File Inventory** | How many session files or DB size? Is there data to read? |
+| **Recent Activity** | Sessions within the lookback window (5 days JSONL / 30 days SQLite)? |
+| **Trust Model** | First-party (Copilot CLI) or third-party (VS Code/JetBrains/Neovim)? |
+
+```
+session-recall health --provider cli
+
+ 10 Provider:cli
+      ├─ Path Discovery     🟢 GREEN  10.0  2 path(s) found
+      ├─ File Inventory     🟢 GREEN  10.0  DB 13656064 bytes, 457 state file(s)
+      ├─ Recent Activity    🟢 GREEN  10.0  20 session(s) in last 30d
+      └─ Trust Model        🟢 GREEN  10.0  Trusted first-party; fences disabled
+```
 
 ```
 session-recall health --provider vscode
@@ -316,6 +337,20 @@ session-recall health --provider vscode
 ```
 
 Available providers: `cli`, `vscode`, `jetbrains`, `neovim`, `all`
+
+**JSON output** for agent parsing:
+
+```bash
+session-recall health --provider vscode --json
+# Returns structured JSON with providers.vscode.dimensions[] array
+```
+
+**Not enabled?** If you see `error: vscode provider is not enabled`, set the env var first:
+
+```bash
+export SESSION_RECALL_ENABLE_FILE_BACKENDS=1
+# Or follow the full guide: deploy/install-other-backends.md
+```
 
 ## Agent Integration
 
