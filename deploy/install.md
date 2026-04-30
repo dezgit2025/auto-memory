@@ -10,8 +10,19 @@ Verify these before proceeding. Stop and report if any fail.
 
 ```bash
 python3 --version   # must be 3.10+
-copilot --version   # Copilot CLI must be installed
 ```
+
+At least one session source is required:
+
+```bash
+# Option A — Copilot CLI (default backend, richest data)
+copilot --version
+
+# Option B — VS Code / JetBrains / Neovim (opt-in file backends)
+# See deploy/install-other-backends.md for setup
+```
+
+> **Don't have Copilot CLI?** session-recall also works with VS Code, JetBrains, and Neovim chat sessions. See [`deploy/install-other-backends.md`](install-other-backends.md) for the one-command setup.
 
 One of these package managers must be available (checked in priority order):
 

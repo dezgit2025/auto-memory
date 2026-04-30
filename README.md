@@ -19,8 +19,18 @@ Multi-storage recall, security hardening, and token budget enforcement. File-bac
 
 **Zero-dependency CLI that turns Copilot CLI's local SQLite into instant recall — no MCP server, no hooks, read-only, schema-checked. ~50 tokens per prompt.**
 
-**Works with:** GitHub Copilot CLI  
-**Coming soon:** Claude Code · Cursor · Codex 
+### Works With
+
+| Backend | Status | How to enable |
+|---------|--------|--------------|
+| **GitHub Copilot CLI** | ✅ default | Already on — `pip install auto-memory` is all you need |
+| **VS Code** | 🟡 opt-in | [Enable in 30 seconds →](deploy/install-other-backends.md#32--vs-code-backend) |
+| **JetBrains** | 🟡 opt-in | [Enable →](deploy/install-other-backends.md#33--jetbrains-backend) |
+| **Neovim** | 🟡 opt-in | [Enable →](deploy/install-other-backends.md#34--neovim-backend) |
+
+> **VS Code user?** Ask your agent to read [`deploy/install-other-backends.md`](deploy/install-other-backends.md) — it walks through detection, env var setup, and verification automatically.
+
+**Coming soon:** Claude Code · Cursor · Codex
 
 ---
 
