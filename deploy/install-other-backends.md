@@ -203,11 +203,11 @@ grep -qF 'SESSION_RECALL_VSCODE_STORAGE' ~/.config/fish/config.fish 2>/dev/null 
 #### Verify VS Code backend
 
 ```bash
-session-recall list --provider vscode --json --limit 3
+session-recall health --provider vscode --json
 ```
 
-- ✅ JSON output with sessions → VS Code backend is working
-- ❌ Empty results or error → see [Troubleshooting](#section-4--troubleshooting)
+- ✅ JSON with `providers.vscode.dimensions` showing 4 sub-checks → VS Code backend is working
+- ❌ Error or all RED zones → see [Troubleshooting](#section-4--troubleshooting)
 
 ---
 
@@ -252,7 +252,7 @@ grep -qF 'SESSION_RECALL_JETBRAINS_ROOT' ~/.config/fish/config.fish 2>/dev/null 
 #### Verify JetBrains backend
 
 ```bash
-session-recall list --provider jetbrains --json --limit 3
+session-recall health --provider jetbrains --json
 ```
 
 ---
@@ -296,7 +296,7 @@ grep -qF 'SESSION_RECALL_NEOVIM_ROOT' ~/.config/fish/config.fish 2>/dev/null || 
 #### Verify Neovim backend
 
 ```bash
-session-recall list --provider neovim --json --limit 3
+session-recall health --provider neovim --json
 ```
 
 ---

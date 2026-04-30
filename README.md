@@ -301,6 +301,22 @@ Dim Name                   Zone     Score  Detail
  9  Progressive Disclosure  ⚪ CALIBRATING  —  Collecting baseline (n=42/200)
 ```
 
+### Per-Provider Health Check
+
+Check individual backends with `--provider`:
+
+```
+session-recall health --provider vscode
+
+ 10 Provider:vscode
+      ├─ Path Discovery     🟢 GREEN  10.0  1 path(s) found
+      ├─ File Inventory     🟢 GREEN  10.0  12 file(s)
+      ├─ Recent Activity    🔴 RED     0.0  No sessions in last 5d
+      └─ Trust Model        🟢 GREEN  10.0  Untrusted third-party; output fences enabled
+```
+
+Available providers: `cli`, `vscode`, `jetbrains`, `neovim`, `all`
+
 ## Agent Integration
 
 auto-memory works with **any agent that supports instruction files** — GitHub Copilot CLI, Claude Code, Cursor, Aider, Windsurf, and more. Installation wires session-recall into your agent's instruction file so it runs context recall automatically.
