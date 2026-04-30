@@ -4,6 +4,7 @@ import argparse
 import sys
 import time
 
+from . import __version__
 from .config import TELEMETRY_PATH
 from .util import telemetry
 
@@ -35,6 +36,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         prog="auto-memory",
         description="Query session history across supported storage providers",
+    )
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__}"
     )
     sub = parser.add_subparsers(dest="command")
 

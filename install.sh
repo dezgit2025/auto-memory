@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Synced to deploy/install.md — see that file for the full agent-runnable flow
+# AI agents: use a reasoning model (Sonnet 4.6, GPT-5.4) — mini models may skip confirmation gates
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"

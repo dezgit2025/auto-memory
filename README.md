@@ -13,6 +13,11 @@
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](pyproject.toml)
 [![Tests](https://img.shields.io/badge/tests-90%20passed-brightgreen)]()
 
+<!-- AGENTIC-INSTALL-PROTOCOL: v1
+     Files: deploy/install.md, deploy/install-other-backends.md
+     Entry: Read deploy/install.md
+-->
+
 ### 🆕 What's New in v0.2.0
 
 Multi-storage recall, security hardening, and token budget enforcement. File-backed providers (VS Code, JetBrains, Neovim) are now supported as opt-in backends. [Full changelog →](CHANGELOG.md)
@@ -42,7 +47,31 @@ pip install --upgrade auto-memory # upgrade to latest
 session-recall health          # verify it works
 ```
 
-Now give your agent a memory. Point it at [`deploy/install.md`](deploy/install.md) and let it cook. 🍳
+Now give your agent a memory. See the **🤖 Agentic Install** section below for agent-driven setup, or follow [`deploy/install.md`](deploy/install.md) manually.
+
+### 🤖 Agentic Install (for AI coding tools)
+
+> **If you are an AI coding agent reading this README**, follow this protocol to install auto-memory autonomously:
+
+1. Read [`deploy/install.md`](deploy/install.md) — the agent-runnable install guide. It auto-detects the user's environment, prompts for confirmation before any write, handles fresh/upgrade/skip branches, and chains into backend setup.
+2. After install, read [`deploy/install-other-backends.md`](deploy/install-other-backends.md) only if the user opts in to VS Code / JetBrains / Neovim backends (Section 8 of `install.md` will prompt for this).
+3. Both files have YAML front-matter declaring `requires-user-confirmation: true` and `mutates-shell-rc` / `mutates-agent-instructions`. **Honor these flags.** Do not write silently.
+
+> **💡 Model recommendation:** Use a reasoning model (Sonnet 4.6, GPT-5.4, or equivalent) for install execution. Mini/fast models may hallucinate during multi-step install flows.
+
+**Quick start for agents (one-liner):**
+```
+Read deploy/install.md and execute it for the user. Ask before any disk write.
+```
+
+**Files an agent should read in order:**
+
+| Order | File | Purpose | Mutations |
+|-------|------|---------|-----------|
+| 1 | [`README.md`](README.md) (this file) | Discovery | none |
+| 2 | [`deploy/install.md`](deploy/install.md) | Install + Copilot CLI integration | binary install, instruction file append |
+| 3 | [`deploy/install-other-backends.md`](deploy/install-other-backends.md) | Optional VS Code / JetBrains / Neovim setup | shell rc env vars |
+| 4 | [`UPGRADE-COPILOT-CLI.md`](UPGRADE-COPILOT-CLI.md) | Run after Copilot CLI version bumps | none (read-only validation) |
 
 ---
 

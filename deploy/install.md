@@ -1,148 +1,196 @@
+---
+purpose: Agent-runnable guide to install auto-memory and wire it into agent instruction files
+audience: AI coding agents (Copilot CLI, Claude Code, Cursor, Aider) acting on behalf of users
+requires-user-confirmation: true
+read-only-detection: true
+mutates-shell-rc: false
+mutates-agent-instructions: true
+mutates-system-binaries: true
+estimated-time: 90 seconds
+companion-file: deploy/install-other-backends.md
+---
+
 # Deploy auto-memory
 
-auto-memory is a zero-dependency Python CLI that queries `~/.copilot/session-store.db` for progressive session recall. Install it once, wire it into Copilot CLI instructions, and every future agent session starts with full context.
-
-> **This guide installs auto-memory v0.2.0+**
-
-## Prerequisites
-
-Verify these before proceeding. Stop and report if any fail.
+**Humans:** skim the TL;DR, then run the snippets — or ask your AI agent to do it.
+**Agents:** read sections 1–7 in order. Every mutating step requires user confirmation. Use a reasoning model (Sonnet 4.6, GPT-5.4) — mini models may skip confirmation gates.
 
 ```bash
-python3 --version   # must be 3.10+
+uv tool install auto-memory && session-recall schema-check && session-recall health
+# Then append the instruction block from Section 6 to your agent instructions file
 ```
 
-At least one session source is required:
+---
+
+## Section 1 — Detect Environment
+
+All checks here are **read-only**. Do not modify anything.
 
 ```bash
-# Option A — Copilot CLI (default backend, richest data)
-copilot --version
-
-# Option B — VS Code / JetBrains / Neovim (opt-in file backends)
-# See deploy/install-other-backends.md for setup
+python3 --version                # must be 3.10+
+copilot --version 2>/dev/null && echo "copilot-cli: detected" || echo "copilot-cli: not found"
+command -v code >/dev/null 2>&1 && echo "vscode: detected"
+command -v nvim >/dev/null 2>&1 && echo "neovim: detected"
+test -d "$HOME/.config/github-copilot" && echo "jetbrains: detected"
 ```
 
-> **Don't have Copilot CLI?** session-recall also works with VS Code, JetBrains, and Neovim chat sessions. See [`deploy/install-other-backends.md`](install-other-backends.md) for the one-command setup.
+> **Agent:** If editors detected but no Copilot CLI, note: *"Consider file backends after install — see Section 8."*
 
-One of these package managers must be available (checked in priority order):
+### Existing install + version
 
 ```bash
-uv --version     # preferred
-pipx --version   # fallback 1
-pip --version     # fallback 2
+INSTALL_PATH=$(command -v session-recall 2>/dev/null)
+INSTALLED_VERSION=$(session-recall --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+if [ -z "$INSTALLED_VERSION" ]; then
+  INSTALLED_VERSION=$(python3 -c "from session_recall import __version__; print(__version__)" 2>/dev/null)
+fi
+echo "path=${INSTALL_PATH:-none} version=${INSTALLED_VERSION:-unknown}"
 ```
 
-### Windows (WSL2) — Enable the Session Store
-
-On Windows 11 + WSL2, Copilot CLI does not create `session-store.db` by default. You must enable the experimental session store first.
-
-1. Start a Copilot CLI session:
+### Package manager + shell
 
 ```bash
-copilot
+command -v uv   >/dev/null 2>&1 && PKG=uv   || \
+command -v pipx >/dev/null 2>&1 && PKG=pipx || \
+command -v pip3 >/dev/null 2>&1 && PKG=pip  || \
+PKG=none
+echo "pkg: $PKG  shell: $(basename "$SHELL")"
 ```
 
-2. Inside the session, run the slash command:
+---
 
-```
-/experimental
-```
-
-3. Select **SESSION_STORE** to enable it. This turns on:
-   - SQLite-based session store for cross-session history
-   - File tracking and full-text search
-
-4. Exit and verify:
+## Section 2 — Choose Install Path
 
 ```bash
-ls ~/.copilot/session-store.db
+LATEST="0.3.0"
+if [ -z "$INSTALL_PATH" ]; then
+  STATE="not-installed"
+elif [ -z "$INSTALLED_VERSION" ]; then
+  STATE="unknown-version"
+elif [ "$INSTALLED_VERSION" = "$LATEST" ]; then
+  STATE="current"
+elif printf '%s\n' "$INSTALLED_VERSION" "$LATEST" | sort -V | head -1 | grep -qx "$INSTALLED_VERSION"; then
+  STATE="outdated"
+else
+  STATE="current"
+fi
+# Detect editable/dev install
+if [ -n "$INSTALL_PATH" ] && python3 -c "import session_recall; print(session_recall.__file__)" 2>/dev/null | grep -q "auto-memory"; then
+  STATE="editable-dev"
+fi
+echo "state: $STATE"
 ```
 
-The file should now exist. If not, start and complete one full Copilot CLI session, then check again.
+| State | Action |
+|-------|--------|
+| `not-installed` | → **Section 3** |
+| `current` | → **Section 6** (wire instructions) |
+| `outdated` | → **Section 4** (upgrade) |
+| `unknown-version` | → **Section 4** (treat as upgrade) |
+| `editable-dev` | `git pull && pip install -e .` then → **Section 6** |
 
-> **This is a one-time setup.** Once enabled, the session store persists across all future sessions.
+---
 
-## Install
+## Section 3 — Fresh Install
 
-### Step 1 — Clone or navigate to the repo
+### 3a — From PyPI (recommended)
 
-If the repo is not already local, clone it:
+> **Agent:** ask user *"Install auto-memory from PyPI? (Y/n)"*
+
+Run the **first** command that succeeds. Stop after first success.
 
 ```bash
-git clone <auto-memory-repo-url>
-cd auto-memory
+uv tool install auto-memory              # preferred
+pipx install auto-memory                 # fallback 1
+python3 -m pip install --user auto-memory  # fallback 2
 ```
 
-If already local, `cd` into the repo root.
+### 3b — From source (for contributors)
 
-### Step 2 — Install the CLI
-
-Run the first command that succeeds. Stop after one succeeds.
+> **Agent:** ask user *"Install auto-memory from source (editable/dev mode)? (Y/n)"*
 
 ```bash
-# Preferred — uv
-uv tool install --force --editable .
-
-# Fallback 1 — pipx
-pipx install --force -e .
-
-# Fallback 2 — pip
-python3 -m pip install --user --force-reinstall -e .
+git clone https://github.com/dezgit2025/auto-memory.git && cd auto-memory
+uv tool install --force --editable .       # or: pipx install --force -e .
 ```
 
-### Step 3 — Verify install
-
-Run both commands. Both must succeed.
+### Verify
 
 ```bash
-which session-recall
-session-recall schema-check
+which session-recall && session-recall schema-check
 ```
 
-If `which session-recall` returns nothing, see Troubleshooting below.
+If `which` returns nothing → see **Section 9**.
 
-## Upgrading from v0.1.0
+---
 
-If already installed, upgrade with the same tool you used to install:
+## Section 4 — Upgrade Existing Install
+
+> **Agent:** ask user *"You're on v${INSTALLED_VERSION} — v${LATEST} is available. Upgrade? (Y/n)"*
+
+Detect method and use the **matching** upgrade command (never mix tools):
 
 ```bash
-# PyPI install
-pip install --upgrade auto-memory
-
-# Editable install (from repo root)
-git pull origin main
-pip install -e .
-
-# Or re-run install.sh
-./install.sh
+if uv tool list 2>/dev/null | grep -q auto-memory; then
+  uv tool upgrade auto-memory
+elif pipx list 2>/dev/null | grep -q auto-memory; then
+  pipx upgrade auto-memory
+else
+  python3 -m pip install --user --upgrade auto-memory
+fi
 ```
 
-Verify upgrade:
+Verify: `session-recall --version`
+
+---
+
+## Section 5 — WSL2 Session Store Prompt
+
+**Skip on macOS and standard Linux.**
+
 ```bash
-python3 -c "from session_recall import __version__; print(__version__)"
-# Should print: 0.2.0
+grep -qi microsoft /proc/version 2>/dev/null || { echo "not WSL2 — skip"; }
 ```
 
-## Agent Integration — Add to Copilot Instructions
+If WSL2 detected and `~/.copilot/session-store.db` does not exist:
 
-This step wires auto-memory into every future agent session by appending instructions to `~/.copilot/copilot-instructions.md`.
+> **Agent:** ask user *"WSL2 detected but no session store found. Enable via Copilot CLI /experimental? (Y/n)"*
 
-### Step 1 — Ensure the file exists
+1. `copilot` → `/experimental` → enable **SESSION_STORE** → exit
+2. Verify: `ls ~/.copilot/session-store.db`
+
+> One-time setup. Once enabled, the store persists across all future sessions.
+
+---
+
+## Section 6 — Wire into Agent Instructions
+
+Target: `~/.copilot/copilot-instructions.md`
+
+### 6a — Detect state
+
+```bash
+if grep -q '<!-- session-recall:v1 -->' ~/.copilot/copilot-instructions.md 2>/dev/null; then
+  echo "current"   # idempotent — skip
+elif grep -q 'Progressive Session Recall' ~/.copilot/copilot-instructions.md 2>/dev/null; then
+  echo "stale"     # replace legacy block (6c)
+else
+  echo "missing"   # append new block (6b)
+fi
+```
+
+### 6b — Append (state = missing)
+
+> **Agent:** ask user *"Append session-recall instructions to copilot-instructions.md? (Y/n)"*
 
 ```bash
 mkdir -p ~/.copilot
-touch ~/.copilot/copilot-instructions.md
 ```
 
-### Step 2 — Check for duplicates
-
-Search `~/.copilot/copilot-instructions.md` for the string `Progressive Session Recall`. If it already exists, **skip Step 3 entirely** — the block is already present.
-
-### Step 3 — Append the instruction block
-
-Append this exact block to the end of `~/.copilot/copilot-instructions.md`:
+Append this exact block:
 
 ````markdown
+<!-- session-recall:v1 — DO NOT EDIT MANUALLY -->
 ## Progressive Session Recall — RUN FIRST ON EVERY PROMPT
 
 **Run `session-recall` FIRST on every prompt before doing anything else.** It costs ~50 tokens and prevents expensive blind searches.
@@ -165,101 +213,107 @@ session-recall schema-check             # validate DB schema (run after Copilot 
 
 Only use filesystem tools (grep, glob, find) if session-recall returns nothing useful.
 If `session-recall` errors, continue silently — it's a convenience, not a blocker.
+<!-- /session-recall:v1 -->
 ````
 
-## Verify Installation
+### 6c — Replace legacy block (state = stale)
 
-Run all three checks. All must pass.
+> **Agent:** ask user *"Found legacy session-recall block. Replace with current version? (Y/n)"*
 
-```bash
-session-recall health          # all dimensions should show GREEN
-session-recall list --json     # should return at least one session
-session-recall schema-check    # must exit 0
-```
+Remove everything from `## Progressive Session Recall` through the end of that section, then append the block from 6b. The `<!-- session-recall:v1 -->` markers make future updates idempotent.
 
-If `session-recall list --json` returns zero sessions, that is normal on a fresh install — Copilot CLI needs at least one completed session first.
+---
 
-## Multi-Storage Configuration (Optional)
-
-By default, session-recall only reads from Copilot CLI's SQLite database. To also recall sessions from VS Code, JetBrains, or Neovim:
+## Section 7 — Verify Install
 
 ```bash
-export SESSION_RECALL_ENABLE_FILE_BACKENDS=1
+session-recall health
 ```
 
-Add this to your shell profile (`~/.bashrc`, `~/.zshrc`, etc.) to persist it.
-
-### Provider paths (auto-detected)
-
-| Provider | Platform | Path |
-|----------|----------|------|
-| VS Code | Linux | `~/.config/Code/User/workspaceStorage` |
-| VS Code | macOS | `~/Library/Application Support/Code/User/workspaceStorage` |
-| VS Code | WSL | `~/.vscode-server/data/User/workspaceStorage` |
-| JetBrains | Linux/macOS | `~/.config/JetBrains/` + `~/.config/github-copilot` |
-| Neovim | Linux/macOS | `~/.local/share/nvim/` + `~/.config/github-copilot` |
-
-Override any path: `SESSION_RECALL_VSCODE_STORAGE=/custom/path`
-
-### Lookback defaults
-
-| Provider type | Default lookback | Override |
-|--------------|-----------------|---------|
-| SQLite (Copilot CLI) | 30 days | `--days N` |
-| JSONL/file backends | 5 days | `--days N` or `SESSION_RECALL_JSONL_DAYS=N` |
-
-### Trust model
-
-File-backed content is marked `_trust_level: "untrusted_third_party"` and wrapped in sentinel fences. Copilot CLI content is `_trust_level: "trusted_first_party"`.
-
-## Troubleshooting
-
-### `error: database not found` (Windows/WSL2)
-
-Copilot CLI has not created the session store database yet. On WSL2, this requires enabling an experimental feature:
-
-1. Run `copilot` to start a session
-2. Run `/experimental` inside the session
-3. Enable **SESSION_STORE**
-4. Complete at least one session, then verify:
+| Result | Meaning |
+|--------|---------|
+| **GREEN** | Done — all systems operational |
+| **AMBER** | Some backends not configured (normal for Copilot-CLI-only setups) |
+| **RED** | Something broken → see **Section 9** |
 
 ```bash
-ls ~/.copilot/session-store.db
+session-recall list --json --limit 1
 ```
 
-If the file still doesn't exist after enabling, try starting a new Copilot CLI session — the database is created on first use after enabling.
+Zero sessions returned is **normal on first use** — complete one Copilot CLI session first.
 
-### `command not found: session-recall`
+---
 
-PATH issue. Check that `~/.local/bin` is on PATH:
+## Section 8 — Optional: Other Backends
+
+> **Agent:** ask user *"Enable VS Code, JetBrains, or Neovim backends? (Y/n)"*
+
+- **Yes** → Read [`deploy/install-other-backends.md`](install-other-backends.md) and execute it end-to-end.
+- **No** → Skip. Copilot CLI backend is sufficient for most users.
+
+---
+
+## Section 9 — Troubleshooting
+
+**`command not found: session-recall`** — PATH issue:
 
 ```bash
-echo "$PATH" | tr ':' '\n' | grep -q '.local/bin' && echo "OK" || echo "MISSING"
+echo "$PATH" | tr ':' '\n' | grep -q '.local/bin' && echo "OK" || echo "MISSING — run: export PATH=\"\$HOME/.local/bin:\$PATH\""
 ```
 
-If missing, add it and retry:
+**`database not found`** — On WSL2, see **Section 5**. On macOS/Linux: `ls ~/.copilot/session-store.db`
+
+**`schema-check` fails (exit 2)** — Copilot CLI schema drifted. See [UPGRADE-COPILOT-CLI.md](../UPGRADE-COPILOT-CLI.md).
+
+**No sessions found** — Normal on first use. Complete one Copilot CLI session, then retry.
+
+---
+
+## Section 10 — Rollback
+
+### Uninstall
 
 ```bash
-export PATH="$HOME/.local/bin:$PATH"
-which session-recall
+uv tool uninstall auto-memory    # if installed with uv
+pipx uninstall auto-memory       # if installed with pipx
+python3 -m pip uninstall auto-memory  # if installed with pip
 ```
 
-If still not found, re-run install with `uv tool install --force --editable .` from the repo root.
-
-### `schema-check` fails (exit code 2)
-
-The Copilot CLI DB schema has drifted from what session-recall expects. This usually happens after a Copilot CLI upgrade. See [UPGRADE-COPILOT-CLI.md](../UPGRADE-COPILOT-CLI.md) for the full procedure.
-
-### No sessions found
-
-Normal on first use. Copilot CLI needs at least one completed session before session-recall has anything to query. Run a Copilot CLI session, then retry.
-
-## Upgrading Copilot CLI
-
-After any Copilot CLI upgrade, run:
+### Revert agent instructions
 
 ```bash
-session-recall schema-check
+sed -i.bak '/<!-- session-recall:v1/,/<!-- \/session-recall:v1 -->/d' ~/.copilot/copilot-instructions.md
 ```
 
-If it exits 0, no action needed. If it fails, follow the full upgrade procedure in [UPGRADE-COPILOT-CLI.md](../UPGRADE-COPILOT-CLI.md).
+### Revert shell rc
+
+N/A — this guide does not modify shell config. See [`deploy/install-other-backends.md`](install-other-backends.md) for file-backend rollback.
+
+---
+
+## Section 11 — Maintainers / Lint
+
+### Bash syntax check
+
+```bash
+python3 -c "
+import re, subprocess, sys
+text = open('deploy/install.md').read()
+blocks = re.findall(r'\`\`\`bash\n(.*?)\`\`\`', text, re.DOTALL)
+errs = 0
+for i, b in enumerate(blocks, 1):
+    r = subprocess.run(['bash', '-n'], input=b, capture_output=True, text=True)
+    if r.returncode != 0:
+        print(f'Block {i}: FAIL\n{r.stderr}'); errs += 1
+print(f'{len(blocks)} blocks, {errs} errors')
+sys.exit(1 if errs else 0)
+"
+```
+
+### Internal link check
+
+```bash
+for f in deploy/install-other-backends.md UPGRADE-COPILOT-CLI.md; do
+  test -f "$f" && echo "OK: $f" || echo "MISSING: $f"
+done
+```
