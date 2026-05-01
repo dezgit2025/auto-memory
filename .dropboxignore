@@ -1,0 +1,47 @@
+# Git internals — keeps Dropbox out of .git so git operations don't get blocked
+.git/
+
+# Dependencies / venvs
+node_modules/
+.venv/
+venv/
+__pycache__/
+
+# Build outputs
+dist/
+build/
+target/
+out/
+*.tsbuildinfo
+
+# Caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+coverage/
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+*.log
+*.tmp
+.tmp/
+
+# Claude Code settings (local only)
+.claude/
+.mcp.json
