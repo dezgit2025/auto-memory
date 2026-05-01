@@ -165,14 +165,35 @@ If WSL2 detected and `~/.copilot/session-store.db` does not exist:
 
 ## Section 6 — Wire into Agent Instructions
 
-Target: `~/.copilot/copilot-instructions.md`
+Detect which agent is in use and target the correct instruction file.
+
+### 6.0 — Detect agent instruction file
+
+```bash
+if test -f "$HOME/.copilot/copilot-instructions.md"; then
+  AGENT_FILE="$HOME/.copilot/copilot-instructions.md"
+  AGENT_TYPE="copilot-cli"
+elif test -f "$HOME/.claude/CLAUDE.md"; then
+  AGENT_FILE="$HOME/.claude/CLAUDE.md"
+  AGENT_TYPE="claude-code"
+elif test -d "$HOME/.claude"; then
+  AGENT_FILE="$HOME/.claude/CLAUDE.md"
+  AGENT_TYPE="claude-code"
+else
+  AGENT_FILE="$HOME/.copilot/copilot-instructions.md"
+  AGENT_TYPE="copilot-cli"
+fi
+echo "agent=$AGENT_TYPE file=$AGENT_FILE"
+```
+
+> **Agent:** If you already know which agent you are (e.g., Claude Code knows it writes to `~/.claude/CLAUDE.md`), short-circuit this detection and use your own instruction file.
 
 ### 6a — Detect state
 
 ```bash
-if grep -q '<!-- session-recall:v1 -->' ~/.copilot/copilot-instructions.md 2>/dev/null; then
+if grep -q '<!-- session-recall:v1 -->' "$AGENT_FILE" 2>/dev/null; then
   echo "current"   # idempotent — skip
-elif grep -q 'Progressive Session Recall' ~/.copilot/copilot-instructions.md 2>/dev/null; then
+elif grep -q 'Progressive Session Recall' "$AGENT_FILE" 2>/dev/null; then
   echo "stale"     # replace legacy block (6c)
 else
   echo "missing"   # append new block (6b)
@@ -181,10 +202,10 @@ fi
 
 ### 6b — Append (state = missing)
 
-> **Agent:** ask user *"Append session-recall instructions to copilot-instructions.md? (Y/n)"*
+> **Agent:** ask user *"Append session-recall instructions to your agent instruction file? (Y/n)"*
 
 ```bash
-mkdir -p ~/.copilot
+mkdir -p "$(dirname "$AGENT_FILE")"
 ```
 
 Append this exact block:

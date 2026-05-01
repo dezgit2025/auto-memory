@@ -18,9 +18,9 @@
      Entry: Read deploy/install.md
 -->
 
-### 🆕 What's New in v0.2.0
+### 🆕 What's New in v0.3.0
 
-Multi-storage recall, security hardening, and token budget enforcement. File-backed providers (VS Code, JetBrains, Neovim) are now supported as opt-in backends. [Full changelog →](CHANGELOG.md)
+Per-provider health dimensions, agent-runnable install guide, `--version` flag, and "Works With" backend matrix. [Full changelog →](CHANGELOG.md)
 
 **Zero-dependency CLI that turns Copilot CLI's local SQLite into instant recall — no MCP server, no hooks, read-only, schema-checked. ~50 tokens per prompt.**
 
@@ -48,6 +48,37 @@ session-recall health          # verify it works
 ```
 
 Now give your agent a memory. See the **🤖 Agentic Install** section below for agent-driven setup, or follow [`deploy/install.md`](deploy/install.md) manually.
+
+### 📋 Example: Remember Your Last 10 Sessions
+
+Want to recall the last 10 sessions you worked on, which project folder, branch, and what you did? Add this prompt to your agent instructions:
+
+```
+Use `session-recall list --json --limit 10` to show my last 10 sessions.
+Display: date, time, full session_id, summary, branch, turns count, project folder.
+Format as a table.
+```
+
+Your agent runs it and gets:
+
+```
+ #  │ Date  │ Time  │ Session ID                                 │ Summary                    │ Branch            │ Project                  │ Turns
+────┼───────┼───────┼────────────────────────────────────────────┼────────────────────────────┼───────────────────┼──────────────────────────┼──────
+ 1  │ 05-01 │ 14:32 │ a1b2c3d4-e5f6-7890-abcd-ef1234567890       │ Refactor Auth Module       │ main              │ ~/Projects/acme-api      │   12
+ 2  │ 05-01 │ 11:15 │ b2c3d4e5-f6a7-8901-bcde-f12345678901       │ Fix CI Pipeline            │ feat/oauth2       │ ~/Projects/acme-api      │   28
+ 3  │ 04-30 │ 22:48 │ c3d4e5f6-a7b8-9012-cdef-123456789012       │ Add Redis Caching          │ feat/cache-layer  │ ~/Projects/acme-api      │   35
+ 4  │ 04-30 │ 16:05 │ d4e5f6a7-b8c9-0123-defa-234567890123       │ Debug WebSocket Timeout    │ main              │ ~/Projects/realtime-chat │    8
+ 5  │ 04-29 │ 09:33 │ e5f6a7b8-c9d0-1234-efab-345678901234       │ Write Migration Script     │ feat/db-v2        │ ~/Projects/realtime-chat │   42
+ 6  │ 04-29 │ 08:12 │ f6a7b8c9-d0e1-2345-fabc-456789012345       │ Update API Docs            │ main              │ ~/Projects/acme-api      │    3
+ 7  │ 04-28 │ 19:55 │ a7b8c9d0-e1f2-3456-abcd-567890123456       │ Deploy Staging             │ release/v2.1      │ ~/Projects/acme-api      │   15
+ 8  │ 04-28 │ 14:20 │ b8c9d0e1-f2a3-4567-bcde-678901234567       │ Code Review Fixes          │ feat/oauth2       │ ~/Projects/acme-api      │   22
+ 9  │ 04-27 │ 21:07 │ c9d0e1f2-a3b4-5678-cdef-789012345678       │ Scaffold React Components  │ feat/dashboard-ui │ ~/Projects/acme-frontend │   31
+ 10 │ 04-27 │ 10:44 │ d0e1f2a3-b4c5-6789-defa-890123456789       │ Setup Terraform Infra      │ infra/aws-prod    │ ~/Projects/acme-infra    │   19
+```
+
+> **~50 tokens.** Your agent gets full context of what you worked on — no re-explaining, no wasted searches.
+
+---
 
 ### 🤖 Agentic Install (for AI coding tools)
 
