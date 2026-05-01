@@ -12,6 +12,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](pyproject.toml)
 [![Tests](https://img.shields.io/badge/tests-90%20passed-brightgreen)]()
+[![Discussions](https://img.shields.io/badge/📢_Updates-Discussions-blue)](https://github.com/dezgit2025/auto-memory/discussions)
 
 <!-- AGENTIC-INSTALL-PROTOCOL: v1
      Files: deploy/install.md, deploy/install-other-backends.md
