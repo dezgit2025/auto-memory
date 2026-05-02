@@ -312,8 +312,6 @@ Or follow the manual snippets in [`deploy/install-claude-code.md`](deploy/instal
 | `01bf810e` | myorg/infra | Check if the staging ⟦database⟧ has pending ⟦migration⟧ scripts |
 | `3b89ff09` | myorg/backend-api | What work was done on ⟦database⟧ ⟦migration⟧ in this repo? |
 
-> Full sample with `files` output → [`docs/cc-sample.md`](docs/cc-sample.md)
-
 ### 🤖 For your AI coding agent
 
 If you'd rather have an agent install this for you, point it at [`deploy/install-claude-code.md`](deploy/install-claude-code.md). The doc has YAML front-matter (`requires-user-confirmation: true`) and per-step "agent: ask user" prompts so a reasoning model walks you through install with confirmation at every mutating step.
