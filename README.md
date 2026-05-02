@@ -89,8 +89,9 @@ Your agent runs it and gets:
 > **If you are an AI coding agent reading this README**, follow this protocol to install auto-memory autonomously:
 
 1. Read [`deploy/install.md`](deploy/install.md) — the agent-runnable install guide. It auto-detects the user's environment, prompts for confirmation before any write, handles fresh/upgrade/skip branches, and chains into backend setup.
-2. After install, read [`deploy/install-other-backends.md`](deploy/install-other-backends.md) only if the user opts in to VS Code / JetBrains / Neovim backends (Section 8 of `install.md` will prompt for this).
-3. Both files have YAML front-matter declaring `requires-user-confirmation: true` and `mutates-shell-rc` / `mutates-agent-instructions`. **Honor these flags.** Do not write silently.
+2. If the user uses **Claude Code**, read [`deploy/install-claude-code.md`](deploy/install-claude-code.md) — pip extra, env var, CLAUDE.md wiring, and optional scheduler setup. Ask before any write.
+3. If the user opts in to **VS Code / JetBrains / Neovim** backends, read [`deploy/install-other-backends.md`](deploy/install-other-backends.md) (Section 8 of `install.md` will prompt for this).
+4. All files have YAML front-matter declaring `requires-user-confirmation: true` and `mutates-shell-rc` / `mutates-agent-instructions`. **Honor these flags.** Do not write silently.
 
 > **💡 Model recommendation:** Use a reasoning model (Sonnet 4.6, GPT-5.4, or equivalent) for install execution. Mini/fast models may hallucinate during multi-step install flows.
 
