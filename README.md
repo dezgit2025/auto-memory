@@ -260,6 +260,64 @@ auto-memory is the **page fault handler** — it pulls exact facts from disk in 
 - **Schema-aware** — validates expected schema on every call, fails fast on drift
 - **Telemetry** — ring buffer of last 100 invocations for concurrency monitoring
 
+## Works with Claude Code (opt-in)
+
+In addition to GitHub Copilot CLI, `auto-memory` can read [Claude Code](https://docs.anthropic.com/claude-code) session logs from `~/.claude/projects/`. This ships as a separate CLI binary (`session-recall-cc`) that is **off unless explicitly enabled** — Copilot CLI users pay zero cost.
+
+### Quick install (3 steps)
+
+```bash
+pip install auto-memory[claude]
+export SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1
+session-recall-cc health
+```
+
+### Optional: pre-warm scheduler
+
+> Skip this unless you call recall many times per minute. The CLI does on-demand mtime-incremental indexing on every invocation (~50ms after the first run).
+
+```bash
+# Auto-detects OS — installs launchd on macOS, cron on Linux
+bash scripts/install-claude-sidecar.sh --install
+```
+
+Or follow the manual snippets in [`deploy/install-claude-code.md`](deploy/install-claude-code.md) §7.
+
+### How it works
+
+- Reads Claude Code's per-conversation `~/.claude/projects/<cwd>/<uuid>.jsonl` files
+- Builds an FTS5 index at `~/.claude/.sr-index.db`
+- Indexer is **mtime-incremental** — typical update <100ms
+- **Read-only** — never modifies Claude Code's session files
+
+### Sample output
+
+> Try: *"What work was done on the API integration in this repo? Check session-recall-cc for recent history."*
+
+**`session-recall-cc list --limit 5`**
+
+| ID | Repo | Summary | Last Seen | Turns |
+|----|------|---------|-----------|-------|
+| `3b89ff09` | myorg/backend-api | What work was done on the API integration? | 2026-05-02 | 1 |
+| `7e63b4b4` | myorg/infra | Where are the session JSON files for Claude Code located? | 2026-05-02 | 1 |
+| `78c36e1f` | myorg/infra | How do I update Claude Code? | 2026-05-02 | 2 |
+| `aed766c7` | myorg/backend-api | Refactored auth middleware | 2026-04-23 | 1 |
+| `0f532ef0` | myorg/dotfiles | ping | 2026-04-18 | 0 |
+
+**`session-recall-cc search "database migration" --limit 3`**
+
+| ID | Repo | Snippet (FTS5 highlights in ⟦⟧) |
+|----|------|---------------------------------|
+| `bc112c14` | myorg/backend-api | ⟦Database⟧ ⟦migration⟧ for user table — added indexes on email and created_at |
+| `01bf810e` | myorg/infra | Check if the staging ⟦database⟧ has pending ⟦migration⟧ scripts |
+| `3b89ff09` | myorg/backend-api | What work was done on ⟦database⟧ ⟦migration⟧ in this repo? |
+
+> Full sample with `files` output → [`docs/cc-sample.md`](docs/cc-sample.md)
+
+### 🤖 For your AI coding agent
+
+If you'd rather have an agent install this for you, point it at [`deploy/install-claude-code.md`](deploy/install-claude-code.md). The doc has YAML front-matter (`requires-user-confirmation: true`) and per-step "agent: ask user" prompts so a reasoning model walks you through install with confirmation at every mutating step.
+
 ## Usage
 
 ### Try these prompts with your agent
