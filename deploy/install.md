@@ -62,7 +62,7 @@ echo "pkg: $PKG  shell: $(basename "$SHELL")"
 ## Section 2 — Choose Install Path
 
 ```bash
-LATEST="0.3.0"
+LATEST="0.4.0"
 if [ -z "$INSTALL_PATH" ]; then
   STATE="not-installed"
 elif [ -z "$INSTALLED_VERSION" ]; then

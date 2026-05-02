@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 Format: [Keep a Changelog](https://keepachangelog.com/). Versioning: [SemVer](https://semver.org/).
 
+## [0.4.0] — Claude Code Support
+
+### Added
+- **Claude Code provider** (`session-recall-cc`) — separate CLI for Claude Code session recall
+  - FTS5 full-text search over Claude Code JSONL sessions
+  - Porter stemming, unicode61, prefix queries, bm25 column weighting
+  - Incremental on-demand indexing with mtime cutoff
+  - Symlink guard and bounded JSONL reads (security hardened)
+  - WAL mode + busy_timeout for concurrent access
+  - Auto-prune (configurable via `SESSION_RECALL_CC_PRUNE_DAYS`, default 90)
+  - `session-recall-claude` alias
+- **Sidecar entry point** — optional cron-based index pre-warming
+  - `python -m session_recall.providers.claude_code.sidecar --once`
+- **Agent-runnable install doc** — `deploy/install-claude-code.md`
+  - Sentinel-bracketed CLAUDE.md instructions with cross-CLI safety
+  - Per-repo default install (not global)
+- **Token budget tests** for Claude Code provider output
+- **`[claude]` pip extra** — decorative marker for discoverability
+
+### Security
+- FTS5 query injection prevention (reuses upstream `sanitize_fts5_query`)
+- Symlink traversal guard on all filesystem operations
+- Bounded JSONL reads (1MB line cap, 5000 line cap)
+- No writes to user-owned config files (`~/.claude/settings.json`, `CLAUDE.md`, MCP config)
+
+### Design
+- **Process-level isolation** — `session-recall-cc` is a separate binary; bugs cannot affect `session-recall`
+- **Env var gate** — requires `SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1`
+- **Agent-driven recall** — no hooks, no auto-mutation; agent reads instruction file and decides
+- **Cherry-picked from PR #8** (@osamarehman) with security hardening and architectural alignment
+
 ## [0.3.0] — 2026-04-30
 
 ### Added

@@ -34,6 +34,22 @@ preflight() {
         return 1
     fi
 
+    # Verify repo is in copilot's trustedFolders (else first-run dialog blocks the launcher)
+    if [ -f ~/.copilot/config.json ]; then
+        if ! python3 -c "
+import json, sys, os
+cfg = json.load(open(os.path.expanduser('~/.copilot/config.json')))
+trusted = cfg.get('trustedFolders', [])
+repo = os.path.realpath('$REPO_ROOT')
+ok = any(repo == os.path.realpath(t) or repo.startswith(os.path.realpath(t).rstrip('/') + '/') for t in trusted)
+sys.exit(0 if ok else 1)
+" 2>/dev/null; then
+            echo "❌ $REPO_ROOT is not in ~/.copilot/config.json trustedFolders"
+            echo "   Run \`copilot\` once interactively in this dir and choose 'Yes, remember' first."
+            return 1
+        fi
+    fi
+
     # Verify required plan files exist
     local missing=0
     for f in \

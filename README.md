@@ -15,13 +15,13 @@
 [![Discussions](https://img.shields.io/badge/📢_Updates-Discussions-blue)](https://github.com/dezgit2025/auto-memory/discussions)
 
 <!-- AGENTIC-INSTALL-PROTOCOL: v1
-     Files: deploy/install.md, deploy/install-other-backends.md
+     Files: deploy/install.md, deploy/install-other-backends.md, deploy/install-claude-code.md
      Entry: Read deploy/install.md
 -->
 
-### 🆕 What's New in v0.3.0
+### 🆕 What's New in v0.4.0
 
-Per-provider health dimensions, agent-runnable install guide, `--version` flag, and "Works With" backend matrix. [Full changelog →](CHANGELOG.md)
+**Claude Code support** — `session-recall-cc` reads Claude Code JSONL sessions and builds an FTS5 index for structured recall. `pip install auto-memory[claude]` to get started. [Full changelog →](CHANGELOG.md)
 
 **Zero-dependency CLI that turns Copilot CLI's local SQLite into instant recall — no MCP server, no hooks, read-only, schema-checked. ~50 tokens per prompt.**
 
@@ -30,13 +30,16 @@ Per-provider health dimensions, agent-runnable install guide, `--version` flag, 
 | Backend | Status | How to enable |
 |---------|--------|--------------|
 | **GitHub Copilot CLI** | ✅ default | Already on — `pip install auto-memory` is all you need |
+| **Claude Code** | 🟡 opt-in | `pip install auto-memory[claude]` — [Full setup →](deploy/install-claude-code.md) |
 | **VS Code** | 🟡 opt-in | [Enable in 30 seconds →](deploy/install-other-backends.md#32--vs-code-backend) |
 | **JetBrains** | 🟡 opt-in | [Enable →](deploy/install-other-backends.md#33--jetbrains-backend) |
 | **Neovim** | 🟡 opt-in | [Enable →](deploy/install-other-backends.md#34--neovim-backend) |
 
+> **Claude Code user?** `pip install auto-memory[claude] && export SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1` — then ask your agent to read [`deploy/install-claude-code.md`](deploy/install-claude-code.md) for full integration.
+
 > **VS Code user?** Ask your agent to read [`deploy/install-other-backends.md`](deploy/install-other-backends.md) — it walks through detection, env var setup, and verification automatically.
 
-**Coming soon:** Claude Code · Cursor · Codex
+**Coming soon:** Cursor · Codex
 
 ---
 
@@ -102,8 +105,9 @@ Read deploy/install.md and execute it for the user. Ask before any disk write.
 |-------|------|---------|-----------|
 | 1 | [`README.md`](README.md) (this file) | Discovery | none |
 | 2 | [`deploy/install.md`](deploy/install.md) | Install + Copilot CLI integration | binary install, instruction file append |
-| 3 | [`deploy/install-other-backends.md`](deploy/install-other-backends.md) | Optional VS Code / JetBrains / Neovim setup | shell rc env vars |
-| 4 | [`UPGRADE-COPILOT-CLI.md`](UPGRADE-COPILOT-CLI.md) | Run after Copilot CLI version bumps | none (read-only validation) |
+| 3 | [`deploy/install-claude-code.md`](deploy/install-claude-code.md) | Claude Code integration | pip extra, CLAUDE.md append |
+| 4 | [`deploy/install-other-backends.md`](deploy/install-other-backends.md) | Optional VS Code / JetBrains / Neovim setup | shell rc env vars |
+| 5 | [`UPGRADE-COPILOT-CLI.md`](UPGRADE-COPILOT-CLI.md) | Run after Copilot CLI version bumps | none (read-only validation) |
 
 ---
 
