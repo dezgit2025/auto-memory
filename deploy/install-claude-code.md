@@ -108,6 +108,15 @@ session-recall-cc list --json --limit 5
 ```
 Use the output to ground your understanding of recent work.
 
+**Searching past sessions:**
+```
+session-recall-cc search "natural language phrase"   # FTS5 full-text
+session-recall-cc files                              # files touched recently
+session-recall-cc show <session-id>                  # full transcript
+```
+
+> **Query tips:** Multi-word natural-language phrases work well. Avoid hyphens / dots in single-token searches — FTS5 splits on them. Prefer `search "session recall"` over `search "session-recall"`. For exact filenames, use `files | grep <name>` instead of `search`.
+
 This requires `auto-memory[claude]` installed and `SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1` set.
 <!-- session-recall-cc:v1 END -->
 ````
@@ -149,20 +158,153 @@ Then follow 5a–5b using `$AGENT_FILE`.
 
 ---
 
-## Section 7 — Optional: Cron Sidecar
+## Section 7 — Optional: Pre-Warm Scheduler
 
-For pre-warming the FTS5 index so queries are instant:
+> [!NOTE]
+> **Most users can skip this section.** The CLI does on-demand mtime-incremental indexing on every invocation, so cold-start cost is ~50ms after the first run. Pre-warming is only worth setting up if you call recall 20+ times/min or want consistent sub-100ms latency on the very first call after waking your laptop.
 
-> **Agent:** ask user *"Add cron job to pre-warm the session-recall-cc index every 5 minutes? (Y/n)"*
+### Agent decision tree
 
-```cron
-*/5 * * * * env SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1 python -m session_recall.providers.claude_code.sidecar --once >> ~/.claude/.sr-sidecar.log 2>&1
-```
+> **Agent:** follow this flow to install the sidecar:
+>
+> 1. **Ask user:** *"Set up a background scheduler to pre-warm the session-recall-cc index? (Y/n)"* — if no, skip this section entirely.
+> 2. **Detect OS:** `uname -s` → `Darwin` (macOS), `Linux`, or `MINGW`/`MSYS` (Windows)
+> 3. **Check for repo clone:** `test -f scripts/install-claude-sidecar.sh`
+>    - **If repo clone exists** → run `bash scripts/install-claude-sidecar.sh --install` (auto-detects OS, idempotent, supports `--dry-run`)
+>    - **If pip-only install** → follow the manual snippets below: §7a (macOS), §7b (Linux), or §7c (Windows)
+> 4. **Always ask user before writing** any plist, crontab, or scheduled task.
+> 5. **Verify:** confirm the scheduler is running with `bash scripts/install-claude-sidecar.sh --status` or the manual verify commands in each section.
 
-Add with:
+Pick **one** of the paths below. All call the same Python module (`session_recall.providers.claude_code.sidecar --once`), which:
+
+1. Scans `~/.claude/projects/*/*.jsonl`
+2. Re-parses any file whose mtime is newer than the last index
+3. Upserts into `~/.claude/.sr-index.db` (single SQLite transaction)
+4. Exits cleanly — no daemon, no long-running process
+
+### §7-quickstart — Automated installer (recommended)
+
+Instead of hand-editing crontab or writing plist files, run the installer script:
 
 ```bash
-(crontab -l 2>/dev/null; echo '*/5 * * * * env SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1 python -m session_recall.providers.claude_code.sidecar --once >> ~/.claude/.sr-sidecar.log 2>&1') | crontab -
+bash scripts/install-claude-sidecar.sh --install        # auto-detects OS
+bash scripts/install-claude-sidecar.sh --status         # check state
+bash scripts/install-claude-sidecar.sh --uninstall      # remove
+```
+
+The script picks **launchd on macOS**, **cron on Linux**, and prints a Windows hint when run on Windows. It is idempotent and supports a `--dry-run` flag for previewing changes.
+
+> **Agent:** if the user has cloned the repo, prefer the installer over §7a/§7b/§7c manual snippets. If they only `pip install`'d (no repo checkout), fall back to the manual sections below.
+
+### §7a — macOS: launchd (recommended for Mac)
+
+The Apple-blessed scheduler. Survives sleep/wake, auto-runs at login, integrates with `launchctl`.
+
+> **Agent:** ask user *"Install launchd agent to pre-warm session-recall-cc every 5 minutes? (Y/n)"*
+
+```bash
+PYTHON3="$(command -v python3)"            # capture full path — launchd has no PATH inheritance
+USER_HOME="$HOME"
+PLIST="$USER_HOME/Library/LaunchAgents/com.session-recall-cc.sidecar.plist"
+mkdir -p "$USER_HOME/Library/LaunchAgents"
+
+cat > "$PLIST" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.session-recall-cc.sidecar</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>$PYTHON3</string>
+        <string>-m</string>
+        <string>session_recall.providers.claude_code.sidecar</string>
+        <string>--once</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>SESSION_RECALL_ENABLE_CLAUDE_BACKEND</key>
+        <string>1</string>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+    <key>StartInterval</key>
+    <integer>300</integer>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>$USER_HOME/.claude/.sr-sidecar.log</string>
+    <key>StandardErrorPath</key>
+    <string>$USER_HOME/.claude/.sr-sidecar.err.log</string>
+    <key>WorkingDirectory</key>
+    <string>$USER_HOME</string>
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>
+EOF
+
+plutil -lint "$PLIST"                          # validate plist syntax
+launchctl unload "$PLIST" 2>/dev/null          # idempotent (no-op if not loaded)
+launchctl load -w "$PLIST"                     # -w persists across reboots
+launchctl list | grep session-recall-cc        # confirm registration
+sleep 3 && tail -3 ~/.claude/.sr-sidecar.log   # confirm first run output
+```
+
+**Verify it ran:** `tail ~/.claude/.sr-sidecar.log` should show `indexed=N skipped=M errors=0`.
+
+**Uninstall:**
+```bash
+launchctl unload -w ~/Library/LaunchAgents/com.session-recall-cc.sidecar.plist
+rm ~/Library/LaunchAgents/com.session-recall-cc.sidecar.plist
+rm -f ~/.claude/.sr-sidecar.log ~/.claude/.sr-sidecar.err.log
+```
+
+> [!TIP]
+> The `Label` (`com.session-recall-cc.sidecar`) is the canonical handle. To change the interval, edit `StartInterval` (seconds) and `launchctl unload && launchctl load -w` again.
+
+### §7b — Linux: cron
+
+> **Agent:** ask user *"Add cron job to pre-warm session-recall-cc every 5 minutes? (Y/n)"*
+
+```bash
+PYTHON3="$(command -v python3)"
+(crontab -l 2>/dev/null; echo "*/5 * * * * env SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1 $PYTHON3 -m session_recall.providers.claude_code.sidecar --once >> ~/.claude/.sr-sidecar.log 2>&1") | crontab -
+crontab -l | grep session_recall    # confirm
+```
+
+**Uninstall:**
+```bash
+crontab -l | grep -v 'session_recall.providers.claude_code.sidecar' | crontab -
+rm -f ~/.claude/.sr-sidecar.log
+```
+
+> [!NOTE]
+> macOS users **can** use cron instead of launchd — it still ships and works. Apple just won't add features to it. We recommend launchd on Mac for sleep/wake handling and clean `launchctl` integration, but cron is fine if you prefer it.
+
+### §7c — Windows: Task Scheduler (native) or WSL cron
+
+**Native (PowerShell, run as your user — no admin needed):**
+
+> **Agent:** ask user *"Register Windows Scheduled Task to pre-warm session-recall-cc every 5 minutes? (Y/n)"*
+
+```powershell
+$python = (Get-Command python).Source
+$action = New-ScheduledTaskAction -Execute $python `
+  -Argument "-m session_recall.providers.claude_code.sidecar --once"
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) `
+  -RepetitionInterval (New-TimeSpan -Minutes 5)
+$env = @{ "SESSION_RECALL_ENABLE_CLAUDE_BACKEND" = "1" }
+Register-ScheduledTask -TaskName "session-recall-cc-sidecar" `
+  -Action $action -Trigger $trigger -Description "Pre-warm Claude Code session index"
+```
+
+**Uninstall:** `Unregister-ScheduledTask -TaskName "session-recall-cc-sidecar" -Confirm:$false`
+
+**WSL2 alternative (if you already use WSL):** follow §7b inside WSL. One gotcha — the cron daemon doesn't auto-start in WSL, so add this to your `~/.bashrc`:
+```bash
+service cron status >/dev/null 2>&1 || sudo service cron start
 ```
 
 ---
@@ -180,9 +322,20 @@ Add with:
    rm ~/.claude/.sr-index.db
    ```
 
-3. **Remove cron entry** (if added):
+3. **Remove pre-warm scheduler** (if added — pick the one you installed):
    ```bash
-   crontab -l | grep -v 'session_recall.providers.claude_code.sidecar' | crontab -
+   # macOS launchd:
+   launchctl unload -w ~/Library/LaunchAgents/com.session-recall-cc.sidecar.plist 2>/dev/null
+   rm -f ~/Library/LaunchAgents/com.session-recall-cc.sidecar.plist
+
+   # Linux / WSL cron:
+   crontab -l 2>/dev/null | grep -v 'session_recall.providers.claude_code.sidecar' | crontab -
+
+   # Windows Task Scheduler (PowerShell):
+   #   Unregister-ScheduledTask -TaskName "session-recall-cc-sidecar" -Confirm:$false
+
+   # Logs (any OS):
+   rm -f ~/.claude/.sr-sidecar.log ~/.claude/.sr-sidecar.err.log
    ```
 
 4. **Uninstall the package** (if desired):
