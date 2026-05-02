@@ -92,3 +92,6 @@ temp/
 # Internal working docs
 polish/
 docs/
+
+# Local verification scripts/output (claude_code provider)
+src/session_recall/providers/claude_code/verifications/
