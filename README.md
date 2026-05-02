@@ -274,14 +274,64 @@ session-recall-cc health
 
 ### Optional: pre-warm scheduler
 
-> Skip this unless you call recall many times per minute. The CLI does on-demand mtime-incremental indexing on every invocation (~50ms after the first run).
+> Skip this unless you want consistent sub-100ms latency. The CLI already does on-demand indexing (~50ms after the first run).
+
+If you have the repo cloned, the installer auto-detects your OS:
 
 ```bash
-# Auto-detects OS — installs launchd on macOS, cron on Linux
-bash scripts/install-claude-sidecar.sh --install
+bash scripts/install-claude-sidecar.sh --install    # auto-detects OS
+bash scripts/install-claude-sidecar.sh --status     # check state
+bash scripts/install-claude-sidecar.sh --uninstall  # remove
 ```
 
-Or follow the manual snippets in [`deploy/install-claude-code.md`](deploy/install-claude-code.md) §7.
+Otherwise, pick your OS below:
+
+#### macOS (Intel & Apple Silicon)
+
+Uses `launchd` — Apple's native scheduler. Survives sleep/wake, auto-runs at login.
+
+```bash
+PYTHON3="$(command -v python3)"
+cat > ~/Library/LaunchAgents/com.session-recall-cc.sidecar.plist <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.session-recall-cc.sidecar</string>
+  <key>ProgramArguments</key><array>
+    <string>$PYTHON3</string><string>-m</string>
+    <string>session_recall.providers.claude_code.sidecar</string>
+    <string>--once</string>
+  </array>
+  <key>EnvironmentVariables</key><dict>
+    <key>SESSION_RECALL_ENABLE_CLAUDE_BACKEND</key><string>1</string>
+    <key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+  </dict>
+  <key>StartInterval</key><integer>300</integer>
+  <key>RunAtLoad</key><true/>
+  <key>StandardOutPath</key><string>$HOME/.claude/.sr-sidecar.log</string>
+  <key>StandardErrorPath</key><string>$HOME/.claude/.sr-sidecar.err.log</string>
+</dict></plist>
+EOF
+launchctl load -w ~/Library/LaunchAgents/com.session-recall-cc.sidecar.plist
+```
+
+**Verify:** `launchctl list | grep session-recall-cc`
+**Uninstall:** `launchctl unload -w ~/Library/LaunchAgents/com.session-recall-cc.sidecar.plist && rm ~/Library/LaunchAgents/com.session-recall-cc.sidecar.plist`
+
+#### Linux / Windows WSL2
+
+Uses `cron` — works on any distro and WSL2.
+
+```bash
+(crontab -l 2>/dev/null; echo "*/5 * * * * env SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1 $(command -v python3) -m session_recall.providers.claude_code.sidecar --once >> ~/.claude/.sr-sidecar.log 2>&1") | crontab -
+```
+
+**Verify:** `crontab -l | grep session-recall`
+**Uninstall:** `crontab -l | grep -v session-recall | crontab -`
+
+> [!TIP]
+> Full details (Windows Task Scheduler, interval tuning, troubleshooting) → [`deploy/install-claude-code.md`](deploy/install-claude-code.md) §7
 
 ### How it works
 
