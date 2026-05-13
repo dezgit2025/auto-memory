@@ -5,6 +5,8 @@ import os
 import subprocess
 import sys
 
+import pytest
+
 
 def _run_health(*extra_args: str, env_override: dict[str, str] | None = None):
     """Run session-recall health as a subprocess, return CompletedProcess."""
@@ -22,6 +24,16 @@ def _run_health(*extra_args: str, env_override: dict[str, str] | None = None):
     )
 
 
+def _require_cli_provider_available() -> None:
+    """Skip tests that require the CLI provider when it is not discoverable."""
+    result = _run_health("--json")
+    assert result.returncode == 0, f"stderr: {result.stderr}"
+    data = json.loads(result.stdout)
+    providers = data.get("providers", {})
+    if "cli" not in providers:
+        pytest.skip("CLI provider unavailable in this environment")
+
+
 def test_e2e_health_default_still_works():
     result = _run_health()
     assert result.returncode == 0, f"stderr: {result.stderr}"
@@ -29,6 +41,7 @@ def test_e2e_health_default_still_works():
 
 
 def test_e2e_health_provider_cli_json():
+    _require_cli_provider_available()
     result = _run_health("--provider", "cli", "--json")
     assert result.returncode == 0, f"stderr: {result.stderr}"
     data = json.loads(result.stdout)
@@ -37,6 +50,7 @@ def test_e2e_health_provider_cli_json():
 
 
 def test_e2e_health_provider_cli_has_subdims():
+    _require_cli_provider_available()
     result = _run_health("--provider", "cli", "--json")
     assert result.returncode == 0, f"stderr: {result.stderr}"
     data = json.loads(result.stdout)
