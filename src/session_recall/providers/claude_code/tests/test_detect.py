@@ -1,14 +1,11 @@
 """Tests for Claude Code detect module."""
 from __future__ import annotations
 
-import os
-import pathlib
 import time
 
 import pytest
 
 from session_recall.providers.claude_code.detect import (
-    CC_PROJECTS_DIR,
     decode_project_path,
     encode_project_path,
     find_project_dir,
@@ -141,8 +138,6 @@ def test_list_session_files_rejects_symlink_escape(fake_projects, tmp_path):
     outside.mkdir()
     (outside / "evil.jsonl").write_text("")
 
-    link = proj / "evil.jsonl"
-    # Remove the name collision — use a different name
     evil_link = proj / "bad.jsonl"
     evil_link.symlink_to(outside / "evil.jsonl")
 
