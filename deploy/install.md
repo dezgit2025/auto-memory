@@ -191,7 +191,7 @@ echo "agent=$AGENT_TYPE file=$AGENT_FILE"
 ### 6a — Detect state
 
 ```bash
-if grep -q '<!-- session-recall:v1 -->' "$AGENT_FILE" 2>/dev/null; then
+if grep -q '<!-- session-recall:v1' "$AGENT_FILE" 2>/dev/null; then
   echo "current"   # idempotent — skip
 elif grep -q 'Progressive Session Recall' "$AGENT_FILE" 2>/dev/null; then
   echo "stale"     # replace legacy block (6c)
@@ -208,11 +208,17 @@ fi
 mkdir -p "$(dirname "$AGENT_FILE")"
 ```
 
-Append this exact block:
+> **Agent — check `AGENT_TYPE` from Section 6.0 before appending:**
+> - `AGENT_TYPE=copilot-cli` → append the block **as-is** below.
+> - `AGENT_TYPE=claude-code` → this block queries **Copilot CLI's** session store, not Claude Code's own history. Append it **only if the user also uses Copilot CLI on this machine** and wants that history searchable too — and when you do, it MUST include the "skip" line shown below so Claude Code doesn't waste a call on it. Either way, also read [`deploy/install-claude-code.md`](install-claude-code.md) and append its `session-recall-cc` block — that's the one Claude Code should actually run on every prompt.
+
+Append this exact block (Copilot CLI, or Claude Code + Copilot CLI combined on one machine):
 
 ````markdown
 <!-- session-recall:v1 — DO NOT EDIT MANUALLY -->
 ## Progressive Session Recall — RUN FIRST ON EVERY PROMPT
+
+**If you are Claude Code, skip this block — use `session-recall-cc` instead (see the Claude Code section below/elsewhere in this file).**
 
 **Run `session-recall` FIRST on every prompt before doing anything else.** It costs ~50 tokens and prevents expensive blind searches.
 
@@ -236,6 +242,8 @@ Only use filesystem tools (grep, glob, find) if session-recall returns nothing u
 If `session-recall` errors, continue silently — it's a convenience, not a blocker.
 <!-- /session-recall:v1 -->
 ````
+
+> **Agent:** If `AGENT_TYPE=copilot-cli` and the file is `~/.copilot/copilot-instructions.md`, drop the "If you are Claude Code, skip this block" line — Claude Code never reads that file, so the line is noise there. Keep it only when `AGENT_FILE` is a `CLAUDE.md`.
 
 ### 6c — Replace legacy block (state = stale)
 

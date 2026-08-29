@@ -1,32 +1,32 @@
 # auto-memory — Claude Code Instructions Template
 
-> **Note:** For installation, use [`deploy/install.md`](deploy/install.md) — it handles everything including appending this template automatically.
+> **Note:** For installation, use [`deploy/install-claude-code.md`](deploy/install-claude-code.md) — it handles everything including appending this template automatically.
 
-This file contains the raw instruction block for manual reference. Copy the block below into `~/.claude/CLAUDE.md` or your project's `.claude/CLAUDE.md` if you prefer manual setup.
+This file contains the raw instruction block for manual reference. Copy the block below into `~/.claude/CLAUDE.md` (global) or your project's `CLAUDE.md` (per-repo) if you prefer manual setup.
+
+**This is the Claude Code–specific block.** It uses `session-recall-cc`, which reads Claude Code's own JSONL session transcripts (`~/.claude/projects/`) via a dedicated SQLite+FTS5 index — not the plain `session-recall` command, which reads Copilot CLI's session store instead. If your `CLAUDE.md` also contains the generic `session-recall` block (e.g. from [`copilot-instructions-template.md`](copilot-instructions-template.md) or `deploy/install.md`), make sure that block is gated to skip itself for Claude Code — see [`deploy/install-claude-code.md`](deploy/install-claude-code.md) for details.
+
+Requires `auto-memory[claude]` installed and `SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1` set.
 
 ---
 
-<!-- session-recall:v1 — DO NOT EDIT MANUALLY -->
-## Progressive Session Recall — RUN FIRST ON EVERY PROMPT
+<!-- session-recall-cc:v1 START -->
+**For Claude Code only** — if you are not Claude Code (e.g., Copilot CLI, Cursor, Aider), ignore this section.
 
-**Run `session-recall` FIRST on every prompt before doing anything else.** It costs ~50 tokens and prevents expensive blind searches.
+When starting a new conversation in this repo, run:
+```
+session-recall-cc list --json --limit 5
+```
+Use the output to ground your understanding of recent work.
 
-```bash
-session-recall files --json --limit 10  # recently touched files
-session-recall files --days 7 --json    # files touched in last 7 days
-session-recall list --json --limit 5    # recent sessions
-session-recall list --days 2 --json     # sessions from last 2 days
-session-recall search '<term>' --json   # full-text search
-session-recall search '<term>' --days 5 # search last 5 days only
-session-recall checkpoints --days 3     # checkpoints from last 3 days
-session-recall repos --json             # discovered repositories across providers
-session-recall show <id> --json         # drill into one session
-session-recall health --json            # 8-dimension health check
-session-recall schema-check             # validate DB schema (run after Copilot CLI upgrade)
+**Searching past sessions:**
+```
+session-recall-cc search "natural language phrase"   # FTS5 full-text
+session-recall-cc files                              # files touched recently
+session-recall-cc show <session-id>                  # full transcript
 ```
 
-**`--days N` works on all 4 query commands** (`list`, `files`, `checkpoints`, `search`) — filters to sessions/files/checkpoints from the last N days.
+> **Query tips:** Multi-word natural-language phrases work well. Avoid hyphens / dots in single-token searches — FTS5 splits on them. Prefer `search "session recall"` over `search "session-recall"`. For exact filenames, use `files | grep <name>` instead of `search`.
 
-Only use filesystem tools (grep, glob, find) if session-recall returns nothing useful.
-If `session-recall` errors, continue silently — it's a convenience, not a blocker.
-<!-- /session-recall:v1 -->
+This requires `auto-memory[claude]` installed and `SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1` set.
+<!-- session-recall-cc:v1 END -->
