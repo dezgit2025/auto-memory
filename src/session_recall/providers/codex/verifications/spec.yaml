@@ -1,0 +1,152 @@
+# Verification spec — session-recall-codex v1 (plan §8 Phase 0 Step 3)
+# Schema: verify/verification-script-spec.md §4.1. Authored BEFORE production code.
+# Profile names/ceilings sourced from captured-profiles.json (machine capture), never hand-typed.
+
+task_id: session-recall-codex-v1
+
+acceptance_criteria:
+  - "`session-recall-codex --version` and `--help` exit 0 without opening any database"
+  - "`schema-check [--json]` runs the full fixed pre-flight on both DBs and exits 0 on exact profile match; JSON reports both profile names"
+  - "`list [--repo] [--limit] [--days] [--include-archived] [--json]` returns newest-first top-level sessions from state DB only; exit 0 (valid empty result is exit 0)"
+  - "`search QUERY ...` performs case-insensitive LITERAL matching over userMessage/agentMessage text (paginated) and allowlisted legacy rollout events; returns <=limit rows with 250-char sanitized excerpts; exit 0"
+  - "`show SESSION_ID [--turns N] [--full] [--json]` resolves ids of >=8 chars, renders user/assistant turns grouped by turn_id; exit 0 found / exit 1 not found"
+  - "`files ...` returns paths only from explicit fileChange.changes[*].path (paginated) or allowlisted legacy file-change records; never inferred from command text; exit 0"
+  - "`repos [--limit] [--days] [--include-local] [--json]` aggregates by repo label; local:* rows hidden unless --include-local; exit 0"
+  - "`health [--json]` reports the provider dimensions; fixed-schema failure is red AND exits 2, never amber"
+  - "every data command runs the same pre-flight before any session query; on drift nothing is queried"
+  - "list/search JSON rows pin key sets: id_full, id_short, summary, created_at, date, branch, repository, turns_count, files_count, _trust_level (=codex_local_first_party); search rows add window_used and excerpt; unknown extra keys are a spec violation"
+  - "search/files default lookback is the recency ladder 7->14->30 days with delta-band scans and early stop; explicit --days disables the ladder; list/repos use flat 30 days"
+
+files_in_scope:
+  - src/session_recall/providers/codex/__init__.py
+  - src/session_recall/providers/codex/cli.py
+  - src/session_recall/providers/codex/paths.py
+  - src/session_recall/providers/codex/connect.py
+  - src/session_recall/providers/codex/schema.py
+  - src/session_recall/providers/codex/state_queries.py
+  - src/session_recall/providers/codex/history_queries.py
+  - src/session_recall/providers/codex/rollout_reader.py
+  - src/session_recall/providers/codex/normalize.py
+  - src/session_recall/providers/codex/provider.py
+  - src/session_recall/providers/codex/health.py
+  - src/session_recall/db/connect.py   # shared refactor: exception core + SystemExit wrapper (only permitted existing-code change)
+  - pyproject.toml                     # console-script entry only
+
+schema_profiles:
+  source: src/session_recall/providers/codex/verifications/captured-profiles.json
+  state: codex-state-v5-migration-51        # ceiling 51 'thread artifacts', 0 failed migrations
+  history: codex-thread-history-v1-migration-6   # ceiling 6 'thread turn ends', 0 failed migrations
+  used_tables: [threads, thread_items, thread_turns, _sqlx_migrations]   # thread_spawn_edges deliberately excluded (§19)
+  rule: "any difference on a used table (missing/renamed/extra column, changed decl, ceiling change, failed migration row, missing JSON1) -> exit 2, JSON {ok:false, error:schema_drift, query_executed:false}; unrelated extra tables/indexes/triggers are diagnostic-only and pass"
+
+happy_path_cases:
+  - input: "list --json --limit 5 on fixture with 1 paginated + 1 legacy thread"
+    expected_output: "both rows, newest-first, correct id_short/summary/repository; exit 0"
+  - input: "show <full-id> --json on paginated fixture"
+    expected_output: "user + assistant turns in rollout_ordinal order, grouped by turn_id; exit 0"
+  - input: "show <full-id> --json on legacy fixture"
+    expected_output: "same normalized turns shape parsed from rollout JSONL; exit 0"
+  - input: "search <seeded-recent-term> --json"
+    expected_output: "match with window_used: 7 and sanitized excerpt; exit 0"
+  - input: "files --json on fixture with one fileChange item"
+    expected_output: "exactly the explicit changed path, deduped; exit 0"
+  - input: "repos --json"
+    expected_output: "parsed slug for origin thread; local:<cwd> row only with --include-local; exit 0"
+  - input: "schema-check --json on exact synthetic fixtures"
+    expected_output: "ok:true with both profile names; exit 0"
+  - input: "health --json on healthy fixture"
+    expected_output: "read-only + schema dimensions green; exit 0"
+
+boundary_cases:
+  - input: "empty valid store (0 threads, exact schema)"
+    expected_output: "list/search/files/repos return empty results, exit 0"
+  - input: "exactly --limit matching rows"
+    expected_output: "all returned, no over-fetch, exit 0"
+  - input: "search term seeded ONLY in the 15-30-day band"
+    expected_output: "found, window_used: 30 (ladder exhausted correctly)"
+  - input: "search with explicit --days 9"
+    expected_output: "single 9-day window, no ladder, window_used: 9"
+  - input: "archived thread in fixture"
+    expected_output: "absent by default; present with --include-archived (list/search/files)"
+  - input: "guardian-shaped subagent thread (agent_path NULL, source JSON $.subagent set)"
+    expected_output: "excluded from list, search, files, and repos — all four"
+  - input: "--full on oversized session"
+    expected_output: "truncation removed per-message but total output capped at the documented budget"
+  - input: "thread with only name set (title/preview empty)"
+    expected_output: "summary falls back name -> title -> preview -> first_user_message"
+
+failure_mode_cases:
+  - input: "show with id shorter than 8 chars"
+    expected_exception: "SystemExit(2)"
+    expected_message_substring: "at least 8"
+  - input: "show with 8-char prefix matching 2 fixture threads (same-minute UUIDv7 pair)"
+    expected_exception: "SystemExit(2)"
+    expected_message_substring: "matches"
+  - input: "show with valid unmatched id"
+    expected_exception: "SystemExit(1)"
+  - input: "state DB file absent, no siblings"
+    expected_exception: "SystemExit(4)"
+    expected_message_substring: "storage_missing"
+  - input: "state_5.sqlite absent but state_6.sqlite present"
+    expected_exception: "SystemExit(4)"
+    expected_message_substring: "storage_version_changed"
+  - input: "any drift fixture (dropped threads.preview / renamed history_mode / added threads column / changed item_json decl / missing thread_turns / ceiling 52 / ceiling 7 / success=0 row / JSON1 probe mocked off)"
+    expected_exception: "SystemExit(2)"
+    expected_message_substring: "query_executed"
+  - input: "DB locked beyond bounded retries (50/150/450ms)"
+    expected_exception: "SystemExit(3)"
+  - input: "search query '* OR *' / quotes / backslashes / SQL-looking text"
+    expected_exception: "none — treated as literal text, exit 0, no crash, no broadened match"
+  - input: "legacy rollout containing only unknown event shapes"
+    expected_exception: "none — exit 0 with warnings: [rollout_shape_unrecognized], never a silent empty"
+
+invariants:
+  - "SHA-256 of every fixture DB, -wal, -shm, and rollout file is identical before and after ANY command (read-only proof)"
+  - "runtime imports are stdlib-only (sqlite3, json, argparse, pathlib, contextlib, ...)"
+  - "importing/running session-recall, session-recall-cc, and session-recall-claude never imports session_recall.providers.codex"
+  - "one sqlite connection open per DB per command: schema validation and the data query use the SAME connections (no close-reopen gap)"
+  - "every SQL statement uses bound parameters; no f-string/percent interpolation of user values"
+  - "all user/session text passes sanitize_for_terminal before human output"
+  - "reasoning, encrypted content, tool output, webSearch, subAgentActivity, collabAgentToolCall never appear in default command output"
+  - "no code path reads thread_spawn_edges"
+  - "rollout paths resolve under the configured sessions root; symlink escapes and non-regular files rejected"
+
+negative_cases:
+  - "search for held-out literal '<RANDOM-8HEX-injected-at-verify-time>' seeded only in one fixture turn must return exactly that session — hardcoded outputs cannot pass"
+  - "the known-bad drift fixture set must NEVER produce exit 0 on any data command"
+  - "running the full suite twice must produce identical verdicts (idempotency witness)"
+  - "a deliberate syntax error injected into a codex module (isolation fixture) must NOT break `session-recall --version`"
+  - "no command may create, write, or delete any file under the fixture store directories"
+
+anti_cheat_checks:
+  - "no new pytest.skip / pytest.xfail anywhere under src/session_recall/ vs the pre-implementation baseline"
+  - "no function body in codex/ that is only pass, ..., or raise NotImplementedError"
+  - "pytest collected count == passed count (no silent deselection)"
+  - "verifier + spec + test hashes match BASELINE-HASHES.txt; changes require explicit review note"
+  - "reuse_audit_gate: codex/ must not re-implement iter_jsonl_bounded, utc_iso_from_ts, is_within_days, short_id, is_under_root, parse_repo_url, sanitize_for_terminal, fmt_json/output, score_dim/overall_score — grep-verified; an unexplained duplicate fails the scope audit (exceptions require a written entry in plans/codex-reuse-audit.md §3)"
+  - "second fresh-process witness re-runs the canonical schema-check + list case and must agree"
+
+environment_requirements:
+  python: ">=3.10"
+  deps: [pytest>=8]   # dev-only; runtime stays stdlib
+  env_vars:
+    PYTHONHASHSEED: "0"
+    PYTHONDEVMODE: "1"
+    SESSION_RECALL_CODEX_STATE_DB: "<hermetic tmp fixture>"
+    SESSION_RECALL_CODEX_HISTORY_DB: "<hermetic tmp fixture>"
+    SESSION_RECALL_CODEX_SESSIONS_ROOT: "<hermetic tmp fixture>"
+  notes:
+    - "fresh mktemp dirs, synthetic data only; CI must never read ~/.codex"
+    - "pytest cache disabled (-p no:cacheprovider); subprocess timeouts on every CLI invocation"
+    - "verifier exit codes: 0=pass 1=test-fail 2=infra 3=anti-cheat 124=timeout (spec §5); CLI-level codes 0/1/2/3/4 are asserted INSIDE cases, distinct from verifier codes"
+
+performance_budget:
+  max_runtime_seconds: 300          # whole verifier run
+  latency_p95_ms_on_500_thread_fixture:   # plan §20.2, 5 runs each, installed executable
+    list_limit_10: 150
+    files_window_7: 300
+    search_window_7: 500
+    search_window_30_ladder_exhausted: 2000   # breach voids the no-FTS-sidecar decision (§13.7 trigger)
+    show_paginated: 400
+    show_legacy: 800
+    schema_check_full_preflight: 200
