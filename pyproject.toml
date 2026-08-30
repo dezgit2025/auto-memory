@@ -24,6 +24,7 @@ dependencies = []
 session-recall = "session_recall.__main__:main"
 session-recall-cc = "session_recall.providers.claude_code.cli:main"
 session-recall-claude = "session_recall.providers.claude_code.cli:main"
+session-recall-codex = "session_recall.providers.codex.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/dezgit2025/auto-memory"
