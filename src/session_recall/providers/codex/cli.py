@@ -13,6 +13,7 @@ database; pre-flight and queries share those connections (§16 Fix 2) —
 from __future__ import annotations
 
 import argparse
+import sqlite3
 import sys
 
 _TRIAL_NOTE = "Trial build: search/show/files/health arrive in a later phase."
@@ -21,6 +22,7 @@ _TRIAL_NOTE = "Trial build: search/show/files/health arrive in a later phase."
 def _cmd_schema_check(args: argparse.Namespace) -> int:
     from .connect import open_codex_ro
     from .paths import resolve_paths
+    from ._schema_report import format_diagnostics_human
     from .schema import check_schema, drift_json, format_drift_human, success_json
     from .util_out import dump_json
 
@@ -32,8 +34,8 @@ def _cmd_schema_check(args: argparse.Namespace) -> int:
         else:
             profiles = ", ".join(report.expected_profiles.values())
             print(f"ok: schema matches fixed profiles ({profiles})")
-            for d in report.diagnostics:
-                print(f"diagnostic: {d}")
+            for line in format_diagnostics_human(report):
+                print(line)
         return 0
     if args.json:
         dump_json(drift_json(report))
@@ -111,6 +113,16 @@ def _handle(args: argparse.Namespace, fn) -> int:
     except CodexError as e:
         print(f"error: {e.message}", file=sys.stderr)
         return e.exit_code
+    except sqlite3.Error as e:
+        # Mid-query failure (e.g. Codex rewrote a file during an upgrade):
+        # report cleanly with the storage-failure exit code, never a traceback.
+        msg = f"Codex storage read failed mid-query ({e.__class__.__name__}: {e})"
+        if args.json:
+            dump_json({"ok": False, "error": "sqlite_error", "query_executed": False,
+                       "message": msg})
+        else:
+            print(f"error: {msg}", file=sys.stderr)
+        return 3
 
 
 def _build_parser() -> argparse.ArgumentParser:

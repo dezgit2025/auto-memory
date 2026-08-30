@@ -60,3 +60,34 @@ def success_json(report: SchemaReport) -> dict:
         "profiles": dict(report.expected_profiles),
         "diagnostics": list(report.diagnostics),
     }
+
+
+def format_diagnostics_human(report: SchemaReport) -> list[str]:
+    """Human lines for pass-through diagnostics (schema-check, non-JSON).
+
+    A healthy live store legitimately has dozens of tables/indexes/triggers
+    session-recall never touches, so "extra <type>" diagnostics collapse to
+    one count line per side. Anything else stays itemized. JSON output
+    keeps the full list.
+    """
+    counts: dict[str, dict[str, int]] = {}
+    lines: list[str] = []
+    for d in report.diagnostics:
+        side, _, rest = d.partition(": ")
+        if rest.startswith("extra ") and len(rest.split()) == 3:
+            otype = rest.split()[1]
+            counts.setdefault(side, {})[otype] = (
+                counts.get(side, {}).get(otype, 0) + 1
+            )
+        else:
+            lines.append(f"diagnostic: {d}")
+    for side, by_type in counts.items():
+        summary = ", ".join(
+            f"{n} extra {otype}{'es' if otype.endswith('x') else 's'}"
+            for otype, n in sorted(by_type.items())
+        )
+        lines.append(
+            f"diagnostic: {side}: {summary} not used by session-recall "
+            "(ignored; see --json for names)"
+        )
+    return lines

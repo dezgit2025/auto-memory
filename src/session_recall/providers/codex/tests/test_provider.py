@@ -144,3 +144,34 @@ class TestOtherMethods:
             sessions_root=tmp_path,
         )
         assert CodexProvider(empty).is_available() is False
+
+
+class TestReposTieBreak:
+    def test_equal_counts_sort_newest_first(self, monkeypatch):
+        from session_recall.providers.codex.provider import CodexProvider
+
+        rows = [
+            {"git_origin_url": "https://github.com/acme/old.git", "cwd": None,
+             "created_at_ms": 1_700_000_000_000, "created_at": None},
+            {"git_origin_url": "https://github.com/acme/new.git", "cwd": None,
+             "created_at_ms": 1_800_000_000_000, "created_at": None},
+        ]
+        p = CodexProvider.__new__(CodexProvider)
+
+        import contextlib
+
+        @contextlib.contextmanager
+        def fake_open(_paths):
+            yield None, None
+
+        monkeypatch.setattr(
+            "session_recall.providers.codex.provider.open_codex_ro", fake_open)
+        monkeypatch.setattr(
+            "session_recall.providers.codex.provider.preflight",
+            lambda s, h: None)
+        monkeypatch.setattr(
+            "session_recall.providers.codex.provider.select_threads",
+            lambda *a, **k: rows)
+        p.paths = None
+        out = p.list_repos()
+        assert [r["repository"] for r in out] == ["acme/new", "acme/old"]

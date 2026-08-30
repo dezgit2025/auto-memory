@@ -280,3 +280,28 @@ def test_check_schema_opens_no_connections(codex_store, monkeypatch):
     finally:
         s.close()
         h.close()
+
+
+class TestDiagnosticsHumanCollapse:
+    def test_extra_objects_collapse_to_counts(self):
+        from session_recall.providers.codex._schema_report import (
+            SchemaReport, format_diagnostics_human,
+        )
+        report = SchemaReport(diagnostics=[
+            "state: extra index idx_a",
+            "state: extra index idx_b",
+            "state: extra table totally_unrelated",
+            "history: extra index idx_c",
+        ])
+        lines = format_diagnostics_human(report)
+        assert any("2 extra indexes" in x and "1 extra table" in x
+                   and x.startswith("diagnostic: state:") for x in lines)
+        assert any("history: 1 extra indexes" in x for x in lines)
+        # no raw per-object lines survive
+        assert not any("idx_a" in x or "totally_unrelated" in x for x in lines)
+
+    def test_no_diagnostics_yields_no_lines(self):
+        from session_recall.providers.codex._schema_report import (
+            SchemaReport, format_diagnostics_human,
+        )
+        assert format_diagnostics_human(SchemaReport()) == []

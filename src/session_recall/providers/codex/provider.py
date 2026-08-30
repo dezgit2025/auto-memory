@@ -92,7 +92,8 @@ class CodexProvider(StorageProvider):
         out = list(buckets.values())
         if not include_local:
             out = [r for r in out if not r["repository"].startswith("local:")]
-        out.sort(key=lambda r: (-r["session_count"], r["last_seen"]))
+        # most sessions first; ties broken newest-first (matches list)
+        out.sort(key=lambda r: (r["session_count"], r["last_seen"]), reverse=True)
         return out[:limit]
 
     def list_checkpoints(

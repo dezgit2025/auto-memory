@@ -182,3 +182,38 @@ def test_main_cli_does_not_import_codex():
     )
     assert r.returncode == 0, r.stderr
     assert "CLEAN" in r.stdout
+
+
+class TestSqliteErrorMapping:
+    def _args(self, json_mode=False):
+        import argparse
+        return argparse.Namespace(json=json_mode)
+
+    def test_operational_error_maps_to_exit_3(self, capsys):
+        import sqlite3
+
+        from session_recall.providers.codex.cli import _handle
+
+        def boom(_args):
+            raise sqlite3.OperationalError("database disk image is malformed")
+
+        rc = _handle(self._args(), boom)
+        assert rc == 3
+        err = capsys.readouterr().err
+        assert "mid-query" in err and "malformed" in err
+
+    def test_operational_error_json_shape(self, capsys):
+        import json as jsonlib
+        import sqlite3
+
+        from session_recall.providers.codex.cli import _handle
+
+        def boom(_args):
+            raise sqlite3.DatabaseError("locked")
+
+        rc = _handle(self._args(json_mode=True), boom)
+        assert rc == 3
+        obj = jsonlib.loads(capsys.readouterr().out)
+        assert obj["ok"] is False
+        assert obj["error"] == "sqlite_error"
+        assert obj["query_executed"] is False
