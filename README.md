@@ -31,15 +31,18 @@
 |---------|--------|--------------|
 | **GitHub Copilot CLI** | ✅ default | Already on — `pip install auto-memory` is all you need |
 | **Claude Code** | 🟡 opt-in | `pip install auto-memory[claude]` — [Full setup →](deploy/install-claude-code.md) |
+| **Codex CLI** | 🟡 trial | Ships with `pip install auto-memory` — [Full setup →](deploy/install-codex.md) |
 | **VS Code** | 🟡 opt-in | [Enable in 30 seconds →](deploy/install-other-backends.md#32--vs-code-backend) |
 | **JetBrains** | 🟡 opt-in | [Enable →](deploy/install-other-backends.md#33--jetbrains-backend) |
 | **Neovim** | 🟡 opt-in | [Enable →](deploy/install-other-backends.md#34--neovim-backend) |
 
 > **Claude Code user?** `pip install auto-memory[claude] && export SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1` — then ask your agent to read [`deploy/install-claude-code.md`](deploy/install-claude-code.md) for full integration.
 
+> **Codex CLI user?** `pip install auto-memory && session-recall-codex schema-check` — then ask your agent to read [`deploy/install-codex.md`](deploy/install-codex.md) to wire recall into `~/.codex/AGENTS.md`.
+
 > **VS Code user?** Ask your agent to read [`deploy/install-other-backends.md`](deploy/install-other-backends.md) — it walks through detection, env var setup, and verification automatically.
 
-**Coming soon:** Cursor · Codex
+**Coming soon:** Cursor
 
 ---
 
@@ -90,8 +93,9 @@ Your agent runs it and gets:
 
 1. Read [`deploy/install.md`](deploy/install.md) — the agent-runnable install guide. It auto-detects the user's environment, prompts for confirmation before any write, handles fresh/upgrade/skip branches, and chains into backend setup.
 2. If the user uses **Claude Code**, read [`deploy/install-claude-code.md`](deploy/install-claude-code.md) — pip extra, env var, CLAUDE.md wiring, and optional scheduler setup. Ask before any write.
-3. If the user opts in to **VS Code / JetBrains / Neovim** backends, read [`deploy/install-other-backends.md`](deploy/install-other-backends.md) (Section 8 of `install.md` will prompt for this).
-4. All files have YAML front-matter declaring `requires-user-confirmation: true` and `mutates-shell-rc` / `mutates-agent-instructions`. **Honor these flags.** Do not write silently.
+3. If the user uses **Codex CLI**, read [`deploy/install-codex.md`](deploy/install-codex.md) — no extra or env var needed; wires `~/.codex/AGENTS.md` with confirmation. Trial build: `schema-check` / `list` / `repos`.
+4. If the user opts in to **VS Code / JetBrains / Neovim** backends, read [`deploy/install-other-backends.md`](deploy/install-other-backends.md) (Section 8 of `install.md` will prompt for this).
+5. All files have YAML front-matter declaring `requires-user-confirmation: true` and `mutates-shell-rc` / `mutates-agent-instructions`. **Honor these flags.** Do not write silently.
 
 > **💡 Model recommendation:** Use a reasoning model (Sonnet 4.6, GPT-5.4, or equivalent) for install execution. Mini/fast models may hallucinate during multi-step install flows.
 
@@ -107,8 +111,9 @@ Read deploy/install.md and execute it for the user. Ask before any disk write.
 | 1 | [`README.md`](README.md) (this file) | Discovery | none |
 | 2 | [`deploy/install.md`](deploy/install.md) | Install + Copilot CLI integration | binary install, instruction file append |
 | 3 | [`deploy/install-claude-code.md`](deploy/install-claude-code.md) | Claude Code integration | pip extra, CLAUDE.md append |
-| 4 | [`deploy/install-other-backends.md`](deploy/install-other-backends.md) | Optional VS Code / JetBrains / Neovim setup | shell rc env vars |
-| 5 | [`UPGRADE-COPILOT-CLI.md`](UPGRADE-COPILOT-CLI.md) | Run after Copilot CLI version bumps | none (read-only validation) |
+| 4 | [`deploy/install-codex.md`](deploy/install-codex.md) | Codex CLI integration (trial) | ~/.codex/AGENTS.md append |
+| 5 | [`deploy/install-other-backends.md`](deploy/install-other-backends.md) | Optional VS Code / JetBrains / Neovim setup | shell rc env vars |
+| 6 | [`UPGRADE-COPILOT-CLI.md`](UPGRADE-COPILOT-CLI.md) | Run after Copilot CLI version bumps | none (read-only validation) |
 
 ---
 
@@ -366,6 +371,37 @@ Uses `cron` — works on any distro and WSL2.
 ### 🤖 For your AI coding agent
 
 If you'd rather have an agent install this for you, point it at [`deploy/install-claude-code.md`](deploy/install-claude-code.md). The doc has YAML front-matter (`requires-user-confirmation: true`) and per-step "agent: ask user" prompts so a reasoning model walks you through install with confirmation at every mutating step.
+
+## Works with Codex CLI (trial, opt-in)
+
+`auto-memory` can also read [OpenAI Codex CLI](https://github.com/openai/codex)'s local SQLite session store (`~/.codex/`). This ships as a separate binary (`session-recall-codex`) that is **inert unless invoked** — Copilot CLI and Claude Code users pay zero cost, and a Codex storage change can never break the main CLI.
+
+### Quick install (2 steps)
+
+```bash
+pip install auto-memory          # binary included, no extra needed
+session-recall-codex schema-check   # validates ~/.codex storage before any query
+```
+
+Then wire it into Codex (with confirmation) via [`deploy/install-codex.md`](deploy/install-codex.md), which appends the recall block from [`codex-instructions-template.md`](codex-instructions-template.md) to `~/.codex/AGENTS.md` — Codex reads that file every session, so the block fires only when Codex is the invoker.
+
+### Trial build scope
+
+| Command | Status |
+|---------|--------|
+| `schema-check` | ✅ fixed-profile validation of both Codex DBs, human + `--json` |
+| `list` | ✅ recent sessions (`--repo` `--limit` `--days` `--include-archived` `--json`) |
+| `repos` | ✅ repo aggregation (`--include-local` reveals `local:` workspaces) |
+| `search` / `show` / `files` / `health` | 🔜 next phase |
+
+### How it works
+
+- Reads `~/.codex/state_5.sqlite` + `~/.codex/thread_history_1.sqlite`, **read-only** (`mode=ro` + `PRAGMA query_only`)
+- Every data command runs a fixed-schema pre-flight first — if a Codex upgrade changes the storage schema, the CLI refuses cleanly (exit 2/4) instead of returning wrong data
+- Sub-agent and archived threads are excluded by default (higher-level context only)
+- Verified read-only: the bundled 15-test smoke set (`codex-test/codex-test-set.md`) proves byte-identical store hashes before/after
+
+> Try (in Codex): *"What did I work on in this repo recently? Run session-recall-codex list --json --limit 5."*
 
 ## Usage
 
