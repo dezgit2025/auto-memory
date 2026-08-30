@@ -28,16 +28,22 @@ def test_e2e_health_default_still_works():
     assert "Overall" in result.stdout
 
 
-def test_e2e_health_provider_cli_json():
-    result = _run_health("--provider", "cli", "--json")
+def test_e2e_health_provider_cli_json(fixture_db):
+    result = _run_health(
+        "--provider", "cli", "--json",
+        env_override={"SESSION_RECALL_DB": fixture_db},
+    )
     assert result.returncode == 0, f"stderr: {result.stderr}"
     data = json.loads(result.stdout)
     assert "providers" in data
     assert "dims" in data
 
 
-def test_e2e_health_provider_cli_has_subdims():
-    result = _run_health("--provider", "cli", "--json")
+def test_e2e_health_provider_cli_has_subdims(fixture_db):
+    result = _run_health(
+        "--provider", "cli", "--json",
+        env_override={"SESSION_RECALL_DB": fixture_db},
+    )
     assert result.returncode == 0, f"stderr: {result.stderr}"
     data = json.loads(result.stdout)
     cli_dims = data["providers"]["cli"]["dimensions"]
