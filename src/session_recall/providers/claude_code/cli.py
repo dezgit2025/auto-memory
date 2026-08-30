@@ -90,7 +90,6 @@ def _cmd_show(args: argparse.Namespace) -> int:
 
 
 def _cmd_health(args: argparse.Namespace) -> int:
-    import os
     from datetime import datetime, timezone
 
     from .index import _index_path

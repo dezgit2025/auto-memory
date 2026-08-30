@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 Format: [Keep a Changelog](https://keepachangelog.com/). Versioning: [SemVer](https://semver.org/).
 
+## [0.5.0] — Codex CLI Support (trial)
+
+### Added
+- **Codex CLI provider** (`session-recall-codex`) — standalone read-only CLI over
+  Codex CLI's SQLite storage (`~/.codex/state_5.sqlite` + `thread_history_1.sqlite`)
+  - Trial build commands: `schema-check`, `list`, `repos` (search/show/files/health next phase)
+  - Fixed-schema pre-flight on every data command: captured profiles
+    `codex-state-v5-migration-51` / `codex-thread-history-v1-migration-6`;
+    any drift refuses cleanly (exit 2/4) before any query
+  - Sub-agent and archived threads excluded by default; `local:` workspaces
+    hidden in `repos` unless `--include-local`
+  - Exit-code contract: 0 ok / 1 not found / 2 usage-drift / 3 busy / 4 storage missing
+  - Acceptance frozen before code: spec.yaml, synthetic fixtures, hashed verifiers,
+    15-test read-only smoke set (`codex-test/codex-test-set.md`)
+- **Docs** — `deploy/install-codex.md` (agent-runnable) + `codex-instructions-template.md`
+  (global `~/.codex/AGENTS.md` block + self-routing repo block)
+
+### Fixed
+- `schema-check` human output collapses extra tables/indexes/triggers to per-side counts
+- `repos` tie-break now newest-first on equal session counts
+- CLI maps mid-query `sqlite3.Error` to clean exit 3 (no traceback)
+- CI: pinned `ruff==0.15.12` in dev deps — unpinned ruff 0.16.x broke the lint
+  gate on CI and blocked the v0.3.0/v0.4.0 PyPI publishes; removed unused imports
+
 ## [0.4.0] — Claude Code Support
 
 ### Added

@@ -11,7 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](pyproject.toml)
-[![Tests](https://img.shields.io/badge/tests-90%20passed-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-376%20passed-brightgreen)]()
 [![Discussions](https://img.shields.io/badge/📢_Updates-Discussions-blue)](https://github.com/dezgit2025/auto-memory/discussions)
 
 <!-- AGENTIC-INSTALL-PROTOCOL: v1
@@ -19,9 +19,11 @@
      Entry: Read deploy/install.md
 -->
 
-### 🆕 What's New in v0.4.0
+### 🆕 What's New in v0.5.0
 
-**Claude Code support** — `session-recall-cc` reads Claude Code JSONL sessions and builds an FTS5 index for structured recall. `pip install auto-memory[claude]` to get started. [Full changelog →](CHANGELOG.md)
+**Codex CLI support (trial)** — `session-recall-codex` reads OpenAI Codex CLI's local SQLite session store (`~/.codex/`) with a fixed-schema pre-flight before every query. Ships with the base install — no extra, no env var. [Full setup →](deploy/install-codex.md)
+
+**Also recent (v0.4.0):** Claude Code support — `session-recall-cc` reads Claude Code JSONL sessions and builds an FTS5 index for structured recall (`pip install auto-memory[claude]`). [Full changelog →](CHANGELOG.md)
 
 **Zero-dependency CLI that turns Copilot CLI's local SQLite into instant recall — no MCP server, no hooks, read-only, schema-checked. ~50 tokens per prompt.**
 
