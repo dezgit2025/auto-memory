@@ -8,11 +8,18 @@ import time
 RETRY_DELAYS_MS = [50, 150, 450]
 
 
-def connect_ro(db_path: str) -> sqlite3.Connection:
-    """Open read-only connection with busy timeout and retry on SQLITE_BUSY."""
+class DatabaseBusyError(Exception):
+    """Database remained locked/busy after bounded retries."""
+
+
+def connect_ro_raising(db_path: str) -> sqlite3.Connection:
+    """Open read-only connection; raise instead of exiting on failure.
+
+    Raises FileNotFoundError if the database file is missing, and
+    DatabaseBusyError if it stays locked after bounded retries.
+    """
     if not pathlib.Path(db_path).exists():
-        print(f"error: database not found: {db_path}", file=sys.stderr)
-        sys.exit(4)
+        raise FileNotFoundError(db_path)
     for delay in [0] + RETRY_DELAYS_MS:
         if delay:
             time.sleep(delay * random.uniform(0.8, 1.2) / 1000)
@@ -29,5 +36,16 @@ def connect_ro(db_path: str) -> sqlite3.Connection:
         except sqlite3.OperationalError as e:
             if "locked" not in str(e).lower() and "busy" not in str(e).lower():
                 raise
-    print("error: database is locked — another session-recall process may be running", file=sys.stderr)
-    raise SystemExit(3)
+    raise DatabaseBusyError(db_path)
+
+
+def connect_ro(db_path: str) -> sqlite3.Connection:
+    """Open read-only connection with busy timeout and retry on SQLITE_BUSY."""
+    try:
+        return connect_ro_raising(db_path)
+    except FileNotFoundError:
+        print(f"error: database not found: {db_path}", file=sys.stderr)
+        sys.exit(4)
+    except DatabaseBusyError:
+        print("error: database is locked — another session-recall process may be running", file=sys.stderr)
+        raise SystemExit(3)
