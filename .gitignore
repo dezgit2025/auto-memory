@@ -95,3 +95,6 @@ docs/
 
 # Local verification scripts/output (claude_code provider)
 src/session_recall/providers/claude_code/verifications/
+
+# Codex smoke-test workspace (local-only)
+codex-test/
