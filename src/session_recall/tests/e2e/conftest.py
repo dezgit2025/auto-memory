@@ -5,8 +5,20 @@ import os
 import sqlite3
 import subprocess
 import sys
+from datetime import datetime, timedelta, timezone
 
 import pytest
+
+# Base is computed once per run so all fixture rows share one clock.
+# Dates are relative to now so the 30-day lookback never ages them out
+# (hardcoded 2026-04-* literals broke every test ~30 days after writing).
+_BASE = datetime.now(timezone.utc).replace(microsecond=0)
+
+
+def _ts(days_ago: int, hh: int, mm: int, ss: int = 0) -> str:
+    """ISO-8601 Z timestamp at hh:mm:ss on the day `days_ago` before now."""
+    day = (_BASE - timedelta(days=days_ago)).date()
+    return f"{day.isoformat()}T{hh:02d}:{mm:02d}:{ss:02d}Z"
 
 
 def _build_fixture_db(db_path: str) -> None:
@@ -57,8 +69,8 @@ def _build_fixture_db(db_path: str) -> None:
             "acme/myapp",
             "main",
             "Fix authentication bug in login flow",
-            "2026-04-27T10:00:00Z",
-            "2026-04-27T10:30:00Z",
+            _ts(1, 10, 0),
+            _ts(1, 10, 30),
             "local",
         ),
         (
@@ -67,8 +79,8 @@ def _build_fixture_db(db_path: str) -> None:
             "acme/myapp",
             "feat/dashboard",
             "Add dashboard charts for user analytics",
-            "2026-04-26T14:00:00Z",
-            "2026-04-26T15:00:00Z",
+            _ts(2, 14, 0),
+            _ts(2, 15, 0),
             "local",
         ),
         (
@@ -77,8 +89,8 @@ def _build_fixture_db(db_path: str) -> None:
             "acme/shared-lib",
             "main",
             "Refactor logging utilities for structured output",
-            "2026-04-25T09:00:00Z",
-            "2026-04-25T09:45:00Z",
+            _ts(3, 9, 0),
+            _ts(3, 9, 45),
             "local",
         ),
     ]
@@ -91,19 +103,19 @@ def _build_fixture_db(db_path: str) -> None:
         ("aaaa1111-0000-0000-0000-000000000001", 0,
          "Fix the login bug where users get 403",
          "I found the issue in auth_middleware.py line 42.",
-         "2026-04-27T10:05:00Z"),
+         _ts(1, 10, 5)),
         ("aaaa1111-0000-0000-0000-000000000001", 1,
          "Can you also add a unit test for that fix?",
          "Done — added test_auth_middleware.py with 3 test cases.",
-         "2026-04-27T10:15:00Z"),
+         _ts(1, 10, 15)),
         ("bbbb2222-0000-0000-0000-000000000002", 0,
          "Create a bar chart component for the dashboard",
          "Created src/components/BarChart.tsx with recharts.",
-         "2026-04-26T14:10:00Z"),
+         _ts(2, 14, 10)),
         ("cccc3333-0000-0000-0000-000000000003", 0,
          "Refactor the logger to use structured JSON output",
          "Replaced print statements with structlog in 5 files.",
-         "2026-04-25T09:10:00Z"),
+         _ts(3, 9, 10)),
     ]
     for sid, tidx, umsg, aresp, ts in turns:
         conn.execute(
@@ -128,13 +140,13 @@ def _build_fixture_db(db_path: str) -> None:
     # --- Session files ---
     files = [
         ("aaaa1111-0000-0000-0000-000000000001",
-         "src/auth_middleware.py", "edit", 0, "2026-04-27T10:06:00Z"),
+         "src/auth_middleware.py", "edit", 0, _ts(1, 10, 6)),
         ("aaaa1111-0000-0000-0000-000000000001",
-         "tests/test_auth_middleware.py", "create", 1, "2026-04-27T10:16:00Z"),
+         "tests/test_auth_middleware.py", "create", 1, _ts(1, 10, 16)),
         ("bbbb2222-0000-0000-0000-000000000002",
-         "src/components/BarChart.tsx", "create", 0, "2026-04-26T14:11:00Z"),
+         "src/components/BarChart.tsx", "create", 0, _ts(2, 14, 11)),
         ("cccc3333-0000-0000-0000-000000000003",
-         "src/logger.py", "edit", 0, "2026-04-25T09:11:00Z"),
+         "src/logger.py", "edit", 0, _ts(3, 9, 11)),
     ]
     conn.executemany(
         "INSERT INTO session_files (session_id, file_path, tool_name, "
@@ -146,10 +158,10 @@ def _build_fixture_db(db_path: str) -> None:
     checkpoints = [
         ("aaaa1111-0000-0000-0000-000000000001", 1,
          "Auth fix complete", "Fixed 403 bug and added tests",
-         "2026-04-27T10:20:00Z"),
+         _ts(1, 10, 20)),
         ("bbbb2222-0000-0000-0000-000000000002", 1,
          "Chart component done", "BarChart.tsx renders correctly",
-         "2026-04-26T14:30:00Z"),
+         _ts(2, 14, 30)),
     ]
     conn.executemany(
         "INSERT INTO checkpoints (session_id, checkpoint_number, title, "
@@ -160,9 +172,9 @@ def _build_fixture_db(db_path: str) -> None:
     # --- Session refs ---
     refs = [
         ("aaaa1111-0000-0000-0000-000000000001",
-         "commit", "abc1234", 1, "2026-04-27T10:17:00Z"),
+         "commit", "abc1234", 1, _ts(1, 10, 17)),
         ("bbbb2222-0000-0000-0000-000000000002",
-         "pr", "42", 0, "2026-04-26T14:12:00Z"),
+         "pr", "42", 0, _ts(2, 14, 12)),
     ]
     conn.executemany(
         "INSERT INTO session_refs (session_id, ref_type, ref_value, "
