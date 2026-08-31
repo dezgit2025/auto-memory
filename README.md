@@ -19,7 +19,7 @@
      Entry: Read deploy/install.md
 -->
 
-### 🆕 What's New in v0.5.0
+### 🆕 What's New in v0.5.1
 
 **Codex CLI support (trial)** — `session-recall-codex` reads OpenAI Codex CLI's local SQLite session store (`~/.codex/`) with a fixed-schema pre-flight before every query. Ships with the base install — no extra, no env var. [Full setup →](deploy/install-codex.md)
 

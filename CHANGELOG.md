@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 Format: [Keep a Changelog](https://keepachangelog.com/). Versioning: [SemVer](https://semver.org/).
 
+## [0.5.1] — Packaging fix
+
+### Fixed
+- Wheel now ships `providers/codex/verifications/captured-profiles.json`
+  (schema pre-flight data). v0.5.0's wheel omitted it, so every
+  `session-recall-codex` data command crashed on a PyPI install
+  (editable installs masked the gap). v0.5.0 should not be used.
+
 ## [0.5.0] — Codex CLI Support (trial)
 
 ### Added

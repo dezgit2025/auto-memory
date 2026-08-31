@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "auto-memory"
-version = "0.5.0"
+version = "0.5.1"
 description = "Your AI coding agent never forgets — progressive session recall for GitHub Copilot CLI"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -37,3 +37,6 @@ dev = ["pytest>=8", "ruff==0.15.12", "pyyaml>=6"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"session_recall.providers.codex" = ["verifications/captured-profiles.json"]
