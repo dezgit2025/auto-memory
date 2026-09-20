@@ -34,6 +34,10 @@ environment**. Both [pipx](https://pipx.pypa.io/stable/) and
 [uv](https://docs.astral.sh/uv/guides/tools/) isolate CLI tools and let you choose
 Python explicitly when multiple versions are installed. Choose one method.
 
+We distribute auto-memory through these isolated Python environments; we do not
+maintain a Homebrew formula for auto-memory. The Homebrew commands below select
+the macOS Python/tooling used by our sandbox tests, not an auto-memory formula.
+
 On macOS with Homebrew, select the Homebrew Python 3.14 build used by our Codex
 sandbox tests (verified on Apple silicon):
 
@@ -215,6 +219,7 @@ Install once with [pipx or uv](#install-once-for-all-backends), then check
 the backend you use:
 
 ```bash
+session-recall --version # expected: auto-memory 0.6.0
 # GitHub Copilot CLI:
 session-recall health
 # Claude Code:
@@ -222,6 +227,10 @@ SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1 session-recall-cc health
 # Codex:
 session-recall-codex schema-check
 ```
+
+Version 0.6.0 is a [GitHub-only release](https://github.com/dezgit2025/auto-memory/releases/tag/v0.6.0);
+an unqualified PyPI install may return an older version. The commands above pin
+the published release rather than the moving `main` branch.
 
 Now give your agent a memory. See the **🤖 Agentic Install** section below for agent-driven setup, or follow [`deploy/install.md`](deploy/install.md) manually.
 
@@ -440,6 +449,9 @@ auto-memory is the **page fault handler** — it pulls exact facts from disk in 
 In addition to GitHub Copilot CLI, `auto-memory` can read [Claude Code](https://docs.anthropic.com/claude-code) session logs from `~/.claude/projects/`. This ships as a separate CLI binary (`session-recall-cc`) that is **off unless explicitly enabled** — Copilot CLI users pay zero cost.
 
 ### Enable Claude Code after installation
+
+Install the package once using [Quickstart](#quickstart), then enable Claude
+Code recall in that same installation:
 
 ```bash
 # First install the shared package with pipx (or uv) using the instructions above.
@@ -775,6 +787,7 @@ This is an independent open-source project. It is **not** affiliated with, endor
 ## Contributors
 
 - [@jshessen](https://github.com/jshessen) — Multi-storage provider architecture ([PR #5](https://github.com/dezgit2025/auto-memory/pull/5))
+- [@tillig](https://github.com/tillig) — Reported the macOS installation issue and suggested isolated installation with `uv` ([#25](https://github.com/dezgit2025/auto-memory/issues/25)).
 
 ## License
 

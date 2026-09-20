@@ -13,7 +13,27 @@
 - Blockers: none. Default is pipx recommended, uv alternative, pip only inside an explicitly selected venv. AI live-generation and PyPI limitations unchanged.
 - Exact next recovery action: Read AGENTS.md installer-default section for future tasks. Use README/shared guide and the actual released package source. Do not create per-backend duplicate installations, move the immutable release tag, publish PyPI, or resume live AI work without separate authorization. This final documentation checkpoint records the already-verified publication.
 
+### 2026-09-20T17:27:22Z — Issue #25 documentation verified; before publication
+
+- Plan reference/version: `fix-cli-codex.md` v5 release documentation plus the authorized issue #25 follow-up.
+- Previous completed step: README update and isolated installation checks / complete. Current: publish documentation and reporter credit / pending. Next: verify remote README, post the approved thank-you/resolution comment, and close #25 as not planned for Homebrew.
+- Affected paths: README and this journal; issue #25. The source-code release and package version remain 0.6.0.
+- Run/process/task IDs: pipx installation 89774 and uv installation 28431 both exited 0; no ongoing processes or model calls.
+- Validation/results/evidence: both managers installed the public `v0.6.0` tag into separate disposable environments on macOS. Main, Codex and fixer CLIs report 0.6.0; Claude CLI help loads in both. No session-data command or global package installation ran. README uses pipx first, uv as an alternative, explicit venv fallback, release-pinned URLs, the PyPI limitation and @tillig's acknowledgment. `git diff --check` passes.
+- Blockers: none. Remote publication, comment and closure are not yet claimed complete.
+- Exact next recovery action: commit only README and this journal, normal-push main, verify the remote acknowledgment, then inspect #25 before posting to avoid duplicate comments. Leave #18 open; no Homebrew formula, tag or PyPI upload.
+
 ## Append-only activity history
+
+### 2026-09-20T17:25:22Z — Before issue #25 documentation and closure follow-up
+
+- Plan reference/version: `fix-cli-codex.md` v5 release documentation; small follow-up explicitly authorized by the user on 2026-09-20.
+- Previous completed step: GitHub v0.6.0 release. Current: clarify isolated installation and credit the reporter / in progress. Next: validate and publish README, then post one thank-you comment and close issue #25 as not planned for a Homebrew formula.
+- Affected paths: README and this journal; GitHub issue #25. No product-code or package-release changes.
+- Validation/evidence: issue remains open; reporter @tillig suggested `uv tool install` in the existing comment. Current guide documents uv, pipx and virtual environments; the README short Quickstart can still be copied as a global pip command. Version 0.6.0 is GitHub-only, and issue #18 remains separate.
+- Run/process/task IDs: main-thread owner; no delegated tasks or live model calls. A clean checkout isolates this change from ongoing local installation edits.
+- Blockers: none. Validation and publication remain pending.
+- Exact next recovery action: inspect README changes and remote issue state before replaying; verify the release-pinned isolated commands, publish the acknowledgment before claiming it in a comment, then close #25 only after confirming the comment exists.
 
 ### 2026-09-20T00:39:33Z — Before verification planning
 
