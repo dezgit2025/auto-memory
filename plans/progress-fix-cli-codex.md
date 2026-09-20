@@ -2,16 +2,16 @@
 
 ## Current state
 
-- Updated: 2026-09-20T17:27:52Z
-- Plan reference/version: fix-cli-codex.md v5, installation-guidance follow-up complete
-- Previous completed step: reviewed installer and documentation commit pushed and verified
-- Current step/status: pipx-first default recorded and published / complete
-- Next step: none for this request; apply the recorded preference to future project work
-- Affected paths: AGENTS.md project guidance, README and backend guides, install.sh; final journal synchronization only
-- Run/process/task IDs: commit a60c18df706655b605efa6de644d5d468911448b pushed origin/main; published v0.6.0 tag unchanged at3cbd61d
-- Validation/results/evidence paths: pipx and uv both installed the public release successfully in isolated temporary environments; all five command entry points and Homebrew Python3.14.3 identity verified. Both installed sandbox denial probes passed. Installer syntax and pipx/uv/venv branch checks passed; independent review READY; documentation links/order/fences and diff checks passed. No live model or real session-data access; existing user installations unchanged.
-- Blockers: none. Default is pipx recommended, uv alternative, pip only inside an explicitly selected venv. AI live-generation and PyPI limitations unchanged.
-- Exact next recovery action: Read AGENTS.md installer-default section for future tasks. Use README/shared guide and the actual released package source. Do not create per-backend duplicate installations, move the immutable release tag, publish PyPI, or resume live AI work without separate authorization. This final documentation checkpoint records the already-verified publication.
+- Updated: 2026-09-20T17:32:09Z
+- Plan reference/version: fix-cli-codex.md v5 release documentation plus authorized issue #25 follow-up.
+- Previous completed step: README publication, contributor acknowledgment and isolated installation verification.
+- Current step/status: issue #25 thanked and closed as `not_planned` / complete.
+- Next step: none for issue #25. PyPI publication (#18) and live AI-repair validation remain separate work.
+- Affected paths: README and this journal; GitHub issue #25. No product-code, tag or package changes.
+- Run/process/task IDs: README commit `fbc469f`; comment `5751440051`; issue closed at `2026-09-20T17:32:04Z`.
+- Validation/results/evidence paths: remote README includes @tillig's contribution and no-auto-memory-Homebrew-formula policy; GitHub confirms #25 closed with reason `not_planned`, comment authored by `dezgit2025`, and #18 open. Separate disposable pipx/uv installs report 0.6.0 and load Claude CLI help. The prior installation-default update and supported Python guidance were preserved during rebase.
+- Blockers: none. No global tool installation, session-data access, live model request or PyPI publication occurred during this follow-up.
+- Exact next recovery action: inspect the existing issue/comment before any further external action; do not post a duplicate or re-close the issue. Use the README's installation choices and preserve the released tag and separate runtime-validation boundary.
 
 ### 2026-09-20T17:27:22Z — Issue #25 documentation verified; before publication
 
@@ -1230,3 +1230,23 @@
 - Validation/results/evidence paths: pipx and uv both installed the public release successfully in isolated temporary environments; all five command entry points and Homebrew Python3.14.3 identity verified. Both installed sandbox denial probes passed. Installer syntax and pipx/uv/venv branch checks passed; independent review READY; documentation links/order/fences and diff checks passed. No live model or real session-data access; existing user installations unchanged.
 - Blockers: none. Default is pipx recommended, uv alternative, pip only inside an explicitly selected venv. AI live-generation and PyPI limitations unchanged.
 - Exact next recovery action: Read AGENTS.md installer-default section for future tasks. Use README/shared guide and the actual released package source. Do not create per-backend duplicate installations, move the immutable release tag, publish PyPI, or resume live AI work without separate authorization. This final documentation checkpoint records the already-verified publication.
+
+### 2026-09-20T17:31:11Z — Issue #25 README published; before comment and closure
+
+- Plan reference/version: `fix-cli-codex.md` v5 release documentation plus the authorized issue #25 follow-up.
+- Previous completed step: isolated installation checks and README acknowledgment publication / complete. Current: post thank-you and close Homebrew request / starting. Next: verify comment and closure, then record completion.
+- Affected paths: README published in `fbc469f`; this journal; GitHub issue #25. No product/runtime changes.
+- Run/process/task IDs: main-thread issue owner; no ongoing local processes.
+- Validation/evidence: initial push encountered concurrent main updates `a60c18d` / `aa4d854`; rebased and preserved their complete pipx-first documentation and tested interpreter guidance. Normal push of `fbc469f` succeeded. Live README contains @tillig's credit and distinguishes an auto-memory formula from Homebrew-provisioned Python/tooling. Issue #25 still has only the original reporter comment; issue #18 is open.
+- Blockers: none. Comment and state transition remain pending.
+- Exact next recovery action: post the prepared thank-you comment once, capture its URL, close #25 with reason `not planned`, and verify via GitHub. If interrupted, query comments/state before retrying; do not duplicate a posted comment or close #18.
+
+### 2026-09-20T17:32:09Z — Issue #25 closed and contributor credited — complete
+
+- Plan reference/version: `fix-cli-codex.md` v5 release documentation plus authorized issue #25 follow-up.
+- Previous completed step: README published and verified. Current: comment and closure verified / complete. Next: no further issue action required.
+- Affected paths: README, this journal and GitHub issue #25. No delegated tasks or running processes.
+- Evidence: [thank-you/resolution comment](https://github.com/dezgit2025/auto-memory/issues/25#issuecomment-5751440051) posted as `dezgit2025`; issue API returns `closed`, `not_planned`, closure time `2026-09-20T17:32:04Z`. [README acknowledgment](https://github.com/dezgit2025/auto-memory#contributors) is live in commit `fbc469f`. Issue #18 remains open.
+- Validation: actual pipx and uv release-tag installations plus version/help checks passed in disposable environments. Original push was safely rejected after concurrent installer-documentation publication; rebase retained that work and the normal retry push succeeded. GitHub comment and current state were read back before completion.
+- Blockers/limitations: none for this request. The formula request is declined; this does not claim Homebrew packaging was implemented or PyPI publication completed. Existing local user installations and active checkout edits were preserved.
+- Exact next recovery action: retain this completed checkpoint; any new report of installation failure should be investigated against the user's chosen manager, interpreter and release. Do not replay the comment or closure.
