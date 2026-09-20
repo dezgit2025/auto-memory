@@ -2,16 +2,16 @@
 
 ## Current state
 
-- Updated: 2026-09-20T17:27:01Z
-- Plan reference/version: fix-cli-codex.md v5,0.6.0 installation-guidance follow-up
-- Previous completed step: pipx-first docs/project defaults/installer edits and real installation checks complete
-- Current step/status: commit/push reviewed installer-default update / starting
-- Next step: verify remote commit and clean worktree; preserve release tag and runtime boundaries
-- Affected paths: AGENTS.md, README.md, deploy/install.md, deploy/install-codex.md, deploy/install-claude-code.md, deploy/install-other-backends.md, install.sh, journal
-- Run/process/task IDs: pipx isolated install59672 pass; uv install64114 succeeded with final canonical-path validation pass; both installed SBPL probes pass; sol_integration reviewer READY; sol_migration installer writer complete
-- Validation/results/evidence paths: Actual pipx and uv commands installed public v0.6.0 into independent temporary tool directories. All5entrypoints checked: main/Codex/fixer versions0.6.0, Claude/alias help pass; Python3.14.3 resolves to tested Homebrew build. Both runtime probes allow only synthetic reads/scratch writes and deny network/protected access/child execution. Installer bash-n and3stubbed branches pass, no global/userpip fallback. README order, relative links, fences and diff checks pass. No real backend data/model calls or existingtool changes.
-- Blockers: none for requested default. User's final preference is pipx recommended, uv alternative, pip only in a venv; this supersedes interimuv-first draft.
-- Exact next recovery action: Commit/push these8reviewed paths normally and verify local/remoteHEAD. Do not retag0.6.0 or publishPyPI. Future project installation guidance must follow AGENTS.md default while preserving explicit interpreter selection and backend configuration.
+- Updated: 2026-09-20T17:27:52Z
+- Plan reference/version: fix-cli-codex.md v5, installation-guidance follow-up complete
+- Previous completed step: reviewed installer and documentation commit pushed and verified
+- Current step/status: pipx-first default recorded and published / complete
+- Next step: none for this request; apply the recorded preference to future project work
+- Affected paths: AGENTS.md project guidance, README and backend guides, install.sh; final journal synchronization only
+- Run/process/task IDs: commit a60c18df706655b605efa6de644d5d468911448b pushed origin/main; published v0.6.0 tag unchanged at3cbd61d
+- Validation/results/evidence paths: pipx and uv both installed the public release successfully in isolated temporary environments; all five command entry points and Homebrew Python3.14.3 identity verified. Both installed sandbox denial probes passed. Installer syntax and pipx/uv/venv branch checks passed; independent review READY; documentation links/order/fences and diff checks passed. No live model or real session-data access; existing user installations unchanged.
+- Blockers: none. Default is pipx recommended, uv alternative, pip only inside an explicitly selected venv. AI live-generation and PyPI limitations unchanged.
+- Exact next recovery action: Read AGENTS.md installer-default section for future tasks. Use README/shared guide and the actual released package source. Do not create per-backend duplicate installations, move the immutable release tag, publish PyPI, or resume live AI work without separate authorization. This final documentation checkpoint records the already-verified publication.
 
 ## Append-only activity history
 
@@ -1198,3 +1198,15 @@
 - Validation/results/evidence paths: Actual pipx and uv commands installed public v0.6.0 into independent temporary tool directories. All5entrypoints checked: main/Codex/fixer versions0.6.0, Claude/alias help pass; Python3.14.3 resolves to tested Homebrew build. Both runtime probes allow only synthetic reads/scratch writes and deny network/protected access/child execution. Installer bash-n and3stubbed branches pass, no global/userpip fallback. README order, relative links, fences and diff checks pass. No real backend data/model calls or existingtool changes.
 - Blockers: none for requested default. User's final preference is pipx recommended, uv alternative, pip only in a venv; this supersedes interimuv-first draft.
 - Exact next recovery action: Commit/push these8reviewed paths normally and verify local/remoteHEAD. Do not retag0.6.0 or publishPyPI. Future project installation guidance must follow AGENTS.md default while preserving explicit interpreter selection and backend configuration.
+
+### 2026-09-20T17:27:52Z — After installer-default publication — complete
+
+- Plan reference/version: fix-cli-codex.md v5, installation-guidance follow-up complete
+- Previous completed step: reviewed installer and documentation commit pushed and verified
+- Current step/status: pipx-first default recorded and published / complete
+- Next step: none for this request; apply the recorded preference to future project work
+- Affected paths: AGENTS.md project guidance, README and backend guides, install.sh; final journal synchronization only
+- Run/process/task IDs: commit a60c18df706655b605efa6de644d5d468911448b pushed origin/main; published v0.6.0 tag unchanged at3cbd61d
+- Validation/results/evidence paths: pipx and uv both installed the public release successfully in isolated temporary environments; all five command entry points and Homebrew Python3.14.3 identity verified. Both installed sandbox denial probes passed. Installer syntax and pipx/uv/venv branch checks passed; independent review READY; documentation links/order/fences and diff checks passed. No live model or real session-data access; existing user installations unchanged.
+- Blockers: none. Default is pipx recommended, uv alternative, pip only inside an explicitly selected venv. AI live-generation and PyPI limitations unchanged.
+- Exact next recovery action: Read AGENTS.md installer-default section for future tasks. Use README/shared guide and the actual released package source. Do not create per-backend duplicate installations, move the immutable release tag, publish PyPI, or resume live AI work without separate authorization. This final documentation checkpoint records the already-verified publication.
