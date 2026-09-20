@@ -55,6 +55,19 @@ Excluded: PyPI upload, global local-machine reinstall, another paid/live model
 attempt, startup automation, real candidate activation and force-push. The
 pending live retry remains a separate budget decision recorded in the journal.
 
+### GitHub Releases entry — additionally authorized 2026-09-20
+
+The user subsequently requested updating GitHub's Releases panel. Create tag
+and published **v0.6.0** release marked Latest; do not increment again to0.6.1,
+because the implementation and package already identify this feature release
+as0.6.0. This supersedes the earlier no-tag scope for this release only.
+
+Before creating the tag, exclude exactly `v0.6.0` from the existing automatic
+PyPI tag workflow. Preserve the workflow for other version tags. Validate the
+filter and release notes, commit/push that narrow guard, create the GitHub release
+at the verified commit, then verify its tag target and Latest status. No PyPI
+upload or new live AI request is authorized by this GitHub-release action.
+
 ## V5: the simple path to implement
 
 **The fallback is Codex, not another provider.** Keep the existing deterministic

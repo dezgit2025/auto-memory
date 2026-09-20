@@ -2,16 +2,16 @@
 
 ## Current state
 
-- Updated: 2026-09-20T16:58:03Z
-- Plan reference/version: fix-cli-codex.md v5 repository release follow-up0.6.0 R1–R3 complete
-- Previous completed step: R3 release commit/push, remote identity verification and public GitHub installation / complete
-- Current step/status: authorized repository release complete; final publication evidence synchronized with documentation
-- Next step: none for requested release. Experimental live-model validation remains a separate explicitly budget-approved follow-up.
-- Affected paths: release commit88710b9 includes132 reviewed code/asset/test/doc paths; final plan/architecture/roadmap/journal publication records only
-- Run/process/task IDs: release commit88710b9825c7d2bcfc37be0778c558c2c4603bbd pushed origin/main; GitHub CI35524213659 completed success; public install process86285 exit0
-- Validation/results/evidence paths: 635 tests pass27.41s; cumulative C-L2 pass82.515s; mutation/budget/store gates pass; wheel+sdist0.6.0 clean/offline installs pass. Actual README GitHubmain pip command resolved release commit88710b9, installed0.6.0, confirmed main/Codex/fixer versions, current help and4bundled artifacts plus catalogue/profile. Hosted CI passed all UbuntuPython3.10/3.11/3.12 jobs and ARM64macOS fulltests/mutation/clean-install lifecycle: https://github.com/dezgit2025/auto-memory/actions/runs/35524213659 . Source/manifests/staged audit and README coherence checks pass; no runtime data committed.
-- Blockers: none for this release. Live AI generation remains experimental after the prior safe failed attempt; macOS SBPL required for candidate testing. No PyPI tag/upload, global local-machine install, real adapter activation, live retry or force-push performed.
-- Exact next recovery action: For release inspection, use origin/main and the0.6.0 README/install guide; verify current branch/remote before new Git actions. Preserve the ignored local live-retry recovery pointer and ledger; do not run another model request without the existing +32K approval requirement. Publication metadata updates contain no product changes and are committed/pushed as the release handoff.
+- Updated: 2026-09-20T17:02:09Z
+- Plan reference/version: fix-cli-codex.md v5 plus authorized GitHub v0.6.0 Latest release
+- Previous completed step: release notes and exact PyPI-trigger exclusion validated and independently approved
+- Current step/status: commit/push release guard, then create GitHub v0.6.0 release / starting
+- Next step: verify published Latest release, exact tag commit and no PyPI workflow run; synchronize final journal
+- Affected paths: publish.yml2-line exacttag exclusion, plan/journal; temporary notesfile feeds GitHub release body
+- Run/process/task IDs: sol_integration reviewer APPROVED; main publication owner; source version remains0.6.0
+- Validation/results/evidence paths: YAML tags are exactlyv* then!v0.6.0; matching checks exclude0.6.0 and retain0.5.1/0.6.1/1.0.0. Notes include pinnedtag install,635tests, humanapproval, macOS isolation and experimental live status. Release/tag0.6.0 absent before action. Prior code/mainCI acceptance retained, no product edits.
+- Blockers: none
+- Exact next recovery action: Commit and normal-push reviewedguard first, capture remoteSHA, then gh release create v0.6.0 --target exactSHA --latest using notesfile. Do not tag an older commit lackingguard. Verify releases/latest and refs/tags/v0.6.0 before declaring complete; no PyPI upload or new live AI request.
 
 ## Append-only activity history
 
@@ -1126,3 +1126,27 @@
 - Validation/results/evidence paths: 635 tests pass27.41s; cumulative C-L2 pass82.515s; mutation/budget/store gates pass; wheel+sdist0.6.0 clean/offline installs pass. Actual README GitHubmain pip command resolved release commit88710b9, installed0.6.0, confirmed main/Codex/fixer versions, current help and4bundled artifacts plus catalogue/profile. Hosted CI passed all UbuntuPython3.10/3.11/3.12 jobs and ARM64macOS fulltests/mutation/clean-install lifecycle: https://github.com/dezgit2025/auto-memory/actions/runs/35524213659 . Source/manifests/staged audit and README coherence checks pass; no runtime data committed.
 - Blockers: none for this release. Live AI generation remains experimental after the prior safe failed attempt; macOS SBPL required for candidate testing. No PyPI tag/upload, global local-machine install, real adapter activation, live retry or force-push performed.
 - Exact next recovery action: For release inspection, use origin/main and the0.6.0 README/install guide; verify current branch/remote before new Git actions. Preserve the ignored local live-retry recovery pointer and ledger; do not run another model request without the existing +32K approval requirement. Publication metadata updates contain no product changes and are committed/pushed as the release handoff.
+
+### 2026-09-20T17:00:47Z — Before GitHub v0.6.0 Latest release creation
+
+- Plan reference/version: fix-cli-codex.md v5 release follow-up plus explicit GitHub Releases authorization
+- Previous completed step: 0.6.0 code/docs pushed main, public GitHub installation and hosted CI verified
+- Current step/status: prepare GitHub release notes and exactv0.6.0 PyPI-trigger exclusion / in progress
+- Next step: validate/commit/push narrow guard, create v0.6.0 tag+published Latest release, verify remote identity
+- Affected paths: publish.yml exacttag exclusion; release notes; plan/journal. No product/version changes.
+- Run/process/task IDs: main release owner; prior code88710b9 and publication checkpointcb9fbf0 pushed; current Releases lists0.5.1 Latest, v0.6.0 tag absent
+- Validation/results/evidence paths: Code/package versions already0.6.0. Existing workflow matchesv* and would publish PyPI; exact negative tag filter is documented by GitHub and preserves other tags. Prior635tests, hostedCI, wheel/sdist and publicinstall acceptance retained.
+- Blockers: none for authorized GitHub release; PyPI upload remains outside scope
+- Exact next recovery action: Review narrowfilter and notes; pushguard before creatingtag. Create release with explicit targetSHA and --latest; no discussion/message or PyPI assets/upload. If interrupted, query existing tag/release before replaying. Record release URL/tag target and verify Latest endpoint.
+
+### 2026-09-20T17:02:09Z — After release preparation review; before GitHub release publication
+
+- Plan reference/version: fix-cli-codex.md v5 plus authorized GitHub v0.6.0 Latest release
+- Previous completed step: release notes and exact PyPI-trigger exclusion validated and independently approved
+- Current step/status: commit/push release guard, then create GitHub v0.6.0 release / starting
+- Next step: verify published Latest release, exact tag commit and no PyPI workflow run; synchronize final journal
+- Affected paths: publish.yml2-line exacttag exclusion, plan/journal; temporary notesfile feeds GitHub release body
+- Run/process/task IDs: sol_integration reviewer APPROVED; main publication owner; source version remains0.6.0
+- Validation/results/evidence paths: YAML tags are exactlyv* then!v0.6.0; matching checks exclude0.6.0 and retain0.5.1/0.6.1/1.0.0. Notes include pinnedtag install,635tests, humanapproval, macOS isolation and experimental live status. Release/tag0.6.0 absent before action. Prior code/mainCI acceptance retained, no product edits.
+- Blockers: none
+- Exact next recovery action: Commit and normal-push reviewedguard first, capture remoteSHA, then gh release create v0.6.0 --target exactSHA --latest using notesfile. Do not tag an older commit lackingguard. Verify releases/latest and refs/tags/v0.6.0 before declaring complete; no PyPI upload or new live AI request.

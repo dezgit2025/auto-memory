@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "v*"
+      # This experimental release is published on GitHub only.
+      - "!v0.6.0"
 
 permissions:
   contents: write
