@@ -7,6 +7,10 @@ on **2026-09-20** in commit `88710b9`. Direct GitHub installation and hosted
 Linux/macOS CI passed. The final journal records the evidence. No PyPI upload,
 global local-machine installation or new live model attempt was performed.
 
+**GitHub release:** [v0.6.0](https://github.com/dezgit2025/auto-memory/releases/tag/v0.6.0)
+was published as **Latest** on 2026-09-20 at tag target `3cbd61d`. This is a
+GitHub-only release; the exact tag is excluded from automatic PyPI publication.
+
 Current checklist: the V5 section below. Earlier detail is retained for recovery,
 not as additional requirements to execute the simplified design.
 Journal: [progress-fix-cli-codex.md](progress-fix-cli-codex.md).

@@ -2,16 +2,16 @@
 
 ## Current state
 
-- Updated: 2026-09-20T17:02:09Z
-- Plan reference/version: fix-cli-codex.md v5 plus authorized GitHub v0.6.0 Latest release
-- Previous completed step: release notes and exact PyPI-trigger exclusion validated and independently approved
-- Current step/status: commit/push release guard, then create GitHub v0.6.0 release / starting
-- Next step: verify published Latest release, exact tag commit and no PyPI workflow run; synchronize final journal
-- Affected paths: publish.yml2-line exacttag exclusion, plan/journal; temporary notesfile feeds GitHub release body
-- Run/process/task IDs: sol_integration reviewer APPROVED; main publication owner; source version remains0.6.0
-- Validation/results/evidence paths: YAML tags are exactlyv* then!v0.6.0; matching checks exclude0.6.0 and retain0.5.1/0.6.1/1.0.0. Notes include pinnedtag install,635tests, humanapproval, macOS isolation and experimental live status. Release/tag0.6.0 absent before action. Prior code/mainCI acceptance retained, no product edits.
-- Blockers: none
-- Exact next recovery action: Commit and normal-push reviewedguard first, capture remoteSHA, then gh release create v0.6.0 --target exactSHA --latest using notesfile. Do not tag an older commit lackingguard. Verify releases/latest and refs/tags/v0.6.0 before declaring complete; no PyPI upload or new live AI request.
+- Updated: 2026-09-20T17:04:07Z
+- Plan reference/version: fix-cli-codex.md v5 plus GitHub Releases follow-up complete
+- Previous completed step: guarded tag creation, release publication and remote verification / complete
+- Current step/status: GitHub v0.6.0 published and verified as Latest
+- Next step: none for requested version/release update. PyPI publication and further live AI validation remain separate decisions.
+- Affected paths: GitHub release/tag and final plan/journal publication metadata; no additional product changes
+- Run/process/task IDs: guard commit3cbd61d28f899bbe332604c50fb3d749843d30f1 pushed main; release published2026-09-20T17:02:49Z; main release owner
+- Validation/results/evidence paths: releases/latest returns v0.6.0, draft=false, prerelease=false, target3cbd61d28f899bbe332604c50fb3d749843d30f1. Remote refs/tags/v0.6.0 matches target exactly. URL https://github.com/dezgit2025/auto-memory/releases/tag/v0.6.0 . Exact negative tag filter reviewed and validated; no v0.6.0 publish.yml run observed. Previous635tests, clean distributions/public install and hostedCI acceptance retained.
+- Blockers: none. Live AI repair remains experimental as stated in release notes. No PyPI upload/new model call/real activation performed.
+- Exact next recovery action: Use the published v0.6.0 release and pinned tag for installation. Do not recreate or move the tag. Final documentation sync is committed/pushed without retagging. For any future PyPI publication, review the explicit0.6.0 exclusion and obtain that separate authorization; preserve the existing live budget boundary.
 
 ## Append-only activity history
 
@@ -1150,3 +1150,15 @@
 - Validation/results/evidence paths: YAML tags are exactlyv* then!v0.6.0; matching checks exclude0.6.0 and retain0.5.1/0.6.1/1.0.0. Notes include pinnedtag install,635tests, humanapproval, macOS isolation and experimental live status. Release/tag0.6.0 absent before action. Prior code/mainCI acceptance retained, no product edits.
 - Blockers: none
 - Exact next recovery action: Commit and normal-push reviewedguard first, capture remoteSHA, then gh release create v0.6.0 --target exactSHA --latest using notesfile. Do not tag an older commit lackingguard. Verify releases/latest and refs/tags/v0.6.0 before declaring complete; no PyPI upload or new live AI request.
+
+### 2026-09-20T17:04:07Z — After GitHub v0.6.0 Latest release publication — complete
+
+- Plan reference/version: fix-cli-codex.md v5 plus GitHub Releases follow-up complete
+- Previous completed step: guarded tag creation, release publication and remote verification / complete
+- Current step/status: GitHub v0.6.0 published and verified as Latest
+- Next step: none for requested version/release update. PyPI publication and further live AI validation remain separate decisions.
+- Affected paths: GitHub release/tag and final plan/journal publication metadata; no additional product changes
+- Run/process/task IDs: guard commit3cbd61d28f899bbe332604c50fb3d749843d30f1 pushed main; release published2026-09-20T17:02:49Z; main release owner
+- Validation/results/evidence paths: releases/latest returns v0.6.0, draft=false, prerelease=false, target3cbd61d28f899bbe332604c50fb3d749843d30f1. Remote refs/tags/v0.6.0 matches target exactly. URL https://github.com/dezgit2025/auto-memory/releases/tag/v0.6.0 . Exact negative tag filter reviewed and validated; no v0.6.0 publish.yml run observed. Previous635tests, clean distributions/public install and hostedCI acceptance retained.
+- Blockers: none. Live AI repair remains experimental as stated in release notes. No PyPI upload/new model call/real activation performed.
+- Exact next recovery action: Use the published v0.6.0 release and pinned tag for installation. Do not recreate or move the tag. Final documentation sync is committed/pushed without retagging. For any future PyPI publication, review the explicit0.6.0 exclusion and obtain that separate authorization; preserve the existing live budget boundary.
