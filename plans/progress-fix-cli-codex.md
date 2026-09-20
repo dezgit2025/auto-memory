@@ -2,16 +2,16 @@
 
 ## Current state
 
-- Updated: 2026-09-20T16:54:53Z
-- Plan reference/version: fix-cli-codex.md v5 release follow-up0.6.0 R1–R3
-- Previous completed step: R2 final release validation and independent staged audit / complete
-- Current step/status: R3 commit reviewed release and push existing main / starting
-- Next step: verify remote commit and direct GitHub installation, then commit/push publication checkpoint
-- Affected paths: 132 staged release paths; final journal restage; no product changes after successful gates
-- Run/process/task IDs: main cumulative process69521 exit0/pass82.515s; sol_test_plan635 regression tests pass27.41s plus all mutation/budget checks; sol_integration release/index reviewer READY
-- Validation/results/evidence paths: Final C-L2 machine verdict pass includes A/B checks, real SBPL, V5 tests and clean-wheel lifecycle; wheel SHA d91f28d2d5e93d003310cbfd3f82086b86850b8a49d7c0be9cc1804215aa3a43. Independent wheel+sdist0.6.0 offline installs/version/assets pass. Staged132 paths contain no local runtime/secrets; exactly4 reviewed adapter binaries and3 planned records.114 B/33 C hashes, whole-source Ruff, Markdown links, exactV2 placement and cached diff checks pass.
-- Blockers: none for authorized repository publication. Live AI path remains explicitly experimental/unverified; no new model request authorized or attempted.
-- Exact next recovery action: Restage only latest journal, verify index, commit release0.6.0 with Codex repairs and dated README, push main normally without tags/force. If interrupted, inspect local/remote commits before replay. Install the pushed GitHub source in a disposable venv and verify versions/help/assets; append publication evidence and synchronize journal with a documentation commit.
+- Updated: 2026-09-20T16:58:03Z
+- Plan reference/version: fix-cli-codex.md v5 repository release follow-up0.6.0 R1–R3 complete
+- Previous completed step: R3 release commit/push, remote identity verification and public GitHub installation / complete
+- Current step/status: authorized repository release complete; final publication evidence synchronized with documentation
+- Next step: none for requested release. Experimental live-model validation remains a separate explicitly budget-approved follow-up.
+- Affected paths: release commit88710b9 includes132 reviewed code/asset/test/doc paths; final plan/architecture/roadmap/journal publication records only
+- Run/process/task IDs: release commit88710b9825c7d2bcfc37be0778c558c2c4603bbd pushed origin/main; GitHub CI35524213659 completed success; public install process86285 exit0
+- Validation/results/evidence paths: 635 tests pass27.41s; cumulative C-L2 pass82.515s; mutation/budget/store gates pass; wheel+sdist0.6.0 clean/offline installs pass. Actual README GitHubmain pip command resolved release commit88710b9, installed0.6.0, confirmed main/Codex/fixer versions, current help and4bundled artifacts plus catalogue/profile. Hosted CI passed all UbuntuPython3.10/3.11/3.12 jobs and ARM64macOS fulltests/mutation/clean-install lifecycle: https://github.com/dezgit2025/auto-memory/actions/runs/35524213659 . Source/manifests/staged audit and README coherence checks pass; no runtime data committed.
+- Blockers: none for this release. Live AI generation remains experimental after the prior safe failed attempt; macOS SBPL required for candidate testing. No PyPI tag/upload, global local-machine install, real adapter activation, live retry or force-push performed.
+- Exact next recovery action: For release inspection, use origin/main and the0.6.0 README/install guide; verify current branch/remote before new Git actions. Preserve the ignored local live-retry recovery pointer and ledger; do not run another model request without the existing +32K approval requirement. Publication metadata updates contain no product changes and are committed/pushed as the release handoff.
 
 ## Append-only activity history
 
@@ -1114,3 +1114,15 @@
 - Validation/results/evidence paths: Final C-L2 machine verdict pass includes A/B checks, real SBPL, V5 tests and clean-wheel lifecycle; wheel SHA d91f28d2d5e93d003310cbfd3f82086b86850b8a49d7c0be9cc1804215aa3a43. Independent wheel+sdist0.6.0 offline installs/version/assets pass. Staged132 paths contain no local runtime/secrets; exactly4 reviewed adapter binaries and3 planned records.114 B/33 C hashes, whole-source Ruff, Markdown links, exactV2 placement and cached diff checks pass.
 - Blockers: none for authorized repository publication. Live AI path remains explicitly experimental/unverified; no new model request authorized or attempted.
 - Exact next recovery action: Restage only latest journal, verify index, commit release0.6.0 with Codex repairs and dated README, push main normally without tags/force. If interrupted, inspect local/remote commits before replay. Install the pushed GitHub source in a disposable venv and verify versions/help/assets; append publication evidence and synchronize journal with a documentation commit.
+
+### 2026-09-20T16:58:03Z — After R3 publication and public-install verification — release complete
+
+- Plan reference/version: fix-cli-codex.md v5 repository release follow-up0.6.0 R1–R3 complete
+- Previous completed step: R3 release commit/push, remote identity verification and public GitHub installation / complete
+- Current step/status: authorized repository release complete; final publication evidence synchronized with documentation
+- Next step: none for requested release. Experimental live-model validation remains a separate explicitly budget-approved follow-up.
+- Affected paths: release commit88710b9 includes132 reviewed code/asset/test/doc paths; final plan/architecture/roadmap/journal publication records only
+- Run/process/task IDs: release commit88710b9825c7d2bcfc37be0778c558c2c4603bbd pushed origin/main; GitHub CI35524213659 completed success; public install process86285 exit0
+- Validation/results/evidence paths: 635 tests pass27.41s; cumulative C-L2 pass82.515s; mutation/budget/store gates pass; wheel+sdist0.6.0 clean/offline installs pass. Actual README GitHubmain pip command resolved release commit88710b9, installed0.6.0, confirmed main/Codex/fixer versions, current help and4bundled artifacts plus catalogue/profile. Hosted CI passed all UbuntuPython3.10/3.11/3.12 jobs and ARM64macOS fulltests/mutation/clean-install lifecycle: https://github.com/dezgit2025/auto-memory/actions/runs/35524213659 . Source/manifests/staged audit and README coherence checks pass; no runtime data committed.
+- Blockers: none for this release. Live AI generation remains experimental after the prior safe failed attempt; macOS SBPL required for candidate testing. No PyPI tag/upload, global local-machine install, real adapter activation, live retry or force-push performed.
+- Exact next recovery action: For release inspection, use origin/main and the0.6.0 README/install guide; verify current branch/remote before new Git actions. Preserve the ignored local live-retry recovery pointer and ledger; do not run another model request without the existing +32K approval requirement. Publication metadata updates contain no product changes and are committed/pushed as the release handoff.

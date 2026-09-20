@@ -2,6 +2,11 @@
 
 Status: **V5 workflow implemented and offline-verified; live generation remains unverified after one safe failed smoke attempt. See the journal.**
 
+Repository release **0.6.0**, dated **2026-09-20**, includes rebuilt profile-52
+and profile-55 adapter bundles. The prior 0.5.1 bundles remain trusted for
+rollback, with an explicit reviewed profile-55 upgrade recipe. Both distribution
+formats, public GitHub installation, and hosted Linux/macOS CI were verified.
+
 ## V5 implementation direction — authoritative
 
 Use the [simple V5 plan](fix-cli-codex.md#v5-the-simple-path-to-implement).

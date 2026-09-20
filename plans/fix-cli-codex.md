@@ -2,11 +2,17 @@
 
 Status: **V5 IMPLEMENTED — offline acceptance passed; live smoke failed safely and further live verification awaits an explicit budget grant.**
 
+**Repository publication:** version **0.6.0** was committed and pushed to `main`
+on **2026-09-20** in commit `88710b9`. Direct GitHub installation and hosted
+Linux/macOS CI passed. The final journal records the evidence. No PyPI upload,
+global local-machine installation or new live model attempt was performed.
+
 Current checklist: the V5 section below. Earlier detail is retained for recovery,
 not as additional requirements to execute the simplified design.
 Journal: [progress-fix-cli-codex.md](progress-fix-cli-codex.md).
 
-Execution outcome (2026-09-20 UTC): steps 1–3 are implemented and independently
+Initial implementation outcome (2026-09-20 UTC, before repository publication):
+steps 1–3 are implemented and independently
 reviewed using GPT-5.6-sol agents. Regression, adversarial sandbox, mutation,
 clean-install and cumulative offline gates pass. The single synthetic live
 attempt returned `process_failed` without usage telemetry; its ledger records a
@@ -15,8 +21,9 @@ was executed or activated. Subsequent local diagnosis led to an explicitly typed
 output-schema constant and sanitized failure categories; these do not establish
 the original failure cause or live success. A further live attempt requires
 one explicit +32K grant. The journal records the final corrected-source gates.
-Global installation, startup edits, real activation, commits and publication were
-not performed. The smallest next action is the budget-approved synthetic retry.
+At that point, global installation, startup edits, real activation, commits and
+publication had not been performed. Live validation still needs a separately
+budget-approved synthetic retry.
 
 ## Repository release follow-up — authorized 2026-09-20
 
