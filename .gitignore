@@ -101,3 +101,6 @@ src/session_recall/providers/claude_code/verifications/
 
 # Codex smoke-test workspace (local-only)
 codex-test/
+
+# Public launch checklist; root TASKS.md remains local-only
+!launch/tasks.md

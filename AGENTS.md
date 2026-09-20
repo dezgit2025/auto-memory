@@ -49,3 +49,7 @@ storage, report the failure and continue without recall. Do not bypass the
 adapter or directly read Codex-owned SQLite databases. Maintenance schema capture
 requires explicit authorization for that exception. Never modify Codex-owned
 storage.
+
+## Launch records
+
+Entry: [launch/README.md](launch/README.md). Plan: [launch/launch-plan.md](launch/launch-plan.md). Journal: [launch/progress-launch-plan.md](launch/progress-launch-plan.md). Git-trackable checklist: [launch/tasks.md](launch/tasks.md); root TASKS.md remains local-only. Read before resuming launch/application work.
