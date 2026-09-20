@@ -1,5 +1,25 @@
 # Project planning and recovery
 
+## Default Python CLI installation guidance
+
+For future work in this repository, present installation methods in this order:
+
+```bash
+pipx install my-tool      # recommended: isolated CLI environment
+uv tool install my-tool   # alternative: isolated tool environment
+python -m pip install my-tool  # only inside an explicitly activated venv
+```
+
+Use the actual package name and a released version/source in user-facing docs.
+Choose the interpreter explicitly when compatibility requires it. For the
+current Codex AI sandbox, use the tested Apple silicon Homebrew Python 3.14
+path; generic version selection is not proof of a supported Python build.
+Install auto-memory once for all backends, retaining backend-specific setup.
+Do not suggest system/global pip installs or silently switch an existing
+installation between managers. Keep README and backend guides consistent.
+
+## Planning records
+
 - Future direction: [ROADMAP.md](ROADMAP.md).
 - Codex CLI repair plan: [plans/fix-cli-codex.md](plans/fix-cli-codex.md).
 - Its execution journal: [plans/progress-fix-cli-codex.md](plans/progress-fix-cli-codex.md).

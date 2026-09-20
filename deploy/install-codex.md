@@ -14,14 +14,23 @@ version: v0.6.0
 packages or changing user configuration; existing explicit authorization applies.
 
 ```bash
-python3 -m venv ~/.venvs/auto-memory
-~/.venvs/auto-memory/bin/python -m pip install --upgrade \
-  "git+https://github.com/dezgit2025/auto-memory.git@main"
-export PATH="$HOME/.venvs/auto-memory/bin:$PATH"
+brew install pipx python@3.14
+pipx install --python "$(brew --prefix python@3.14)/bin/python3.14" \
+  "auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@v0.6.0"
 session-recall-codex --version
 session-recall-codex-fix --version
 session-recall-codex schema-check
 ```
+
+This is the recommended macOS installation, selecting the Homebrew Python 3.14
+build verified by the sandbox tests on Apple silicon. A generic `--python 3.14`
+can select a different build; Intel Homebrew dependency paths are not supported
+by the current AI sandbox allowlist. For Linux/WSL recall or a manual-venv
+alternative, see [the shared install guide](install.md). One pipx environment
+also supplies the Copilot and Claude commands. Do not reinstall for each backend.
+If PATH setup is needed, run `pipx ensurepath` and restart your terminal.
+Our default is pipx recommended, uv alternative, and pip only inside a venv.
+The shared guide provides the equivalent uv command with the same interpreter.
 
 > [!NOTE]
 > **Release availability:** install 0.6.0 from this GitHub repository. A repository
@@ -78,12 +87,12 @@ test -f "$HOME/.codex/state_5.sqlite" && echo "codex store: detected" || echo "c
 
 ## Section 3 — Install
 
-Use the isolated GitHub installation above, or an existing tool manager:
+Use the pipx installation above. To replace an existing pipx-managed version or
+switch its interpreter, repeat the command with `--force`:
 
 ```bash
-uv tool install --force "git+https://github.com/dezgit2025/auto-memory.git@main"
-# Alternative if you use pipx instead:
-# pipx install --force "git+https://github.com/dezgit2025/auto-memory.git@main"
+pipx install --force --python "$(brew --prefix python@3.14)/bin/python3.14" \
+  "auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@v0.6.0"
 # From an existing clone, inside your virtual environment:
 # python3 -m pip install --upgrade .
 ```

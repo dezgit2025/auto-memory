@@ -26,6 +26,58 @@ schema changes that would otherwise stop session recall. Repair preparation and
 testing are automated after you start them; applying a generated fix requires
 human approval. Codex session databases remain read-only.
 
+### Install once for all backends
+
+**Install auto-memory once for GitHub Copilot CLI, Claude Code, and Codex.**
+Our default is **pipx recommended, uv alternative, and pip only inside a virtual
+environment**. Both [pipx](https://pipx.pypa.io/stable/) and
+[uv](https://docs.astral.sh/uv/guides/tools/) isolate CLI tools and let you choose
+Python explicitly when multiple versions are installed. Choose one method.
+
+On macOS with Homebrew, select the Homebrew Python 3.14 build used by our Codex
+sandbox tests (verified on Apple silicon):
+
+```bash
+brew install pipx python@3.14
+pipx install --python "$(brew --prefix python@3.14)/bin/python3.14" \
+  "auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@v0.6.0"
+```
+
+For Linux/WSL, install pipx and Python 3.14 first, then:
+
+```bash
+pipx install --python python3.14 \
+  "auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@v0.6.0"
+```
+
+**Alternative: uv** (install uv first; do not run both installers):
+
+```bash
+uv tool install --python "$(brew --prefix python@3.14)/bin/python3.14" \
+  "auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@v0.6.0"
+# On Linux/WSL, replace the Homebrew path with --python 3.14.
+```
+
+The Linux/WSL commands provide recall; the current Codex AI-repair sandbox
+requires macOS. On macOS, use the explicit Homebrew path above for AI repair:
+`--python 3.14` alone may select a different Python build. Git is required for
+these release-tag installs. If the tool directory is missing from PATH, run
+`pipx ensurepath` (or `uv tool update-shell` for uv) and restart your terminal.
+To replace an existing install with the same manager or change its Python,
+repeat its install command with `--force`. Confirm `command -v session-recall`
+resolves to your chosen installation when migrating from another manager.
+
+| Backend | Command after installation | Setup |
+| --- | --- | --- |
+| GitHub Copilot CLI | `session-recall health` | [Copilot setup](deploy/install.md) |
+| Claude Code | `SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1 session-recall-cc health` | [Claude setup](deploy/install-claude-code.md) |
+| Codex | `session-recall-codex schema-check` | [Codex setup and repair](deploy/install-codex.md) |
+
+Run the check for the backend you actually use; its local session store must
+exist. You do not need three installations or the `[claude]` extra to obtain
+the commands in 0.6.0. Backend instruction-file wiring remains a separate step.
+For a manual virtual-environment alternative, see the [install guide](deploy/install.md#3a--from-github-060).
+
 ### How it works
 
 **The problem:** As Codex evolves, OpenAI may change the schema—the structure
@@ -86,14 +138,10 @@ the attempt. Ordinary recall and known repairs do not call an AI model.
 
 ### Install this Codex update
 
-Requires Python 3.10+, Git, and an existing Codex session store. Install this
-revision from GitHub in an isolated environment (macOS/Linux shell):
+Use the [shared installation above](#install-once-for-all-backends), then
+verify the installed release and your existing Codex session store:
 
 ```bash
-python3 -m venv ~/.venvs/auto-memory
-~/.venvs/auto-memory/bin/python -m pip install --upgrade \
-  "git+https://github.com/dezgit2025/auto-memory.git@main"
-export PATH="$HOME/.venvs/auto-memory/bin:$PATH"
 session-recall --version
 session-recall-codex --version
 session-recall-codex-fix --version
@@ -163,11 +211,16 @@ base package. [Full Codex installation guide](deploy/install-codex.md) ·
 
 ### Quickstart
 
+Install once with [pipx or uv](#install-once-for-all-backends), then check
+the backend you use:
+
 ```bash
-python3 -m pip install --upgrade "git+https://github.com/dezgit2025/auto-memory.git@main"
-# Run inside a virtual environment; see the isolated install above.
-session-recall health             # verify Copilot CLI recall
-session-recall-codex schema-check # verify Codex recall
+# GitHub Copilot CLI:
+session-recall health
+# Claude Code:
+SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1 session-recall-cc health
+# Codex:
+session-recall-codex schema-check
 ```
 
 Now give your agent a memory. See the **🤖 Agentic Install** section below for agent-driven setup, or follow [`deploy/install.md`](deploy/install.md) manually.
@@ -341,7 +394,7 @@ Total: ~1.1K tokens, 30 seconds, agent is immediately productive.
 
 | Approach | Dependencies | Writes to DB | Setup | Agent-native |
 |----------|-------------|-------------|-------|-------------|
-| **auto-memory** | None (stdlib) | ❌ Read-only | `pip install` | ✅ Instruction-file |
+| **auto-memory** | None (stdlib) | ❌ Read-only | `pipx install` / `uv tool install` | ✅ Instruction-file |
 | MCP server | Node.js runtime | Varies | Server config | ❌ Protocol layer |
 | Custom hooks | Varies | Often yes | Hook scripts | ❌ Event-driven |
 | Manual grep | None | ❌ | None | ❌ Manual |
@@ -386,10 +439,10 @@ auto-memory is the **page fault handler** — it pulls exact facts from disk in 
 
 In addition to GitHub Copilot CLI, `auto-memory` can read [Claude Code](https://docs.anthropic.com/claude-code) session logs from `~/.claude/projects/`. This ships as a separate CLI binary (`session-recall-cc`) that is **off unless explicitly enabled** — Copilot CLI users pay zero cost.
 
-### Quick install (3 steps)
+### Enable Claude Code after installation
 
 ```bash
-python3 -m pip install --upgrade "auto-memory[claude] @ git+https://github.com/dezgit2025/auto-memory.git@main"
+# First install the shared package with pipx (or uv) using the instructions above.
 export SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1
 session-recall-cc health
 ```

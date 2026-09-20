@@ -2,16 +2,16 @@
 
 ## Current state
 
-- Updated: 2026-09-20T17:04:07Z
-- Plan reference/version: fix-cli-codex.md v5 plus GitHub Releases follow-up complete
-- Previous completed step: guarded tag creation, release publication and remote verification / complete
-- Current step/status: GitHub v0.6.0 published and verified as Latest
-- Next step: none for requested version/release update. PyPI publication and further live AI validation remain separate decisions.
-- Affected paths: GitHub release/tag and final plan/journal publication metadata; no additional product changes
-- Run/process/task IDs: guard commit3cbd61d28f899bbe332604c50fb3d749843d30f1 pushed main; release published2026-09-20T17:02:49Z; main release owner
-- Validation/results/evidence paths: releases/latest returns v0.6.0, draft=false, prerelease=false, target3cbd61d28f899bbe332604c50fb3d749843d30f1. Remote refs/tags/v0.6.0 matches target exactly. URL https://github.com/dezgit2025/auto-memory/releases/tag/v0.6.0 . Exact negative tag filter reviewed and validated; no v0.6.0 publish.yml run observed. Previous635tests, clean distributions/public install and hostedCI acceptance retained.
-- Blockers: none. Live AI repair remains experimental as stated in release notes. No PyPI upload/new model call/real activation performed.
-- Exact next recovery action: Use the published v0.6.0 release and pinned tag for installation. Do not recreate or move the tag. Final documentation sync is committed/pushed without retagging. For any future PyPI publication, review the explicit0.6.0 exclusion and obtain that separate authorization; preserve the existing live budget boundary.
+- Updated: 2026-09-20T17:27:01Z
+- Plan reference/version: fix-cli-codex.md v5,0.6.0 installation-guidance follow-up
+- Previous completed step: pipx-first docs/project defaults/installer edits and real installation checks complete
+- Current step/status: commit/push reviewed installer-default update / starting
+- Next step: verify remote commit and clean worktree; preserve release tag and runtime boundaries
+- Affected paths: AGENTS.md, README.md, deploy/install.md, deploy/install-codex.md, deploy/install-claude-code.md, deploy/install-other-backends.md, install.sh, journal
+- Run/process/task IDs: pipx isolated install59672 pass; uv install64114 succeeded with final canonical-path validation pass; both installed SBPL probes pass; sol_integration reviewer READY; sol_migration installer writer complete
+- Validation/results/evidence paths: Actual pipx and uv commands installed public v0.6.0 into independent temporary tool directories. All5entrypoints checked: main/Codex/fixer versions0.6.0, Claude/alias help pass; Python3.14.3 resolves to tested Homebrew build. Both runtime probes allow only synthetic reads/scratch writes and deny network/protected access/child execution. Installer bash-n and3stubbed branches pass, no global/userpip fallback. README order, relative links, fences and diff checks pass. No real backend data/model calls or existingtool changes.
+- Blockers: none for requested default. User's final preference is pipx recommended, uv alternative, pip only in a venv; this supersedes interimuv-first draft.
+- Exact next recovery action: Commit/push these8reviewed paths normally and verify local/remoteHEAD. Do not retag0.6.0 or publishPyPI. Future project installation guidance must follow AGENTS.md default while preserving explicit interpreter selection and backend configuration.
 
 ## Append-only activity history
 
@@ -1162,3 +1162,39 @@
 - Validation/results/evidence paths: releases/latest returns v0.6.0, draft=false, prerelease=false, target3cbd61d28f899bbe332604c50fb3d749843d30f1. Remote refs/tags/v0.6.0 matches target exactly. URL https://github.com/dezgit2025/auto-memory/releases/tag/v0.6.0 . Exact negative tag filter reviewed and validated; no v0.6.0 publish.yml run observed. Previous635tests, clean distributions/public install and hostedCI acceptance retained.
 - Blockers: none. Live AI repair remains experimental as stated in release notes. No PyPI upload/new model call/real activation performed.
 - Exact next recovery action: Use the published v0.6.0 release and pinned tag for installation. Do not recreate or move the tag. Final documentation sync is committed/pushed without retagging. For any future PyPI publication, review the explicit0.6.0 exclusion and obtain that separate authorization; preserve the existing live budget boundary.
+
+### 2026-09-20T17:14:03Z — Before uv-first installation documentation update
+
+- Plan reference/version: fix-cli-codex.md v5,0.6.0 documentation follow-up
+- Previous completed step: GitHub v0.6.0 Latest publication complete
+- Current step/status: make uv primary for Copilot, Claude Code and Codex instructions / starting
+- Next step: validate interpreter selection, backend setup and documentation coherence; commit/push documentation follow-up
+- Affected paths: README.md; deploy/install.md; deploy/install-codex.md; deploy/install-claude-code.md; related install troubleshooting; journal
+- Run/process/task IDs: main docs owner; bounded review if available. No live repair or user-global installation.
+- Validation/results/evidence paths: Current guides mixed pip/venv and uv. One package supplies all backend commands. MacOS AI sandbox was tested with HomebrewPython3.14; a generic --python3.14 selector may resolve a different build, so primary Mac instructions will use its explicit executable path. uv remains recommended, not mandatory.
+- Blockers: none for docs; live-model/PyPI limitations unchanged
+- Exact next recovery action: Add uv-first setup near README top and align three backend guides, keep backend-specific activation and manualvenv alternative, pinGitHubv0.6.0. Check links/commands and any isolated install without touching existingglobaltools; retain immutable release tag.
+
+### 2026-09-20T17:20:08Z — Installer preference revised before publication: pipx first
+
+- Plan reference/version: fix-cli-codex.md v5,0.6.0 installation documentation follow-up
+- Previous completed step: uv command installed release and sandbox probe passed; installer docs still uncommitted
+- Current step/status: user changes default to pipx recommended, uv alternative, pip inside venv / in progress
+- Next step: test pipx command in isolated directories, finish consistent docs/project guidance and publish changes
+- Affected paths: AGENTS.md default guidance, README, backend install guides, journal; no package/version/tag changes
+- Run/process/task IDs: main owner; prior uv install64114 reached commandchecks but test harness compared logical Homebrew prefix without resolving symlink (diagnostic correction pending); installed uv sandbox probe passed
+- Validation/results/evidence paths: Latest user instruction supersedes uv-first ordering. Existingpipx found. Actual package installs need GitHubv0.6.0 tag while PyPI remains0.5.1; generic my-tool examples only belong in project convention. One installation provides all backends; explicitHomebrewPython3.14 retained for tested macOS sandbox.
+- Blockers: none; actualpipx verification and docs checks pending
+- Exact next recovery action: Set pipx as first option in every touched guide, keep uv alternate and venv-only pip, test exactrelease/interpreter with isolatedPIPX directories and verify allcommands/sandbox without live model calls. Validate canonical interpreter paths, not unresolved symlink aliases. Commit/push docs under existingauthorization after gates.
+
+### 2026-09-20T17:27:01Z — Installer defaults validated; before documentation publication
+
+- Plan reference/version: fix-cli-codex.md v5,0.6.0 installation-guidance follow-up
+- Previous completed step: pipx-first docs/project defaults/installer edits and real installation checks complete
+- Current step/status: commit/push reviewed installer-default update / starting
+- Next step: verify remote commit and clean worktree; preserve release tag and runtime boundaries
+- Affected paths: AGENTS.md, README.md, deploy/install.md, deploy/install-codex.md, deploy/install-claude-code.md, deploy/install-other-backends.md, install.sh, journal
+- Run/process/task IDs: pipx isolated install59672 pass; uv install64114 succeeded with final canonical-path validation pass; both installed SBPL probes pass; sol_integration reviewer READY; sol_migration installer writer complete
+- Validation/results/evidence paths: Actual pipx and uv commands installed public v0.6.0 into independent temporary tool directories. All5entrypoints checked: main/Codex/fixer versions0.6.0, Claude/alias help pass; Python3.14.3 resolves to tested Homebrew build. Both runtime probes allow only synthetic reads/scratch writes and deny network/protected access/child execution. Installer bash-n and3stubbed branches pass, no global/userpip fallback. README order, relative links, fences and diff checks pass. No real backend data/model calls or existingtool changes.
+- Blockers: none for requested default. User's final preference is pipx recommended, uv alternative, pip only in a venv; this supersedes interimuv-first draft.
+- Exact next recovery action: Commit/push these8reviewed paths normally and verify local/remoteHEAD. Do not retag0.6.0 or publishPyPI. Future project installation guidance must follow AGENTS.md default while preserving explicit interpreter selection and backend configuration.
