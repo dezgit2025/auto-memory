@@ -3,6 +3,47 @@
 All notable changes to this project will be documented in this file.
 Format: [Keep a Changelog](https://keepachangelog.com/). Versioning: [SemVer](https://semver.org/).
 
+## [0.6.0] — 2026-09-20
+
+Available from the GitHub repository. This change does not itself publish a PyPI
+release. AI-assisted generation remains experimental: synthetic lifecycle and
+sandbox gates pass, but a successful live model repair has not yet been verified.
+
+### Added
+
+- Deterministic `session-recall-codex-fix` checker/planner and reviewed local
+  profile-52-to-55 repair recipe, with explicit apply and digest-bound rollback.
+- Stable Codex adapter launcher, reproducible pinned adapter artifacts, atomic
+  activation journals, single-writer locking and interruption recovery.
+- Synthetic smoke, crash, trust-boundary and isolated-wheel end-to-end tests.
+  Unknown schemas still refuse in normal recall; explicit maintenance can stage a repair.
+- Internal AI-repair budget contracts and durable ledger: approximate 32K blocks,
+  explicit +32K human grants, truthful usage/overshoot reconciliation, single-use
+  approvals and crash-safe recovery.
+- Foreground `assist`, `approve`, `apply-candidate` and `budget-approve` commands:
+  one Codex GPT-6 Astra medium job, strict candidate contracts, macOS sandbox
+  verification, durable human review and existing managed activation/rollback.
+  No automatic model retry, provider switch or startup integration.
+- Versioned GPT-6 policy and requested/reported usage evidence, preserving legacy
+  receipts and blocking new spending while legacy usage remains outstanding.
+- V5 adversarial, mutation and clean-installed-wheel lifecycle verification,
+  including damaged-candidate rollback and conflicting-approval rejection.
+- Dated Codex repair explanation and ASCII flow near the top of README, with
+  standalone version history, repository installation steps and source locations.
+- Rebuilt 0.6.0 adapter bundles and a reviewed upgrade from the prior 0.5.1
+  profile-55 adapter; old bundles remain available for explicit rollback.
+- `session-recall-codex-fix --version` for checking the installed companion.
+
+### Fixed
+
+- Updated the Codex state schema profile to migration 52 (`projects recency`)
+  after verifying that the adapter's used table definitions are unchanged.
+- Advanced the reviewed Codex profile from state migration 52 to 55, including
+  nullable `originator` and `daybreak_enabled` columns; history remains at 6.
+  Unknown schemas still fail before session queries.
+- Fixed calendar-dependent Codex CLI tests and added independent profile,
+  query-blocking, boundary, output-invariance, and trial smoke verification.
+
 ## [0.5.1] — Packaging fix
 
 ### Fixed
@@ -18,7 +59,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versioning: [SemVer](ht
   Codex CLI's SQLite storage (`~/.codex/state_5.sqlite` + `thread_history_1.sqlite`)
   - Trial build commands: `schema-check`, `list`, `repos` (search/show/files/health next phase)
   - Fixed-schema pre-flight on every data command: captured profiles
-    `codex-state-v5-migration-51` / `codex-thread-history-v1-migration-6`;
+    `codex-state-v5-migration-52` / `codex-thread-history-v1-migration-6`;
     any drift refuses cleanly (exit 2/4) before any query
   - Sub-agent and archived threads excluded by default; `local:` workspaces
     hidden in `repos` unless `--include-local`

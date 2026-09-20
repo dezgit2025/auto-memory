@@ -76,6 +76,34 @@ def test_days_band(state):
     assert "oldband alpha work" in _titles(month)
 
 
+def test_thirty_day_cutoff_plus_minus_one_ms(state, codex_store):
+    oldband = next(t for t in codex_store.threads if "oldband" in t["title"])
+    thirty_days_ms = 30 * 86_400_000
+
+    just_inside = select_threads(
+        state,
+        limit=10,
+        days=30,
+        now_ms=oldband["recency_at_ms"] + thirty_days_ms - 1,
+    )
+    exact_cutoff = select_threads(
+        state,
+        limit=10,
+        days=30,
+        now_ms=oldband["recency_at_ms"] + thirty_days_ms,
+    )
+    just_outside = select_threads(
+        state,
+        limit=10,
+        days=30,
+        now_ms=oldband["recency_at_ms"] + thirty_days_ms + 1,
+    )
+
+    assert "oldband alpha work" in _titles(just_inside)
+    assert "oldband alpha work" not in _titles(exact_cutoff)
+    assert "oldband alpha work" not in _titles(just_outside)
+
+
 def test_limit_pushdown_without_repo(state):
     rows = select_threads(state, limit=2, days=30, now_ms=REF_NOW_MS)
     assert _titles(rows) == ["recent-b widget tests", "recent-a widget refactor"]

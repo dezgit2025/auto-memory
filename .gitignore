@@ -78,7 +78,10 @@ Desktop.ini
 .session-recall-stats.json
 .perf/
 uv.lock
-plans/
+plans/*
+!plans/fix-cli-codex.md
+!plans/progress-fix-cli-codex.md
+!plans/fix-cli-codex-architecture.md
 
 # === Logs & Temp ===
 *.log

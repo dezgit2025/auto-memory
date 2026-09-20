@@ -1,0 +1,46 @@
+{
+  "format_version": 1,
+  "catalogue_id": "codex-repairs-v1",
+  "seed_artifact_digest": "sha256:135d1d1e09b465fb09119d756504459a07944ce8a3b9a652e998b75726677643",
+  "recipes": [
+    {
+      "recipe_id": "codex-state52-artifact-to-state55-v2",
+      "source_adapter_digest": "sha256:77cc1a4b29ed776abf8401a36de04f84a9f52051c451e679754f221f3c10d7ba",
+      "schema_fingerprint": "sha256:a8891ce6dfc6ec2f9ec46447f902c2a21041e7dc1c82b7248867ff522ef43492",
+      "target_artifact_digest": "sha256:135d1d1e09b465fb09119d756504459a07944ce8a3b9a652e998b75726677643",
+      "check_ids": [
+        "artifact_manifest_v1",
+        "synthetic_schema_v1",
+        "trial_cli_contract_v1",
+        "unknown_drift_rejected_v1",
+        "synthetic_no_write_v1"
+      ]
+    },
+    {
+      "recipe_id": "codex-state52-artifact-to-state55-v1",
+      "source_adapter_digest": "sha256:a45c800e0c549ae5e4ef3f85255d41448e7a3b119f2c37c0fe9421ea4c1453cb",
+      "schema_fingerprint": "sha256:a8891ce6dfc6ec2f9ec46447f902c2a21041e7dc1c82b7248867ff522ef43492",
+      "target_artifact_digest": "sha256:9799c28ed4e9b3f5cf69ed8e5ad12f983e0a9ddfd410028ce0e2be3970ccc6c5",
+      "check_ids": [
+        "artifact_manifest_v1",
+        "synthetic_schema_v1",
+        "trial_cli_contract_v1",
+        "unknown_drift_rejected_v1",
+        "synthetic_no_write_v1"
+      ]
+    },
+    {
+      "recipe_id": "codex-adapter051-state55-to-060-state55-v1",
+      "source_adapter_digest": "sha256:9799c28ed4e9b3f5cf69ed8e5ad12f983e0a9ddfd410028ce0e2be3970ccc6c5",
+      "schema_fingerprint": "sha256:a8891ce6dfc6ec2f9ec46447f902c2a21041e7dc1c82b7248867ff522ef43492",
+      "target_artifact_digest": "sha256:135d1d1e09b465fb09119d756504459a07944ce8a3b9a652e998b75726677643",
+      "check_ids": [
+        "artifact_manifest_v1",
+        "synthetic_schema_v1",
+        "trial_cli_contract_v1",
+        "unknown_drift_rejected_v1",
+        "synthetic_no_write_v1"
+      ]
+    }
+  ]
+}

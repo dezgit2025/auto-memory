@@ -1,13 +1,15 @@
 name: CI
 
 on:
+  workflow_call:
   push:
     branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
-  test:
+  portable-test:
+    name: Portable / Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -28,4 +30,50 @@ jobs:
         run: ruff check src/
 
       - name: Run tests
-        run: pytest src/ -q
+        run: >-
+          pytest src/ -q -W error
+          --ignore=src/session_recall/codex_fix/tests/test_v5_sandbox.py
+          --ignore=src/session_recall/codex_fix/tests/test_v5_workflow.py
+
+  v5-stage-c-macos:
+    name: V5 Stage C / macOS ARM64
+    runs-on: macos-15
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Select supported Homebrew Python
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = "arm64"
+          brew install python@3.14
+          python_prefix="$(brew --prefix python@3.14)"
+          test "${python_prefix#/opt/homebrew/}" != "$python_prefix"
+          "$python_prefix/bin/python3.14" --version
+          "$python_prefix/bin/python3.14" -m venv "$RUNNER_TEMP/auto-memory-ci-venv"
+          echo "$RUNNER_TEMP/auto-memory-ci-venv/bin" >> "$GITHUB_PATH"
+
+      - name: Install package
+        run: python3.14 -m pip install -e ".[dev]" "setuptools>=68" wheel
+
+      - name: Lint with ruff
+        run: python3.14 -m ruff check src/ verify/codex_assist_verify.py
+
+      - name: Run full source tests with real SBPL
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python3.14 -m pytest src/ verify/test_codex_release_upgrade.py -q -W error
+
+      - name: Verify Stage C mutation detector
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python3.14 verify/codex_assist_verify.py --self-test
+
+      - name: Verify Stage C clean-install lifecycle
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python3.14 verify/codex_assist_verify.py --level L2

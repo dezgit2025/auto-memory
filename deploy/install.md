@@ -12,11 +12,19 @@ companion-file: deploy/install-other-backends.md
 
 # Deploy auto-memory
 
+**Repository release: 0.6.0 — 2026-09-20.** Install this revision from GitHub.
+Publishing a Git commit does not publish to PyPI; unqualified PyPI installs can
+still provide an older version without the new Codex repair companion.
+Codex users can follow [the dedicated setup guide](install-codex.md) directly.
+
 **Humans:** skim the TL;DR, then run the snippets — or ask your AI agent to do it.
 **Agents:** read sections 1–7 in order. Every mutating step requires user confirmation. Use a reasoning model (Sonnet 4.6, GPT-5.4) — mini models may skip confirmation gates.
 
 ```bash
-uv tool install auto-memory && session-recall schema-check && session-recall health
+uv tool install --force "git+https://github.com/dezgit2025/auto-memory.git@main"
+session-recall --version
+# Copilot users: session-recall schema-check && session-recall health
+# Codex users: session-recall-codex schema-check
 # Then append the instruction block from Section 6 to your agent instructions file
 ```
 
@@ -62,7 +70,7 @@ echo "pkg: $PKG  shell: $(basename "$SHELL")"
 ## Section 2 — Choose Install Path
 
 ```bash
-LATEST="0.5.1"
+LATEST="0.6.0"  # target repository version, not a claim about PyPI availability
 if [ -z "$INSTALL_PATH" ]; then
   STATE="not-installed"
 elif [ -z "$INSTALLED_VERSION" ]; then
@@ -93,16 +101,26 @@ echo "state: $STATE"
 
 ## Section 3 — Fresh Install
 
-### 3a — From PyPI (recommended)
+### 3a — From GitHub (0.6.0)
 
-> **Agent:** ask user *"Install auto-memory from PyPI? (Y/n)"*
+> **Agent:** obtain authorization to install auto-memory from GitHub; use prior explicit authorization when present.
 
-Run the **first** command that succeeds. Stop after first success.
+Choose one tool manager or the virtual-environment option; do not install into
+multiple environments for the same setup.
 
 ```bash
-uv tool install auto-memory              # preferred
-pipx install auto-memory                 # fallback 1
-python3 -m pip install --user auto-memory  # fallback 2
+uv tool install --force "git+https://github.com/dezgit2025/auto-memory.git@main"
+# Alternative if pipx is your tool manager:
+# pipx install --force "git+https://github.com/dezgit2025/auto-memory.git@main"
+```
+
+Without uv or pipx, use a virtual environment:
+
+```bash
+python3 -m venv ~/.venvs/auto-memory
+~/.venvs/auto-memory/bin/python -m pip install --upgrade \
+  "git+https://github.com/dezgit2025/auto-memory.git@main"
+export PATH="$HOME/.venvs/auto-memory/bin:$PATH"
 ```
 
 ### 3b — From source (for contributors)
@@ -117,7 +135,11 @@ uv tool install --force --editable .       # or: pipx install --force -e .
 ### Verify
 
 ```bash
-which session-recall && session-recall schema-check
+command -v session-recall
+session-recall --version
+# Check only the backend you use:
+# session-recall schema-check        # Copilot CLI
+# session-recall-codex schema-check  # Codex CLI
 ```
 
 If `which` returns nothing → see **Section 9**.
@@ -132,15 +154,19 @@ Detect method and use the **matching** upgrade command (never mix tools):
 
 ```bash
 if uv tool list 2>/dev/null | grep -q auto-memory; then
-  uv tool upgrade auto-memory
+  uv tool install --force "git+https://github.com/dezgit2025/auto-memory.git@main"
 elif pipx list 2>/dev/null | grep -q auto-memory; then
-  pipx upgrade auto-memory
+  pipx install --force "git+https://github.com/dezgit2025/auto-memory.git@main"
 else
-  python3 -m pip install --user --upgrade auto-memory
+  # Activate the environment where auto-memory is installed first.
+  python3 -m pip install --upgrade "git+https://github.com/dezgit2025/auto-memory.git@main"
 fi
 ```
 
 Verify: `session-recall --version`
+
+For Codex, also verify `session-recall-codex-fix --version` and follow
+[managed-adapter upgrade guidance](install-codex.md#section-4--verify).
 
 ---
 
@@ -166,6 +192,10 @@ If WSL2 detected and `~/.copilot/session-store.db` does not exist:
 ## Section 6 — Wire into Agent Instructions
 
 Detect which agent is in use and target the correct instruction file.
+
+For Codex, use [the Codex wiring section](install-codex.md#section-5--wire-into-codex-global-recommended)
+instead of the Copilot/Claude detection below. Installing this package alone
+does not edit agent instruction files.
 
 ### 6.0 — Detect agent instruction file
 

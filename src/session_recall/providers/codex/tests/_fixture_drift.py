@@ -16,13 +16,16 @@ STATE_MUTATIONS = {
         ["ALTER TABLE threads RENAME COLUMN history_mode TO history_mode_x"],
     "extra_threads_column":
         ["ALTER TABLE threads ADD COLUMN example_column TEXT"],
-    "migration_52": [
+    "migration_54": [
+        "DELETE FROM _sqlx_migrations WHERE version = 55",
+    ],
+    "migration_56": [
         "INSERT INTO _sqlx_migrations (version, description, installed_on, "
-        f"success, checksum, execution_time) VALUES (52, 'synthetic future', "
+        f"success, checksum, execution_time) VALUES (56, 'synthetic future', "
         f"'{MIGRATION_INSTALLED_ON}', 1, x'', 0)"
     ],
     "failed_migration":
-        ["UPDATE _sqlx_migrations SET success = 0 WHERE version = 51"],
+        ["UPDATE _sqlx_migrations SET success = 0 WHERE version = 55"],
     "extra_unrelated_table":
         ["CREATE TABLE totally_unrelated (x INTEGER)"],  # must PASS w/ diagnostic
 }
@@ -41,6 +44,9 @@ HISTORY_MUTATIONS = {
         "DROP TABLE thread_items_old",
     ],
     "missing_thread_turns": ["DROP TABLE thread_turns"],
+    "migration_5": [
+        "DELETE FROM _sqlx_migrations WHERE version = 6",
+    ],
     "migration_7": [
         "INSERT INTO _sqlx_migrations (version, description, installed_on, "
         f"success, checksum, execution_time) VALUES (7, 'synthetic future', "
