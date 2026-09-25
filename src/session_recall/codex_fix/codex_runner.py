@@ -126,8 +126,9 @@ def _usage(value: Any) -> dict[str, int] | None:
     if value is None:
         return None
     allowed = {
-        "input_tokens", "cached_input_tokens", "output_tokens",
-        "reasoning_tokens", "total_tokens",
+        "input_tokens", "cached_input_tokens", "cache_write_input_tokens",
+        "output_tokens", "reasoning_tokens", "reasoning_output_tokens",
+        "total_tokens",
     }
     if not isinstance(value, dict) or not set(value) <= allowed:
         raise ContractError("malformed_events")
@@ -320,8 +321,8 @@ def generate(
         validate_c(policy, "ModelPolicy")
         if (
             type(policy["format_version"]) is not int
-            or policy["format_version"] != 2
-            or policy["policy_id"] != "astra-medium-budget-v2"
+            or policy["format_version"] not in (2, 3)
+            or policy["policy_id"] != {2: "astra-medium-budget-v2", 3: "astra-medium-budget-v3"}[policy["format_version"]]
             or policy["model"] != "gpt-6-astra"
             or policy["effort"] != "medium"
         ):

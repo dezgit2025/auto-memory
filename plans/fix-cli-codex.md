@@ -1444,3 +1444,25 @@ planning request. [spec §11; how-to: “Quick checklist”]
 - [ ] Test artifact/import provenance matches what will run; source checkout cannot mask a broken wheel.
 - [ ] Pre-existing changes are preserved; remaining limitations and stage status are recorded in the journal.
 - [ ] Later stages remain not started until separately executed; no unsupported-schema bypass or automatic model downgrade was introduced.
+
+## 2026-09-25 owner follow-up: schema 57/7 and 100,000-token grants
+
+The owner requested an exact repair of the installed Codex recall CLI and a
+versioned 100,000-token repair grant in this project. The fixer classified state
+migration 57 and history migration 7 as unknown. One authorized Astra/medium
+candidate request failed because the fixer's usage-event parser omitted fields
+now emitted by Codex 0.157. A narrow parser correction preceded the separately
+approved retry. The candidate changed only the captured schema profile, passed
+the fixer's isolated checks, and was explicitly approved and activated. The
+installed `session-recall-codex` launcher must be verified after installation;
+activating the adapter alone does not replace a legacy console script.
+
+The active future budget is the packaged
+[`model-policy-v3.json`](../src/session_recall/codex_fix/data/model-policy-v3.json),
+explained at the project root in [`CODEX_REPAIR_POLICY.md`](../CODEX_REPAIR_POLICY.md).
+It starts with 100,000 tokens and three requests. An owner-approved extension
+adds 100,000 tokens and three requests, with a matching daily-ceiling increase.
+Each request still has a 32,000-token estimate and no hard response-token cap.
+The old v2 ledger remains immutable; same-day spend or unresolved usage blocks
+a v3 ledger reset. Keep old grants and receipts bound to their policy version.
+No Codex-owned database or session row is modified by the repair.

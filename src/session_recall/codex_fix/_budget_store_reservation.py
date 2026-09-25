@@ -38,7 +38,7 @@ class BudgetReservationMixin:
             )
             day, now = trusted_now(self.clock)
             self._guard_legacy_budget(day)
-            daily, days = ensure_day(record, day)
+            daily, days = ensure_day(record, day, ceiling_tokens=self.policy["daily_ceiling_tokens"])
             next_incident, next_daily, request = reserve_ledger(incident, daily)
             reservation = {
                 "reservation_id": request["reservation_id"],

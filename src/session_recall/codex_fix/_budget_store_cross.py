@@ -107,7 +107,12 @@ def _validate_grants(
     events: set[tuple[str, str]] = set()
     pending = 0
     ceilings: dict[str, list[int]] = {key: [] for key in incidents}
-    day_ceilings = {key: 64_000 for key in days}
+    new_policy = any(
+        item["allowance_tokens"] == 100_000 * (item["grants_consumed"] + 1)
+        and item["requests_allowed"] == 3 * (item["grants_consumed"] + 1)
+        for item in incidents.values()
+    ) or any(day["ceiling_tokens"] == 100_000 for day in days.values())
+    day_ceilings = {key: 100_000 if new_policy else 64_000 for key in days}
     for item in value["grants"]:
         challenge = item["challenge"]
         incident = incidents.get(challenge["incident_id"])
@@ -142,7 +147,9 @@ def _validate_grants(
     if any(incidents[key]["grants_consumed"] != count for key, count in consumed.items()):
         _fail()
     for key, values in ceilings.items():
-        expected = [64_000 + 32_000 * index for index in range(len(values))]
+        initial = 100_000 if new_policy else 32_000
+        increment = 100_000 if new_policy else 32_000
+        expected = [initial + increment * (index + 1) for index in range(len(values))]
         if sorted(values) != expected:
             _fail()
     if any(days[key]["ceiling_tokens"] != ceiling for key, ceiling in day_ceilings.items()):

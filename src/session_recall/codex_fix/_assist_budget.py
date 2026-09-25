@@ -6,7 +6,7 @@ from typing import Any
 
 from .budget_store import BudgetStore, ApprovalEvent
 from .contracts import ContractError, digest
-from .policy import model_policy
+from .policy import production_model_policy
 
 
 class Clock:
@@ -15,7 +15,7 @@ class Clock:
 
 
 def budget_store(root, *, approval_source=None):
-    store = BudgetStore(root, 'codex-repair-controller', model_policy(), clock=Clock(), approval_source=approval_source)
+    store = BudgetStore(root, 'codex-repair-controller', production_model_policy(), clock=Clock(), approval_source=approval_source)
     if not store.directory.exists() and not store.directory.is_symlink():
         store.initialize()
     return store
@@ -43,9 +43,14 @@ def reserve(root, request):
         day = store.clock.now_utc().strftime('%Y-%m-%d')
         daily = next((d for d in record['days'] if d['utc_day'] == day), None)
         override = None
-        if daily is not None and daily['charged_tokens'] + daily['held_tokens'] + 32_000 > daily['ceiling_tokens']:
-            # The challenge explicitly names this increase; only human approval can grant it.
-            override = daily['charged_tokens'] + daily['held_tokens'] + 32_000
+        if daily is not None and store.policy['format_version'] == 3:
+            override = daily['ceiling_tokens'] + store.policy['grant_increment_tokens']
+        elif daily is not None and daily['charged_tokens'] + daily['held_tokens'] + 32_000 > daily['ceiling_tokens']:
+            # Round to the next valid policy increment; approval names the exact ceiling.
+            needed = daily['charged_tokens'] + daily['held_tokens'] + 32_000
+            increment = store.policy['grant_increment_tokens']
+            missing = needed - daily['ceiling_tokens']
+            override = daily['ceiling_tokens'] + ((missing + increment - 1) // increment) * increment
         pending = store.checkpoint_for_approval(incident_id, expected_revision=record['revision'], daily_ceiling_override_tokens=override)
     return store, None, {'status': 'action_needed', 'action': 'budget_approval', 'challenge': pending}
 
@@ -57,7 +62,7 @@ def settle(store, reservation, result):
               and type(usage.get('output_tokens')) is int
               and 0 <= usage['input_tokens'] < 2**62 and 0 <= usage['output_tokens'] < 2**62)
     receipt = {
-        'format_version': 2, 'reservation_digest': digest(reservation),
+        'format_version': store.policy['format_version'], 'reservation_digest': digest(reservation),
         'transport_request_id': reservation['reservation_id'],
         'requested_model': 'gpt-6-astra', 'requested_effort': 'medium',
         'reported_model': None, 'reported_effort': None,

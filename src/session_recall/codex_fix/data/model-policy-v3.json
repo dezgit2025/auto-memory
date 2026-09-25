@@ -1,0 +1,21 @@
+{
+  "format_version": 3,
+  "policy_id": "astra-medium-budget-v3",
+  "transport_id": "codex-runner-v1",
+  "auth_mode": "existing_codex_login",
+  "model": "gpt-6-astra",
+  "effort": "medium",
+  "initial_allowance_tokens": 100000,
+  "input_estimate_tokens": 16000,
+  "generation_estimate_tokens": 16000,
+  "checkpoint_margin_tokens": 4000,
+  "grant_increment_tokens": 100000,
+  "daily_ceiling_tokens": 100000,
+  "requests_per_grant": 3,
+  "automatic_retries": 0,
+  "timeout_seconds": 300,
+  "usage_accounting": "estimated_with_actual_reconciliation_v1",
+  "background": false,
+  "auto_approve": false,
+  "auto_activate": false
+}

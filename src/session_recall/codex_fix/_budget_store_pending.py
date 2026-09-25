@@ -27,7 +27,7 @@ def pending_matches(
         and challenge["checkpoint_digest"] == digest(incident)
         and challenge["daily_ledger_digest"] == digest(daily)
         and challenge["new_incident_ceiling_tokens"]
-        == incident["allowance_tokens"] + 32_000
+        == incident["allowance_tokens"] + challenge["grant_tokens"]
         and incident["state"] == "awaiting_budget_approval"
     )
 

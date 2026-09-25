@@ -91,14 +91,16 @@ def validate_challenge(value: Any) -> dict[str, Any]:
     _integer(value["ledger_revision"])
     _digest(value["checkpoint_digest"])
     _digest(value["daily_ledger_digest"])
-    if value["grant_tokens"] != 32_000 or value["request_allowance"] != 1:
-        _fail()
+    tokens = value["grant_tokens"]
+    requests = value["request_allowance"]
     ceiling = _integer(value["new_incident_ceiling_tokens"])
-    if ceiling < 64_000 or ceiling % 32_000:
+    old_shape = tokens == 32_000 and requests == 1 and ceiling >= 64_000 and ceiling % 32_000 == 0
+    new_shape = tokens == 100_000 and requests == 3 and ceiling >= 200_000 and ceiling % 100_000 == 0
+    if not (old_shape or new_shape):
         _fail()
     override = value["daily_ceiling_override_tokens"]
     if override is not None and (
-        type(override) is not int or override < 96_000 or override % 32_000
+        type(override) is not int or not ((old_shape and override >= 96_000 and override % 32_000 == 0) or (new_shape and override >= 200_000 and override % 100_000 == 0))
     ):
         _fail()
     _timestamp(value["created_at"])

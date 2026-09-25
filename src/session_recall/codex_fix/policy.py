@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from typing import Any
+import json
+from importlib.resources import files
 
 
 def model_policy() -> dict[str, Any]:
@@ -28,3 +30,8 @@ def model_policy() -> dict[str, Any]:
         "auto_approve": False,
         "auto_activate": False,
     }
+
+
+def production_model_policy() -> dict[str, Any]:
+    """Versioned, packaged budget for new Codex repair requests."""
+    return json.loads(files(__package__).joinpath("data/model-policy-v3.json").read_text(encoding="utf-8"))

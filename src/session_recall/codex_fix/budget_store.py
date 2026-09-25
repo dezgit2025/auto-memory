@@ -71,35 +71,36 @@ class BudgetStore(BudgetReservationMixin, BudgetSettlementMixin):
         self.path = self.directory / "controller-ledger.json"
 
     def _require_active_policy(self) -> None:
-        if self._policy_version != 2:
+        if self._policy_version not in (2, 3):
             raise ContractError("legacy_policy_read_only")
 
     def _guard_legacy_budget(self, current_day: str) -> None:
         """Refuse to forget unresolved or same-day spend in an immutable v1 ledger."""
-        legacy_directory = self.root / "budget-v1"
-        if not legacy_directory.exists() and not legacy_directory.is_symlink():
-            return
-        safe_directory(legacy_directory)
-        raw = read_bytes(legacy_directory / "controller-ledger.json")
-        try:
-            legacy = json.loads(raw.decode("utf-8"))
-        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-            raise ContractError("invalid_budget_record") from exc
-        if canonical_bytes(legacy) != raw:
-            raise ContractError("invalid_budget_record")
-        validate_record(legacy)
-        if legacy["controller_id"] != self.controller_id:
-            raise ContractError("budget_context_mismatch")
-        if any(item["held_tokens"] for item in legacy["incidents"]) or any(
-            item["status"] == "held" for item in legacy["reservations"]
-        ):
-            raise ContractError("legacy_usage_pending")
-        if any(
-            item["utc_day"] == current_day
-            and (item["charged_tokens"] or item["held_tokens"])
-            for item in legacy["days"]
-        ):
-            raise ContractError("legacy_day_budget_pending")
+        for previous_version in range(1, self._policy_version):
+            legacy_directory = self.root / f"budget-v{previous_version}"
+            if not legacy_directory.exists() and not legacy_directory.is_symlink():
+                continue
+            safe_directory(legacy_directory)
+            raw = read_bytes(legacy_directory / "controller-ledger.json")
+            try:
+                legacy = json.loads(raw.decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise ContractError("invalid_budget_record") from exc
+            if canonical_bytes(legacy) != raw:
+                raise ContractError("invalid_budget_record")
+            validate_record(legacy)
+            if legacy["controller_id"] != self.controller_id:
+                raise ContractError("budget_context_mismatch")
+            if any(item["held_tokens"] for item in legacy["incidents"]) or any(
+                item["status"] == "held" for item in legacy["reservations"]
+            ):
+                raise ContractError("legacy_usage_pending")
+            if any(
+                item["utc_day"] == current_day
+                and (item["charged_tokens"] or item["held_tokens"])
+                for item in legacy["days"]
+            ):
+                raise ContractError("legacy_day_budget_pending")
 
     def _load(self) -> dict[str, Any]:
         safe_directory(self.directory)
@@ -168,7 +169,7 @@ class BudgetStore(BudgetReservationMixin, BudgetSettlementMixin):
             if len(record["incidents"]) >= 32:
                 raise ContractError("budget_capacity")
             day, now = trusted_now(self.clock)
-            _daily, days = ensure_day(record, day)
+            _daily, days = ensure_day(record, day, ceiling_tokens=self.policy["daily_ceiling_tokens"])
             incident = new_incident(
                 self.controller_id,
                 incident_id,
@@ -205,7 +206,7 @@ class BudgetStore(BudgetReservationMixin, BudgetSettlementMixin):
                 for item in working["grants"]
             ):
                 raise ContractError("approval_pending")
-            daily, days = ensure_day(working, day)
+            daily, days = ensure_day(working, day, ceiling_tokens=self.policy["daily_ceiling_tokens"])
             if incident["state"] == "ready":
                 incident_blocked = (
                     incident["charged_tokens"] + 32_000
@@ -242,7 +243,9 @@ class BudgetStore(BudgetReservationMixin, BudgetSettlementMixin):
             ) or daily["charged_tokens"] + daily["held_tokens"] + 32_000 > effective_ceiling:
                 raise ContractError("daily_budget_exhausted")
             challenge = make_challenge(
-                working, incident, daily, now, daily_ceiling_override_tokens
+                working, incident, daily, now, daily_ceiling_override_tokens,
+                grant_tokens=self.policy["grant_increment_tokens"],
+                request_allowance=self.policy["requests_per_grant"],
             )
             grant_record = {
                 "challenge_id": challenge["challenge_id"],
@@ -318,7 +321,11 @@ class BudgetStore(BudgetReservationMixin, BudgetSettlementMixin):
                 },
                 "BudgetGrant",
             )
-            next_incident, next_daily = consume_grant(incident, daily, grant)
+            next_incident, next_daily = consume_grant(
+                incident, daily, grant,
+                grant_tokens=self.policy["grant_increment_tokens"],
+                request_allowance=self.policy["requests_per_grant"],
+            )
             consumed = {
                 **stored,
                 "status": "consumed",

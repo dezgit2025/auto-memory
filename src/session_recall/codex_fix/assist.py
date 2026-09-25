@@ -15,7 +15,7 @@ from ._candidate_store import write_once
 from ._store_io import activation_lock, atomic_json, directory, protect_root, selection
 from .candidate_checks import candidate_context, guarded_registry, run_checks
 from .contracts import ContractError, digest, validate
-from .policy import model_policy
+from .policy import production_model_policy
 from .sandbox import Sandbox
 
 
@@ -69,13 +69,13 @@ def assist(context: Any, *, generate_fn=codex_runner.generate, sandbox=None) -> 
     with tempfile.TemporaryDirectory(prefix='codex-assist-preflight-') as folder:
         if backend.probe(Path(folder).resolve()).returncode != 0:
             return {'status': 'sandbox_unavailable'}
-    request = candidate.prepare(observed, model_policy())
+    request = candidate.prepare(observed, production_model_policy())
     budget, reservation, needed = reserve(root, request)
     if needed is not None:
         return needed
     write_once(root, f'incidents/{request["incident_id"]}/input.json', request)
     try:
-        generated = generate_fn(request, model_policy())
+        generated = generate_fn(request, production_model_policy())
     except Exception:
         # Charge the reservation estimate even when a transport unexpectedly fails.
         settle(budget, reservation, {'status': 'process_failed', 'evidence': None})

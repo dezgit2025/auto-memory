@@ -61,7 +61,7 @@ def advance_record(
 
 
 def ensure_day(
-    record: dict[str, Any], day: str
+    record: dict[str, Any], day: str, *, ceiling_tokens: int = 64_000
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     if record["days"] and day < record["days"][-1]["utc_day"]:
         raise ContractError("clock_regression")
@@ -78,7 +78,7 @@ def ensure_day(
             "revision": 0,
             "previous_checkpoint_digest": None,
             "policy_digest": record["policy_digest"],
-            "ceiling_tokens": 64_000,
+            "ceiling_tokens": ceiling_tokens,
             "charged_tokens": 0,
             "held_tokens": 0,
         },
@@ -99,6 +99,7 @@ def make_challenge(
     daily: dict[str, Any],
     created_at: str,
     override: int | None,
+    *, grant_tokens: int = 32_000, request_allowance: int = 1,
 ) -> dict[str, Any]:
     projection = {
         "format_version": 1,
@@ -110,9 +111,9 @@ def make_challenge(
         "ledger_revision": incident["revision"],
         "checkpoint_digest": digest(incident),
         "daily_ledger_digest": digest(daily),
-        "grant_tokens": 32_000,
-        "new_incident_ceiling_tokens": incident["allowance_tokens"] + 32_000,
-        "request_allowance": 1,
+        "grant_tokens": grant_tokens,
+        "new_incident_ceiling_tokens": incident["allowance_tokens"] + grant_tokens,
+        "request_allowance": request_allowance,
         "daily_ceiling_override_tokens": override,
         "created_at": created_at,
     }

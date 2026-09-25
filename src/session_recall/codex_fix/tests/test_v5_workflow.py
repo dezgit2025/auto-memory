@@ -9,7 +9,9 @@ import json
 import pytest
 
 from session_recall.codex_fix import approval, assist, cli, launcher, store
+from session_recall.codex_fix import _assist_budget
 from session_recall.codex_fix._assist_budget import approve_budget
+from session_recall.codex_fix.policy import model_policy
 from session_recall.codex_fix.contracts import ContractError, canonical_bytes
 from session_recall.codex_fix.sandbox import Sandbox
 
@@ -22,6 +24,12 @@ from ._v5_workflow_fixtures import (
     refreshed_context,
     selection_bytes,
 )
+
+
+@pytest.fixture(autouse=True)
+def historical_v2_policy(monkeypatch):
+    monkeypatch.setattr(assist, "production_model_policy", model_policy)
+    monkeypatch.setattr(_assist_budget, "production_model_policy", model_policy)
 
 
 @pytest.fixture()

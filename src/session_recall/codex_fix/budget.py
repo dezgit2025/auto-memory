@@ -55,7 +55,7 @@ def new_incident(
             "allowance_tokens": policy["initial_allowance_tokens"],
             "charged_tokens": 0,
             "held_tokens": 0,
-            "requests_allowed": 1,
+            "requests_allowed": policy["requests_per_grant"],
             "requests_started": 0,
             "grants_consumed": 0,
             "state": "ready",
@@ -156,6 +156,7 @@ def consume_grant(
     incident: dict[str, Any],
     daily: dict[str, Any],
     grant: dict[str, Any],
+    *, grant_tokens: int = 32_000, request_allowance: int = 1,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     _same_ledgers(incident, daily)
     validate_c(grant, "BudgetGrant")
@@ -168,7 +169,7 @@ def consume_grant(
         grant["checkpoint_digest"] == digest(incident),
         grant["daily_ledger_digest"] == digest(daily),
         grant["new_incident_ceiling_tokens"]
-        == incident["allowance_tokens"] + RESERVATION_TOKENS,
+        == incident["allowance_tokens"] + grant_tokens,
     )
     if not all(bindings):
         raise ContractError("grant_binding_mismatch")
@@ -188,7 +189,7 @@ def consume_grant(
         _advance(
             incident,
             allowance_tokens=grant["new_incident_ceiling_tokens"],
-            requests_allowed=incident["requests_allowed"] + 1,
+            requests_allowed=incident["requests_allowed"] + request_allowance,
             grants_consumed=incident["grants_consumed"] + 1,
             state="ready",
         ),
@@ -278,7 +279,7 @@ def settle_request(
             incident,
             charged_tokens=incident["charged_tokens"] + total,
             held_tokens=incident["held_tokens"] - held,
-            state="awaiting_budget_approval",
+            state="ready" if incident["requests_started"] < incident["requests_allowed"] else "awaiting_budget_approval",
             usage_status=usage_status,
             current_reservation_digest=None,
         ),

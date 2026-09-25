@@ -152,6 +152,9 @@ def model_policy(value: Any) -> None:
     identities = {
         1: {"policy_id": "sol-medium-budget-v1", "model": "gpt-5.6-sol"},
         2: {"policy_id": "astra-medium-budget-v2", "model": "gpt-6-astra"},
+        3: {"policy_id": "astra-medium-budget-v3", "model": "gpt-6-astra",
+            "initial_allowance_tokens": 100_000, "daily_ceiling_tokens": 100_000,
+            "grant_increment_tokens": 100_000, "requests_per_grant": 3},
     }
     if format_version not in identities:
         fail("ModelPolicy.format_version is unsupported")
@@ -185,7 +188,9 @@ def incident(value: Any) -> None:
     enum(value["state"], {"ready", "in_flight", "awaiting_usage", "awaiting_budget_approval"}, "IncidentLedger.state")
     enum(value["usage_status"], {"none", "estimated", "actual"}, "IncidentLedger.usage_status")
     reservation = digest_value(value["current_reservation_digest"], "IncidentLedger.current_reservation_digest", nullable=True)
-    if allowance != 32_000 * (grants + 1) or allowed != grants + 1 or started > allowed:
+    legacy_shape = allowance == 32_000 * (grants + 1) and allowed == grants + 1
+    larger_shape = allowance == 100_000 * (grants + 1) and allowed == 3 * (grants + 1)
+    if not (legacy_shape or larger_shape) or started > allowed:
         fail("IncidentLedger allowance/request arithmetic is inconsistent")
     if held not in {0, 32_000} or (held > 0) != (reservation is not None):
         fail("IncidentLedger reservation hold is inconsistent")
@@ -214,7 +219,8 @@ def daily(value: Any) -> None:
     ceiling = integer(value["ceiling_tokens"], "DailyLedger.ceiling_tokens")
     charged = integer(value["charged_tokens"], "DailyLedger.charged_tokens")
     held = integer(value["held_tokens"], "DailyLedger.held_tokens")
-    if ceiling < 64_000 or ceiling % 32_000 or held % 32_000 or charged > MAX_INT - held:
+    valid_ceiling = (ceiling >= 64_000 and ceiling % 32_000 == 0) or (ceiling >= 100_000 and ceiling % 100_000 == 0)
+    if not valid_ceiling or held % 32_000 or charged > MAX_INT - held:
         fail("DailyLedger token arithmetic is inconsistent")
 
 
@@ -231,15 +237,17 @@ def grant(value: Any) -> None:
     integer(value["ledger_revision"], "BudgetGrant.ledger_revision")
     digest_value(value["checkpoint_digest"], "BudgetGrant.checkpoint_digest")
     digest_value(value["daily_ledger_digest"], "BudgetGrant.daily_ledger_digest")
-    exact_int(value["grant_tokens"], 32_000, "BudgetGrant.grant_tokens")
+    tokens = integer(value["grant_tokens"], "BudgetGrant.grant_tokens")
     ceiling = integer(value["new_incident_ceiling_tokens"], "BudgetGrant.new_incident_ceiling_tokens")
-    if ceiling < 64_000 or ceiling % 32_000:
+    requests = integer(value["request_allowance"], "BudgetGrant.request_allowance")
+    old_shape = tokens == 32_000 and requests == 1 and ceiling >= 64_000 and ceiling % 32_000 == 0
+    new_shape = tokens == 100_000 and requests == 3 and ceiling >= 200_000 and ceiling % 100_000 == 0
+    if not (old_shape or new_shape):
         fail("BudgetGrant incident ceiling is invalid")
-    exact_int(value["request_allowance"], 1, "BudgetGrant.request_allowance")
     override = value["daily_ceiling_override_tokens"]
     if override is not None:
         override = integer(override, "BudgetGrant.daily_ceiling_override_tokens")
-        if override < 96_000 or override % 32_000:
+        if not ((old_shape and override >= 96_000 and override % 32_000 == 0) or (new_shape and override >= 200_000 and override % 100_000 == 0)):
             fail("BudgetGrant daily override is invalid")
     if not string(value["actor_label"], "BudgetGrant.actor_label", 128):
         fail("BudgetGrant.actor_label must not be empty")
@@ -264,7 +272,7 @@ def reservation(value: Any) -> None:
     exact_int(value["estimated_reserved_tokens"], 32_000, "RequestReservation.estimated_reserved_tokens")
     exact(value["reservation_basis"], "estimate", "RequestReservation.reservation_basis")
     pause = integer(value["pause_at_tokens"], "RequestReservation.pause_at_tokens")
-    if pause < 28_000 or (pause + 4_000) % 32_000:
+    if not ((pause >= 28_000 and (pause + 4_000) % 32_000 == 0) or (pause >= 96_000 and (pause + 4_000) % 100_000 == 0)):
         fail("RequestReservation pause boundary is invalid")
 
 
@@ -278,6 +286,7 @@ def usage(value: Any) -> None:
     versioned = {
         1: {"effective_model", "effort"},
         2: {"reported_model", "requested_effort", "reported_effort"},
+        3: {"reported_model", "requested_effort", "reported_effort"},
     }
     if format_version not in versioned:
         fail("UsageEvidence.format_version is unsupported")

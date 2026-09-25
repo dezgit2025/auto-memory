@@ -154,6 +154,26 @@ def test_missing_reported_settings_are_nullable_and_accepted():
     assert len(recorder.calls) == 1
 
 
+def test_current_codex_usage_fields_are_retained_without_relaxing_event_validation():
+    request = candidate_input()
+    usage = {
+        "input_tokens": 10,
+        "cached_input_tokens": 2,
+        "cache_write_input_tokens": 3,
+        "output_tokens": 4,
+        "reasoning_output_tokens": 1,
+    }
+    recorder = RecordingRun(
+        candidate(request),
+        stdout_events=[{"type": "turn.completed", "usage": usage}],
+    )
+
+    result = generate(request, model_policy(), run=recorder)
+
+    assert result["status"] == "completed"
+    assert result["evidence"]["usage"] == usage
+
+
 @pytest.mark.parametrize(
     ("events", "status"),
     [
