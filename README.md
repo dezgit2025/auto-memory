@@ -21,6 +21,24 @@
 
 ## Codex schema repair — v0.6.0 (2026-09-20)
 
+### Current Codex 0.157 schema (state 57 / history 7)
+
+The current `main` branch bundles the reviewed 57/7 adapter for **fresh installs**.
+The immutable `v0.6.0` tag below still bundles 55/6 and will reject the new
+schema. Until a new release is tagged, install current main explicitly:
+
+```bash
+pipx install --python "$(brew --prefix python@3.14)/bin/python3.14" \
+  "auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@main"
+session-recall-codex schema-check
+```
+
+The development build still reports version `0.6.0`; the 57/7 profile is
+identified by `schema-check`. Existing managed selections stay pinned to
+their prior artifact and require a separately reviewed repair. See the
+[Codex install guide](deploy/install-codex.md).
+
+
 Codex recall now includes a repair companion, `session-recall-codex-fix`, for
 schema changes that would otherwise stop session recall. Repair preparation and
 testing are automated after you start them; applying a generated fix requires

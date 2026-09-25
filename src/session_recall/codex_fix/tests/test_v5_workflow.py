@@ -101,7 +101,7 @@ def test_unknown_to_review_approval_activation_launcher_and_rollback(
     rollback_restart = production_context(world)
     restored_path, restored_manifest = launcher._selected(rollback_restart)
     assert restored_path.is_file()
-    assert restored_manifest["profile_ids"]["state"] == "codex-state-v5-migration-55"
+    assert restored_manifest["profile_ids"]["state"] == "codex-state-v5-migration-57"
 
 
 def test_corrupt_active_candidate_does_not_block_fresh_cli_rollback(
@@ -127,7 +127,7 @@ def test_corrupt_active_candidate_does_not_block_fresh_cli_rollback(
     assert body["status"] == "rolled_back_incompatible"
     restored = production_context(world)
     _path, manifest = launcher._selected(restored)
-    assert manifest["profile_ids"]["state"] == "codex-state-v5-migration-55"
+    assert manifest["profile_ids"]["state"] == "codex-state-v5-migration-57"
 
 
 def test_same_target_different_candidate_cannot_create_ambiguous_approval(

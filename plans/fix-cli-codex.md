@@ -1466,3 +1466,20 @@ Each request still has a 32,000-token estimate and no hard response-token cap.
 The old v2 ledger remains immutable; same-day spend or unresolved usage blocks
 a v3 ledger reset. Keep old grants and receipts bound to their policy version.
 No Codex-owned database or session row is modified by the repair.
+
+## 2026-09-25 distribution correction for Codex state 57/history 7
+
+The 2026-09-25 repair initially activated an adapter only in the owner's
+managed store. That did not make a fresh download work. The corrected main
+branch bundles the exact reviewed 57/7 artifact as its fresh-install seed,
+updates the digest-pinned catalogue and protected manifest, and adds a
+synthetic fresh-install test. The artifact differs from the previously bundled
+adapter only in its manifest and captured profile. An isolated wheel without a
+managed selection passed a read-only schema check and session list against the
+installed Codex store. The independent installed-wheel L2 workflow also passed.
+
+The immutable `v0.6.0` tag still bundles 55/6. Until a later release is
+separately approved, the README and Codex install guide direct current Codex
+users to the `main` branch and state the limitation plainly. Existing managed
+selections remain pinned and may require a separate reviewed upgrade. No tag,
+PyPI publication or Codex-owned database change is part of this increment.

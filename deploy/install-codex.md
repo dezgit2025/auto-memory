@@ -7,6 +7,16 @@ version: v0.6.0
 
 # Deploy session-recall-codex (OpenAI Codex CLI)
 
+> [!IMPORTANT]
+> **Codex 0.157 / state 57 + history 7:** a fresh install from the current
+> `main` branch bundles the verified adapter. The immutable `v0.6.0` tag
+> used in the older release commands below bundles 55/6 and fails its
+> schema check on Codex 0.157. Until a new release is tagged, install
+> `auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@main`
+> with the same pipx/Python setup shown below, then run
+> `session-recall-codex schema-check`. Existing managed selections remain
+> pinned and need a separate reviewed upgrade.
+
 **Humans:** skim the overview, then run the snippets — or ask your AI agent to do it.
 **Updated: 2026-09-20 — auto-memory 0.6.0.**
 

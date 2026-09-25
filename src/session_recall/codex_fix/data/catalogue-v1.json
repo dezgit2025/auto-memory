@@ -1,7 +1,7 @@
 {
   "format_version": 1,
   "catalogue_id": "codex-repairs-v1",
-  "seed_artifact_digest": "sha256:135d1d1e09b465fb09119d756504459a07944ce8a3b9a652e998b75726677643",
+  "seed_artifact_digest": "sha256:98d9d5f15f04df4e6ce7fbdd4ee7c372d9d19b2d9352899b0494e5f1861e3a99",
   "recipes": [
     {
       "recipe_id": "codex-state52-artifact-to-state55-v2",

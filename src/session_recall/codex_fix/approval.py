@@ -13,7 +13,7 @@ from ._candidate_store import identifier, read_record, write_once
 from ._store_io import activation_lock, protect_root, timestamp
 from ._store_preconditions import CHECK_IDS
 from .contracts import ContractError, digest, validate
-from .policy import model_policy
+from .policy import model_policy, production_model_policy
 
 
 def _raw_digest(data: bytes) -> str:
@@ -28,7 +28,8 @@ def validate_review(value: dict[str, Any]) -> dict[str, Any]:
     request = validate_input(value['request'])
     candidate = validate_candidate(value['candidate'], request)
     snapshot = validate(value['snapshot'], 'SchemaSnapshot')
-    if request['policy_digest'] != digest(model_policy()) or request['acceptance_contract_digest'] != ACCEPTANCE_DIGEST:
+    supported_policies = {digest(model_policy()), digest(production_model_policy())}
+    if request['policy_digest'] not in supported_policies or request['acceptance_contract_digest'] != ACCEPTANCE_DIGEST:
         raise ContractError('stale_review_policy')
     result = value['result']
     expected = {
