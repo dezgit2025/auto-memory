@@ -9,7 +9,11 @@ HINT = "Use Copilot CLI — DB only updates from active sessions"
 
 def check() -> dict:
     try:
-        mtime = os.path.getmtime(DB_PATH)
+        wal_path = DB_PATH + "-wal"
+        mtime = max(
+            os.path.getmtime(DB_PATH),
+            os.path.getmtime(wal_path) if os.path.exists(wal_path) else 0,
+        )
         age_hours = (time.time() - mtime) / 3600
     except OSError:
         return {"name": "DB Freshness", "score": 0, "zone": "RED",
