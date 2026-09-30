@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 
 
 def _run_health(*extra_args: str, env_override: dict[str, str] | None = None):
@@ -18,7 +19,7 @@ def _run_health(*extra_args: str, env_override: dict[str, str] | None = None):
         text=True,
         timeout=30,
         env=env,
-        cwd="/tmp",
+        cwd=tempfile.gettempdir(),
     )
 
 

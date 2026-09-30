@@ -58,7 +58,10 @@ jobs:
       # native Windows covers recall for Copilot CLI and Claude Code.
       - name: Run tests
         shell: bash
-        run: pytest src/ -q -W error --ignore=src/session_recall/codex_fix
+        run: >-
+          pytest src/ -q -W error
+          --ignore=src/session_recall/codex_fix
+          --ignore=src/session_recall/providers/codex
 
   package-smoke:
     name: Package / wheel install
