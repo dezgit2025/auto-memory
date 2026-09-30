@@ -786,10 +786,6 @@ No. auto-memory is strictly read-only. It never writes to `~/.copilot/session-st
 **What happens when Copilot CLI updates its schema?**
 Run `session-recall schema-check` to validate. The tool fails fast on schema drift rather than returning bad data. See [UPGRADE-COPILOT-CLI.md](UPGRADE-COPILOT-CLI.md).
 
-## Roadmap
-
-See [ROADMAP.md](ROADMAP.md).
-
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and guidelines. Issues, PRs, and docs improvements are welcome.

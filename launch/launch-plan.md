@@ -1,7 +1,7 @@
 # Launch preparation plan — v1
 
 Launch: September 21–27, 2026; exact day undecided. Reminder: October 4, 10 a.m. Eastern.
-Scope: drafts, references, tasks, and local reminder. [Roadmap](../ROADMAP.md).
+Scope: drafts, references, tasks, and local reminder.
 Steps: (1) prepare kit and task links; (2) install reminder; (3) verify claims, links, answer lengths and schedule.
 Acceptance: resumable entry document; accurate capabilities; application answers under 500 characters; verified reminder.
 Excluded: posting, submission, commits/pushes, product changes, live AI repair.

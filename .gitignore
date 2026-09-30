@@ -38,6 +38,7 @@ service-account*.json
 
 # === AI Agent / Copilot / Claude ===
 CLAUDE.md
+AGENTS.md
 TASKS.md
 .claude/
 .copilot/
@@ -104,3 +105,10 @@ codex-test/
 
 # Public launch checklist; root TASKS.md remains local-only
 !launch/tasks.md
+
+# OpenAI application draft (local-only)
+launch/openai-application.md
+
+# Local-only planning docs
+/ROADMAP.md
+/projects.md

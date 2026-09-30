@@ -158,7 +158,6 @@ Stage C execution. Live generation and candidate execution still require their
 budget/model/sandbox gates. No global installation, commit, publication or direct
 Codex database access is authorized by this revision.
 
-Roadmap: [CX-001](../ROADMAP.md#codex-compatibility).
 Journal: [progress-fix-cli-codex.md](progress-fix-cli-codex.md).
 
 Stage A acceptance (2026-09-20 UTC): 404 tests pass without warnings; source lint
@@ -1483,3 +1482,15 @@ separately approved, the README and Codex install guide direct current Codex
 users to the `main` branch and state the limitation plainly. Existing managed
 selections remain pinned and may require a separate reviewed upgrade. No tag,
 PyPI publication or Codex-owned database change is part of this increment.
+
+## 2026-09-29 owner follow-up: local state 58/history 7 repair
+
+The installed recall command refused Codex state migration 58 while history
+remained at migration 7. A read-only maintenance capture showed that the used
+table columns were unchanged. The fixer had no known recipe. Its macOS sandbox
+preflight could not run inside the workspace sandbox, so the owner explicitly
+approved an escalated fixer run using the fixer's own verified sandbox. The
+reviewed candidate changed only the captured state's migration ceiling and
+profile name, passed six checks, and was activated in the local managed
+selection. Codex-owned storage was not modified. This does not update the
+bundled adapter for fresh installations; that is a separate distribution step.

@@ -2,6 +2,19 @@
 
 ## Current state
 
+- Updated: 2026-09-20T18:19:41Z
+- Plan reference/version: fix-cli-codex.md v5 retrospective follow-up
+- Previous completed step: general principle sanity-check and summary append complete
+- Current step/status: high-level summary added at bottom of learning notes / complete
+- Next step: none for this documentation request; apply the principle proportionally in future designs
+- Affected paths: plans/learnings-fix-cli-codex-plan.md and this journal for this follow-up; earlier retrospective links unchanged
+- Run/process/task IDs: main author; no model/repair/installation or publication action
+- Validation/results/evidence paths: Summary defines agentic artificial intelligence without unexplained abbreviations, covers bounded work/authority/spending, protected verification and recovery, and includes a plain-text control-flow diagram. It explicitly allows authorized low-risk autonomy, distinguishes estimates from hard limits, and avoids guarantees of perfect safety or claims that a second model is an enforcement boundary. Diagram character/fence checks and diff check pass.
+- Blockers: none
+- Exact next recovery action: Use the appended high-level summary as a design principle, not as blanket permission for automation or a claim that current partial safeguards are complete. The model may explore; trusted software controls consequential actions and budget boundaries. Retrospective remains locally saved with uncommitted suggestions and no product code changes.
+
+### Preserved prior upstream checkpoint — issue 25
+
 - Updated: 2026-09-20T17:32:09Z
 - Plan reference/version: fix-cli-codex.md v5 release documentation plus authorized issue #25 follow-up.
 - Previous completed step: README publication, contributor acknowledgment and isolated installation verification.
@@ -1251,6 +1264,54 @@
 - Blockers/limitations: none for this request. The formula request is declined; this does not claim Homebrew packaging was implemented or PyPI publication completed. Existing local user installations and active checkout edits were preserved.
 - Exact next recovery action: retain this completed checkpoint; any new report of installation failure should be investigated against the user's chosen manager, interpreter and release. Do not replay the comment or closure.
 
+### 2026-09-20T18:07:57Z — Before plain-language retrospective drafting
+
+- Plan reference/version: fix-cli-codex.md v5 and completed release/installer follow-ups; retrospective only
+- Previous completed step: pipx-first installer guidance published and verified
+- Current step/status: review execution history and classify lessons versus deferred enhancements / starting
+- Next step: write plans/learnings-fix-cli-codex-plan.md with plain-language diagrams, verify evidence/status labels and make it visible to Git
+- Affected paths: requested retrospective, related plan/roadmap/AGENTS links, .gitignore allowlist and this journal
+- Run/process/task IDs: main writer/journal owner; read-only reviews next. No live model repair or installation.
+- Validation/results/evidence paths: Supported session recall schema-check and recent-session list pass. No installed skill matching session CLI/session recall found; documented recall executable used. Active plan/journal/roadmap read. Source confirms approximate token guard and a28K marker, but no runtime call to should_pause outside tests; this must not be described as a working hard cutoff.
+- Blockers: none for retrospective. Unverified live repair and separately authorized spending/publication work remain unchanged.
+- Exact next recovery action: Distinguish implemented safeguards, partial behavior, intentionally removed complexity and genuinely deferred work. Explain tokens, approvals, isolation, recovery and publication in simple terms with plain-text diagrams. Add evidence links and suggested acceptance checks; do not execute suggested enhancements or reset the live budget ledger.
+
+### 2026-09-20T18:18:07Z — After retrospective review and validation — notes complete
+
+- Plan reference/version: fix-cli-codex.md v5 plus retrospective documentation follow-up
+- Previous completed step: execution/source review, synthetic budget edge-case reproduction and independent retrospective review complete
+- Current step/status: requested plain-language retrospective saved and validated / complete
+- Next step: none for this documentation request; select and authorize a bounded improvement separately if desired
+- Affected paths: plans/learnings-fix-cli-codex-plan.md; links in plan/roadmap/AGENTS; .gitignore allowlist; this journal. No product source changes.
+- Run/process/task IDs: main author/journal owner; scope, budget and final reviews complete; no live repair/model/installation process
+- Validation/results/evidence paths: Session recall schema-check/list succeeded; no separate installed session CLI skill found, so supported recall executable used. Retrospective has11 lessons,11 ASCII-only diagrams and10 stable uncommitted suggestions; technical abbreviations avoided or defined. Relative evidence links, balanced fences, Git visibility and diff check pass. Independent full-document review READY. Synthetic-only helper reproduction:18000 then35000 usage totals53000; proposed85000 daily ceiling is rejected as invalid_budget_record, while96000 is valid under the existing rule; no model calls or real ledger changes.
+- Blockers: none for notes. Recorded gaps remain unfixed:28K helper is not wired to running requests; irregular daily allowance rounding can block approval; public budget status/reconciliation are absent; live model success is still unverified.
+- Exact next recovery action: Read the learning notes and uncommitted LEARN-01 through LEARN-10 suggestions before planning any follow-up. Retain current released behavior and historical acceptance evidence; do not infer a hard token cap, automatic permission to implement suggestions, a new live budget grant or publication authorization from this retrospective. Documentation is saved locally and visible to Git.
+
+### 2026-09-20T18:18:23Z — Before high-level agent-development summary
+
+- Plan reference/version: fix-cli-codex.md v5 retrospective follow-up
+- Previous completed step: plain-language retrospective independently reviewed and saved
+- Current step/status: sanity-check and append a reusable principle about bounded model authority / starting
+- Next step: validate the appended summary, diagram and plain-language qualifications
+- Affected paths: plans/learnings-fix-cli-codex-plan.md and this journal only for this follow-up
+- Run/process/task IDs: main documentation owner; no product/model/installation work
+- Validation/results/evidence paths: User requests generalizing the lesson: independently enforced limits instead of relying on model faithfulness. Qualification: bound consequences and permissions in proportion to risk; do not unnecessarily restrict exploration or promise complete safety.
+- Blockers: none
+- Exact next recovery action: Append summary at document bottom covering model proposals versus program-enforced authority, narrow implementation units, independent checks and separate approvals; distinguish configurable boundaries from permanent absence of human review. Keep existing notes and unimplemented status intact.
+
+### 2026-09-20T18:19:41Z — After high-level bounded-authority summary — complete
+
+- Plan reference/version: fix-cli-codex.md v5 retrospective follow-up
+- Previous completed step: general principle sanity-check and summary append complete
+- Current step/status: high-level summary added at bottom of learning notes / complete
+- Next step: none for this documentation request; apply the principle proportionally in future designs
+- Affected paths: plans/learnings-fix-cli-codex-plan.md and this journal for this follow-up; earlier retrospective links unchanged
+- Run/process/task IDs: main author; no model/repair/installation or publication action
+- Validation/results/evidence paths: Summary defines agentic artificial intelligence without unexplained abbreviations, covers bounded work/authority/spending, protected verification and recovery, and includes a plain-text control-flow diagram. It explicitly allows authorized low-risk autonomy, distinguishes estimates from hard limits, and avoids guarantees of perfect safety or claims that a second model is an enforcement boundary. Diagram character/fence checks and diff check pass.
+- Blockers: none
+- Exact next recovery action: Use the appended high-level summary as a design principle, not as blanket permission for automation or a claim that current partial safeguards are complete. The model may explore; trusted software controls consequential actions and budget boundaries. Retrospective remains locally saved with uncommitted suggestions and no product code changes.
+
 ### 2026-09-25T04:36:45Z — Schema 57/7 repair active; 100k policy before final install/commit
 
 - Plan/version: `fix-cli-codex.md` owner follow-up. Previous completed step: 0.6.0 release and documentation. Current step/status: managed schema-57/history-7 adapter ACTIVE; versioned 100,000-token policy implemented and tested; final package reinstall, Git commit and push PENDING.
@@ -1290,3 +1351,12 @@
 - Remote proof: an isolated wheel downloaded from GitHub commit `d5307f5`, installed into a disposable venv with no managed selection, passed state-57/history-7 schema-check and returned five sessions read-only. The local pipx package was refreshed; bare CLI schema-check/list and fixer check passed after reinstall. The full source/release-upgrade suite passed 569 tests, protected manifest and ruff passed, and installed-wheel L2 passed all three cases. No live model call or Codex-owned database write occurred in this increment.
 - Limit: immutable `v0.6.0` still bundles 55/6. The README and Codex guide direct current Codex users to main until a separately approved release. Previously managed selections remain pinned and may need their own reviewed upgrade. No release tag, PyPI publication or GitHub release was created.
 - Exact next recovery action: if a tagged download is requested, prepare a versioned release candidate and review the tag-triggered PyPI workflow before publication. Do not move the old tag or claim that it contains 57/7.
+
+### 2026-09-29T12:52:20Z — Local schema 58 repair active
+
+- Plan/version: `fix-cli-codex.md` owner maintenance follow-up. Previous completed step: 2026-09-25 fresh-main distribution correction. Current step/status: local managed state-58/history-7 repair COMPLETE; fresh-install packaging not selected.
+- Failed attempt and changed hypothesis: the first `assist` stopped at `sandbox_unavailable` before reservation or model request. Escalation waited until the owner explicitly authorized the model request and outer sandbox override. After that approval, the fixer ran its own macOS sandbox and produced a passing candidate. No blocked attempt was replayed blindly.
+- Evidence: read-only capture found unchanged used columns; candidate `5140814f5fe9272e38db21d951f4754b17cc26f8055feea196b1d4f80d408d1e` changed only the state ceiling 57→58 and profile name. Its digest-matched artifact `b0cfacfcfc4c23e1f624aa3e44a526d8299fc672c385b4e2648859756a150421` passed all six candidate checks. Explicit approval and activation operation `bef3ad71a2d9bb149bb8d8fe48452094f7635fdeba31feed78fed11ac2f8cc0e` advanced managed selection generation 1→2 and retained the prior selection for rollback.
+- Acceptance: bare `session-recall-codex schema-check --json` exited 0 for state-58/history-7; bare `list --json --limit 5` exited 0 with five sessions; fixer `check` returned `supported`. Synthetic schema/list, unknown-migration refusal and no-write hashes also passed.
+- Affected paths: fixer managed state, this plan and journal. No source package, bundled seed, Codex-owned database, production OpenClaw route or Polar VM was changed. Existing unrelated worktree edits remain untouched.
+- Exact next recovery action: for a future local drift, rerun bare schema-check then fixer check. Do not replay this candidate or activation. A fresh-install state-58 bundle requires a separately selected packaging increment; the current local repair does not supply it.

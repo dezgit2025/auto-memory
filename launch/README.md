@@ -4,7 +4,6 @@ Launch target: **September 21–27, 2026**. Follow-up: **October 4, 10 a.m. East
 Read [plan](launch-plan.md), [journal](progress-launch-plan.md), and [tasks](tasks.md), then current [changelog](../CHANGELOG.md) and [Codex guide](../deploy/install-codex.md). Reconcile actual state before resuming. Refresh all claims before publication.
 
 - [Reddit post and announcement drafts](reddit-posts.md)
-- [OpenAI application and sources](openai-application.md)
 - [Task checklist](tasks.md)
 - [Reminder](reminder.md)
 
