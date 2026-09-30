@@ -3,10 +3,7 @@
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
-
-import pytest
 
 from session_recall.providers.copilot_cli import CopilotCliProvider
 from session_recall.providers.file import (
@@ -14,12 +11,6 @@ from session_recall.providers.file import (
     _extract_role,
     _extract_text,
     _is_wsl,
-)
-
-# Windows Python rewrites POSIX/WSL session paths (/home/x -> \home\x).
-# Fixed by PR #29; strict so CI flags these once the fix lands.
-posix_paths_on_windows = pytest.mark.xfail(
-    sys.platform == "win32", reason="POSIX paths rewritten on Windows (#29)", strict=True
 )
 
 
@@ -135,7 +126,6 @@ def test_cli_fallback_prefers_context_repository_field(tmp_path: Path) -> None:
     assert results[0]["repository"] == "dezgit2025/auto-memory"
 
 
-@posix_paths_on_windows
 def test_cli_fallback_uses_tool_path_to_infer_repository(
     monkeypatch, tmp_path: Path
 ) -> None:
@@ -186,7 +176,6 @@ def test_cli_fallback_uses_tool_path_to_infer_repository(
     assert sessions[0]["repository"] == "dezgit2025/auto-memory"
 
 
-@posix_paths_on_windows
 def test_cli_fallback_labels_non_repo_session_as_local_workspace(
     tmp_path: Path,
 ) -> None:

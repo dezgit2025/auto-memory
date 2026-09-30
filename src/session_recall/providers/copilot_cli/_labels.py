@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import ntpath
 import posixpath
 from pathlib import Path
 
@@ -42,4 +41,4 @@ def _local_workspace_label(path_str: str | None) -> str | None:
         return None
     if _is_posixish_path(path_str):
         return f"local:{posixpath.expanduser(path_str)}"
-    return f"local:{ntpath.normpath(str(Path(path_str).expanduser()))}"
+    return f"local:{Path(path_str).expanduser()}"
