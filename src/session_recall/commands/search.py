@@ -17,8 +17,12 @@ def sanitize_fts5_query(raw: str) -> str | None:
     """Escape FTS5 special characters and add prefix matching.
 
     Returns None for empty/whitespace-only queries.
-    Strategy: split on whitespace, quote each token that contains
-    special chars, append * for prefix matching on every token.
+    Strategy: split on whitespace. Plain tokens get * for prefix matching.
+    Tokens containing special chars (hyphens, dots, slashes, ...) are split
+    on those chars into the subtokens unicode61 actually indexes, and
+    searched as a phrase with prefix matching on the last subtoken —
+    so `session-recall` becomes `"session recall"*` and matches without
+    the caller needing to know how the tokenizer splits.
     """
     stripped = raw.strip()
     if not stripped:
@@ -26,11 +30,16 @@ def sanitize_fts5_query(raw: str) -> str | None:
     tokens = stripped.split()
     safe_tokens = []
     for tok in tokens:
-        escaped = tok.replace('"', '""')
         if _FTS5_SPECIAL.search(tok):
-            safe_tokens.append(f'"{escaped}"')
+            subtokens = [s for s in _FTS5_SPECIAL.split(tok) if s]
+            if not subtokens:
+                continue
+            phrase = " ".join(s.replace('"', '""') for s in subtokens)
+            safe_tokens.append(f'"{phrase}"*')
         else:
-            safe_tokens.append(f"{escaped}*")
+            safe_tokens.append(f'{tok.replace(chr(34), chr(34) * 2)}*')
+    if not safe_tokens:
+        return None
     return " ".join(safe_tokens)
 
 
