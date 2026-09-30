@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 Format: [Keep a Changelog](https://keepachangelog.com/). Versioning: [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- Copilot CLI workspace labels keep POSIX/WSL-style paths intact on Windows
+  instead of rewriting them with backslashes, so repository detection works for
+  WSL sessions. Adds a regression test for health discovery when only the
+  `session-state` folder exists (#19). Contributed by @erSpell (#29).
+
+### CI
+
+- Runs the suite on Windows and on Linux Python 3.13/3.14, and smoke-tests the
+  built wheel's console scripts and bundled data from a clean install (#30).
+
 ## [0.6.0] — 2026-09-20
 
 Available from the GitHub repository. This change does not itself publish a PyPI

@@ -802,6 +802,7 @@ This is an independent open-source project. It is **not** affiliated with, endor
 
 - [@jshessen](https://github.com/jshessen) — Multi-storage provider architecture ([PR #5](https://github.com/dezgit2025/auto-memory/pull/5))
 - [@tillig](https://github.com/tillig) — Reported the macOS installation issue and suggested isolated installation with `uv` ([#25](https://github.com/dezgit2025/auto-memory/issues/25)).
+- [@erSpell](https://github.com/erSpell) — Windows/WSL path handling for Copilot CLI workspace labels and a `session-state` regression test ([PR #29](https://github.com/dezgit2025/auto-memory/pull/29))
 
 ## License
 
