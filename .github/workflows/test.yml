@@ -54,12 +54,11 @@ jobs:
       - name: Lint with ruff
         run: ruff check src/
 
+      # The Codex launcher and fixer are POSIX-only (deploy/install-codex.md);
+      # native Windows covers recall for Copilot CLI and Claude Code.
       - name: Run tests
         shell: bash
-        run: >-
-          pytest src/ -q -W error
-          --ignore=src/session_recall/codex_fix/tests/test_v5_sandbox.py
-          --ignore=src/session_recall/codex_fix/tests/test_v5_workflow.py
+        run: pytest src/ -q -W error --ignore=src/session_recall/codex_fix
 
   package-smoke:
     name: Package / wheel install
@@ -84,6 +83,8 @@ jobs:
           "$RUNNER_TEMP/pkg/bin/pip" install dist/*.whl
 
       - name: Check console scripts and bundled data
+        env:
+          SESSION_RECALL_ENABLE_CLAUDE_BACKEND: "1"
         run: |
           set -euo pipefail
           expected="$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")"
