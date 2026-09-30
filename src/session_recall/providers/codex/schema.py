@@ -8,7 +8,7 @@ closes a database, so validation and query always share connections.
 """
 
 import json
-from pathlib import Path
+from importlib.resources import files
 
 from ._schema_report import SchemaReport, drift_json, format_drift_human, success_json
 from .errors import CodexSchemaDrift
@@ -19,8 +19,12 @@ __all__ = [
     "drift_json", "format_drift_human", "success_json",
 ]
 
-_PROFILES_PATH = Path(__file__).parent / "verifications" / "captured-profiles.json"
-_PROFILES = json.loads(_PROFILES_PATH.read_text())
+_PROFILES_RESOURCE = (
+    files(__package__)
+    .joinpath("verifications")
+    .joinpath("captured-profiles.json")
+)
+_PROFILES = json.loads(_PROFILES_RESOURCE.read_text(encoding="utf-8"))
 
 STATE_PROFILE_NAME = _PROFILES["state"]["profile"]
 HISTORY_PROFILE_NAME = _PROFILES["history"]["profile"]

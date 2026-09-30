@@ -3,7 +3,7 @@ purpose: Agent-runnable guide to install auto-memory and wire it into agent inst
 audience: AI coding agents (Copilot CLI, Claude Code, Cursor, Aider) acting on behalf of users
 requires-user-confirmation: true
 read-only-detection: true
-mutates-shell-rc: false
+mutates-shell-rc: true # optional pipx ensurepath / uv tool update-shell only
 mutates-agent-instructions: true
 mutates-system-binaries: true
 estimated-time: 90 seconds
@@ -12,13 +12,42 @@ companion-file: deploy/install-other-backends.md
 
 # Deploy auto-memory
 
+**Repository release: 0.6.0 — 2026-09-20.** Install this revision from GitHub.
+Publishing a Git commit does not publish to PyPI; unqualified PyPI installs can
+still provide an older version without the new Codex repair companion.
+Codex users can follow [the dedicated setup guide](install-codex.md) directly.
+
+**Default: pipx recommended, uv alternative, pip only inside a venv.** One isolated tool installation
+provides the Copilot, Claude Code and Codex commands. Choosing the Python
+executable explicitly avoids ambiguity with multiple Python installations.
+Choose one manager for the shared package; separate installs per backend are unnecessary.
+
 **Humans:** skim the TL;DR, then run the snippets — or ask your AI agent to do it.
 **Agents:** read sections 1–7 in order. Every mutating step requires user confirmation. Use a reasoning model (Sonnet 4.6, GPT-5.4) — mini models may skip confirmation gates.
 
 ```bash
-uv tool install auto-memory && session-recall schema-check && session-recall health
+# macOS/Homebrew; this is the Python build used by Codex sandbox tests:
+brew install pipx python@3.14
+pipx install --python "$(brew --prefix python@3.14)/bin/python3.14" \
+  "auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@v0.6.0"
+session-recall --version
+# Copilot users: session-recall schema-check && session-recall health
+# Codex users: session-recall-codex schema-check
 # Then append the instruction block from Section 6 to your agent instructions file
 ```
+
+On Linux/WSL, install [pipx](https://pipx.pypa.io/stable/) and Python 3.14,
+then use `--python python3.14` instead of the Homebrew path. Codex AI candidate testing
+is verified on Apple silicon macOS with Homebrew Python 3.14; Intel Homebrew
+dependency paths and uv-managed Python builds are not supported by the current
+AI sandbox allowlist. Ordinary recall supports Python 3.10+.
+
+If the tool bin directory is missing from PATH, `pipx ensurepath` updates
+your shell configuration; restart the terminal afterward. Confirm the active
+installation with `command -v session-recall` and `pipx list`, especially
+when migrating from an older pip/pipx installation. Do not create separate
+auto-memory installations for each backend. Claude still needs its backend env
+flag; follow [the Claude guide](install-claude-code.md).
 
 ---
 
@@ -50,8 +79,8 @@ echo "path=${INSTALL_PATH:-none} version=${INSTALLED_VERSION:-unknown}"
 ### Package manager + shell
 
 ```bash
-command -v uv   >/dev/null 2>&1 && PKG=uv   || \
 command -v pipx >/dev/null 2>&1 && PKG=pipx || \
+command -v uv   >/dev/null 2>&1 && PKG=uv   || \
 command -v pip3 >/dev/null 2>&1 && PKG=pip  || \
 PKG=none
 echo "pkg: $PKG  shell: $(basename "$SHELL")"
@@ -62,7 +91,7 @@ echo "pkg: $PKG  shell: $(basename "$SHELL")"
 ## Section 2 — Choose Install Path
 
 ```bash
-LATEST="0.5.1"
+LATEST="0.6.0"  # target repository version, not a claim about PyPI availability
 if [ -z "$INSTALL_PATH" ]; then
   STATE="not-installed"
 elif [ -z "$INSTALLED_VERSION" ]; then
@@ -87,23 +116,44 @@ echo "state: $STATE"
 | `current` | → **Section 6** (wire instructions) |
 | `outdated` | → **Section 4** (upgrade) |
 | `unknown-version` | → **Section 4** (treat as upgrade) |
-| `editable-dev` | `git pull && pip install -e .` then → **Section 6** |
+| `editable-dev` | Update the checkout, then reinstall with the same tool manager or `python -m pip install -e .` inside its activated venv |
 
 ---
 
 ## Section 3 — Fresh Install
 
-### 3a — From PyPI (recommended)
+### 3a — From GitHub (0.6.0)
 
-> **Agent:** ask user *"Install auto-memory from PyPI? (Y/n)"*
+> **Agent:** obtain authorization to install auto-memory from GitHub; use prior explicit authorization when present.
 
-Run the **first** command that succeeds. Stop after first success.
+Choose one tool manager or the virtual-environment option; do not install into
+multiple environments for the same setup.
 
 ```bash
-uv tool install auto-memory              # preferred
-pipx install auto-memory                 # fallback 1
-python3 -m pip install --user auto-memory  # fallback 2
+# Recommended, macOS:
+pipx install --python "$(brew --prefix python@3.14)/bin/python3.14" \
+  "auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@v0.6.0"
 ```
+
+Alternative, after [installing uv](https://docs.astral.sh/uv/getting-started/installation/):
+
+```bash
+uv tool install --python "$(brew --prefix python@3.14)/bin/python3.14" \
+  "auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@v0.6.0"
+# Linux/WSL: use --python 3.14 instead of the Homebrew path.
+```
+
+Without uv or pipx, use a virtual environment:
+
+```bash
+python3 -m venv ~/.venvs/auto-memory
+~/.venvs/auto-memory/bin/python -m pip install --upgrade \
+  "git+https://github.com/dezgit2025/auto-memory.git@v0.6.0"
+export PATH="$HOME/.venvs/auto-memory/bin:$PATH"
+```
+
+For macOS Codex AI repair, create this alternative environment with the explicit
+Homebrew interpreter above instead of an arbitrary `python3`.
 
 ### 3b — From source (for contributors)
 
@@ -111,13 +161,21 @@ python3 -m pip install --user auto-memory  # fallback 2
 
 ```bash
 git clone https://github.com/dezgit2025/auto-memory.git && cd auto-memory
-uv tool install --force --editable .       # or: pipx install --force -e .
+pipx install --force --editable .
+# Alternative: uv tool install --force --editable .
 ```
+
+For Codex AI repair on macOS, add the explicit Homebrew `--python` path from
+the recommended command above when installing an editable checkout.
 
 ### Verify
 
 ```bash
-which session-recall && session-recall schema-check
+command -v session-recall
+session-recall --version
+# Check only the backend you use:
+# session-recall schema-check        # Copilot CLI
+# session-recall-codex schema-check  # Codex CLI
 ```
 
 If `which` returns nothing → see **Section 9**.
@@ -131,16 +189,25 @@ If `which` returns nothing → see **Section 9**.
 Detect method and use the **matching** upgrade command (never mix tools):
 
 ```bash
-if uv tool list 2>/dev/null | grep -q auto-memory; then
-  uv tool upgrade auto-memory
-elif pipx list 2>/dev/null | grep -q auto-memory; then
-  pipx upgrade auto-memory
+if pipx list 2>/dev/null | grep -q auto-memory; then
+  # macOS; on Linux/WSL use --python python3.14.
+  pipx install --force --python "$(brew --prefix python@3.14)/bin/python3.14" \
+    "auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@v0.6.0"
+elif uv tool list 2>/dev/null | grep -q auto-memory; then
+  # macOS; on Linux/WSL use --python 3.14 instead of the Homebrew path.
+  uv tool install --force --python "$(brew --prefix python@3.14)/bin/python3.14" \
+    "auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@v0.6.0"
 else
-  python3 -m pip install --user --upgrade auto-memory
+  # Activate the intended venv first; fail closed outside a venv.
+  python -c 'import sys; assert sys.prefix != sys.base_prefix, "Activate a venv first"' &&
+    python -m pip install --upgrade "git+https://github.com/dezgit2025/auto-memory.git@v0.6.0"
 fi
 ```
 
 Verify: `session-recall --version`
+
+For Codex, also verify `session-recall-codex-fix --version` and follow
+[managed-adapter upgrade guidance](install-codex.md#section-4--verify).
 
 ---
 
@@ -166,6 +233,10 @@ If WSL2 detected and `~/.copilot/session-store.db` does not exist:
 ## Section 6 — Wire into Agent Instructions
 
 Detect which agent is in use and target the correct instruction file.
+
+For Codex, use [the Codex wiring section](install-codex.md#section-5--wire-into-codex-global-recommended)
+instead of the Copilot/Claude detection below. Installing this package alone
+does not edit agent instruction files.
 
 ### 6.0 — Detect agent instruction file
 
@@ -303,10 +374,15 @@ echo "$PATH" | tr ':' '\n' | grep -q '.local/bin' && echo "OK" || echo "MISSING 
 ### Uninstall
 
 ```bash
-uv tool uninstall auto-memory    # if installed with uv
 pipx uninstall auto-memory       # if installed with pipx
-python3 -m pip uninstall auto-memory  # if installed with pip
+uv tool uninstall auto-memory    # alternative, if installed with uv
+# For pip: activate the intended venv, then verify before uninstalling.
+python -c 'import sys; assert sys.prefix != sys.base_prefix, "Activate a venv first"' &&
+  python -m pip uninstall auto-memory
 ```
+
+Choose only the command for your manager. Removing the shared package removes
+its commands for all three backends.
 
 ### Revert agent instructions
 
@@ -316,7 +392,9 @@ sed -i.bak '/<!-- session-recall:v1/,/<!-- \/session-recall:v1 -->/d' ~/.copilot
 
 ### Revert shell rc
 
-N/A — this guide does not modify shell config. See [`deploy/install-other-backends.md`](install-other-backends.md) for file-backend rollback.
+If you opted into `pipx ensurepath` or `uv tool update-shell`, review the PATH
+line it added before removing it; other tools may use the same directory.
+See [`deploy/install-other-backends.md`](install-other-backends.md) for file-backend rollback.
 
 ---
 

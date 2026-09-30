@@ -1,6 +1,6 @@
 """Synthetic `state_5.sqlite` thread rows for the small store fixture.
 
-All timestamps derive from REF_NOW_MS (2026-08-30T12:00:00Z) — deterministic,
+All timestamps derive from REF_NOW_MS (2026-08-23T12:00:00Z) — deterministic,
 no wall-clock reads. Thread ids are UUIDv7-style: leading 48 bits encode the
 creation timestamp, so short-prefix collision behavior matches real Codex.
 """
@@ -10,7 +10,7 @@ from pathlib import Path
 
 from ._fixture_schema import column_names
 
-# 2026-08-30T12:00:00Z as epoch milliseconds (fixed reference "now").
+# 2026-08-23T12:00:00Z as epoch milliseconds (fixed reference "now").
 REF_NOW_MS = 1787486400000
 _DAY_MS = 86_400_000
 
@@ -26,7 +26,7 @@ def make_uuid7(ts_ms: int, seq: int) -> str:
 
 
 def _base_row(tid: str, ts_ms: int) -> dict:
-    """A full 38-column threads row with realistic defaults."""
+    """A full 40-column threads row with realistic defaults."""
     return {
         "id": tid,
         "rollout_path": "",
@@ -66,6 +66,8 @@ def _base_row(tid: str, ts_ms: int) -> dict:
         "section_position": None,
         "section_entered_at_ms": None,
         "project_id": None,
+        "originator": None,
+        "daybreak_enabled": None,
     }
 
 

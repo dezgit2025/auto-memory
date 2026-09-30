@@ -17,7 +17,10 @@ Two blocks, for two different files. Do not mix them up:
 <!-- session-recall-codex:v1 START -->
 ## Session recall (Codex)
 
-When starting work in a repo, ground yourself in recent history:
+Before executing any other command in a new Codex session, validate the recall
+adapter, then ground yourself in recent history:
+
+    session-recall-codex schema-check
 
     session-recall-codex list --json --limit 5
 
@@ -30,7 +33,11 @@ Other commands:
 Cost: ~50 tokens per query. Prefer it over blind filesystem searches.
 If a command exits 2 with "schema changed" or exits 4 (storage missing /
 version changed), report it and continue without recall — never try to
-repair or bypass it, and never read ~/.codex/*.sqlite directly.
+repair it automatically or bypass it, and never read ~/.codex/*.sqlite directly.
+If the user explicitly requests repair, follow deploy/install-codex.md in the
+auto-memory repository and use session-recall-codex-fix. Generated repairs
+require review and explicit approval before application; storage problems
+do not trigger AI repair.
 (search / show / files / health arrive in a later auto-memory release.)
 <!-- session-recall-codex:v1 END -->
 ```

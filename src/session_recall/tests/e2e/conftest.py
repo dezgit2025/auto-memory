@@ -5,6 +5,7 @@ import os
 import sqlite3
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -244,7 +245,7 @@ def empty_db(tmp_path_factory):
 def run_cli(*args: str, db_path: str | None = None) -> subprocess.CompletedProcess:
     """Invoke session-recall as a subprocess with optional DB override.
 
-    Runs from /tmp to avoid auto-detection of the current git repo,
+    Runs from the system temp dir to avoid auto-detection of the current git repo,
     ensuring the fixture DB's repos are visible without --repo filtering.
     """
     env = os.environ.copy()
@@ -257,7 +258,7 @@ def run_cli(*args: str, db_path: str | None = None) -> subprocess.CompletedProce
         text=True,
         timeout=30,
         env=env,
-        cwd="/tmp",
+        cwd=tempfile.gettempdir(),
     )
 
 

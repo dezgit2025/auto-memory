@@ -2,7 +2,7 @@
 requires-user-confirmation: true
 mutates-agent-instructions: true
 tool: session-recall-cc
-version: v1
+version: v0.6.0
 ---
 
 # Deploy session-recall-cc (Claude Code)
@@ -11,10 +11,22 @@ version: v1
 **Agents:** read sections 1–9 in order. Every mutating step requires user confirmation. Use a reasoning model (Sonnet 4.6, GPT-5.4) — mini models may skip confirmation gates.
 
 ```bash
-pip install auto-memory[claude]
+# macOS/Homebrew; use the shared guide for Linux/WSL:
+brew install pipx python@3.14
+pipx install --python "$(brew --prefix python@3.14)/bin/python3.14" \
+  "auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@v0.6.0"
 export SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1
 session-recall-cc health
 ```
+
+**pipx is recommended; uv is an alternative; pip belongs inside a venv.** pipx isolates this CLI and
+makes the selected Python explicit. The same installation includes Copilot,
+Claude Code and Codex commands; skip the install if you already followed
+[the shared guide](install.md). In 0.6.0, `[claude]` is an optional compatibility
+extra with no additional dependencies; it does not replace the backend env flag.
+Use `pipx ensurepath` and restart your terminal if the commands are not on
+PATH. For Linux/WSL, use `--python python3.14` instead of the Homebrew path; the
+shared guide also documents uv/manual-venv alternatives.
 
 ---
 
@@ -32,13 +44,15 @@ session-recall-cc health
 ## Section 2 — Prerequisites
 
 ```bash
-python3 --version                # must be 3.10+
-command -v pip3 >/dev/null 2>&1 && echo "pip: detected" || echo "pip: not found"
+pipx --version
+git --version
 test -d "$HOME/.claude" && echo "claude-code: detected" || echo "claude-code: not found"
 ```
 
 > [!IMPORTANT]
-> You need Python 3.10+ and pip. Claude Code must have been used at least once (so `~/.claude/` exists).
+> Claude Code must have been used at least once (so `~/.claude/` exists). Recall
+> supports Python 3.10+; the recommended shared setup selects Python 3.14. See
+> [pipx installation](https://pipx.pypa.io/stable/) if needed.
 
 ---
 
@@ -47,7 +61,7 @@ test -d "$HOME/.claude" && echo "claude-code: detected" || echo "claude-code: no
 > **Agent:** ask user *"Install auto-memory with Claude Code support? (Y/n)"*
 
 ```bash
-pip install auto-memory[claude]
+# Install once using the pipx command at the top, then enable this backend:
 export SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1
 ```
 
@@ -117,7 +131,7 @@ session-recall-cc show <session-id>                  # full transcript
 
 > **Query tips:** Multi-word natural-language phrases work well. Avoid hyphens / dots in single-token searches — FTS5 splits on them. Prefer `search "session recall"` over `search "session-recall"`. For exact filenames, use `files | grep <name>` instead of `search`.
 
-This requires `auto-memory[claude]` installed and `SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1` set.
+This requires the `auto-memory` base package (0.6.0 or later) installed and `SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1` set.
 <!-- session-recall-cc:v1 END -->
 ````
 
@@ -340,7 +354,9 @@ service cron status >/dev/null 2>&1 || sudo service cron start
 
 4. **Uninstall the package** (if desired):
    ```bash
-   pip uninstall auto-memory
+   pipx uninstall auto-memory  # if installed with pipx
+   # Alternative manager: uv tool uninstall auto-memory
+   # For pip, activate its venv first, then: python -m pip uninstall auto-memory
    ```
 
 ---

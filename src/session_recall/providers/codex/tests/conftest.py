@@ -10,6 +10,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from .. import state_queries
 from ._fixture_history import populate_history
 from ._fixture_rollouts import build_all as build_rollouts
 from ._fixture_schema import build_empty_db
@@ -57,6 +58,11 @@ def codex_store(tmp_path):
 @pytest.fixture()
 def codex_env(codex_store, monkeypatch):
     """Point the three Codex env overrides at the temp store."""
+    monkeypatch.setattr(
+        state_queries,
+        "time",
+        SimpleNamespace(time=lambda: REF_NOW_MS / 1000),
+    )
     monkeypatch.setenv("SESSION_RECALL_CODEX_STATE_DB", str(codex_store.state_db))
     monkeypatch.setenv(
         "SESSION_RECALL_CODEX_HISTORY_DB", str(codex_store.history_db)

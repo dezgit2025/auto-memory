@@ -159,7 +159,7 @@ def test_schema_exact_fixture_passes(codex_store):
         "state": schema.STATE_PROFILE_NAME,
         "history": schema.HISTORY_PROFILE_NAME,
     }
-    assert report.found["state"]["migration"] == 51
+    assert report.found["state"]["migration"] == 55
     assert report.found["history"]["migration"] == 6
 
 
@@ -175,10 +175,12 @@ _FAILING = {
     "drop_preview": "preview",
     "rename_history_mode": "history_mode",
     "extra_threads_column": "example_column",
-    "migration_52": "ceiling 52",
+    "migration_54": "ceiling 54",
+    "migration_56": "ceiling 56",
     "failed_migration": "failed migration",
     "item_json_type_changed": "item_json",
     "missing_thread_turns": "thread_turns",
+    "migration_5": "ceiling 5",
     "migration_7": "ceiling 7",
 }
 
@@ -195,12 +197,22 @@ def test_each_mutation_fails_with_specific_difference(
 
 def test_lower_ceiling_fails(codex_store):
     conn = sqlite3.connect(codex_store.state_db)
-    conn.execute("DELETE FROM _sqlx_migrations WHERE version = 51")
+    conn.execute("DELETE FROM _sqlx_migrations WHERE version = 55")
     conn.commit()
     conn.close()
     report = _check(codex_store.state_db, codex_store.history_db)
     assert not report.ok
-    assert any("ceiling 50" in d for d in report.differences)
+    assert any("ceiling 54" in d for d in report.differences)
+
+
+def test_lower_history_ceiling_fails(codex_store):
+    conn = sqlite3.connect(codex_store.history_db)
+    conn.execute("DELETE FROM _sqlx_migrations WHERE version = 6")
+    conn.commit()
+    conn.close()
+    report = _check(codex_store.state_db, codex_store.history_db)
+    assert not report.ok
+    assert any("ceiling 5" in d for d in report.differences)
 
 
 def test_drift_json_exact_shape(codex_store, tmp_path):
@@ -245,7 +257,7 @@ def test_format_drift_human_contents(codex_store, tmp_path):
 
 def test_preflight_raises_with_report(codex_store, tmp_path):
     d = make_drifted(codex_store.state_db, codex_store.history_db,
-                     tmp_path / "drift", "migration_52")
+                     tmp_path / "drift", "migration_56")
     s, h = sqlite3.connect(d["state"]), sqlite3.connect(d["history"])
     try:
         with pytest.raises(CodexSchemaDrift) as ei:

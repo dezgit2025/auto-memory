@@ -6,19 +6,25 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
 echo "Installing session-recall..."
+VENV_FALLBACK=false
 
-if command -v uv >/dev/null 2>&1; then
-    echo "Using uv..."
-    uv tool install --force --editable .
-elif command -v pipx >/dev/null 2>&1; then
+if command -v pipx >/dev/null 2>&1; then
     echo "Using pipx..."
     pipx install --force -e .
+elif command -v uv >/dev/null 2>&1; then
+    echo "Using uv..."
+    uv tool install --force --editable .
 else
-    echo "WARN: uv and pipx not found, falling back to pip --user"
-    python3 -m pip install --user --force-reinstall -e .
+    echo "WARN: pipx and uv not found; installing into the project .venv"
+    VENV_FALLBACK=true
+    python3 -m venv "$SCRIPT_DIR/.venv"
+    "$SCRIPT_DIR/.venv/bin/python" -m pip install --force-reinstall -e .
 fi
 
 echo ""
 echo "Installed. Verify with:"
-echo "  which session-recall"
+if [[ "$VENV_FALLBACK" == true ]]; then
+    echo "  export PATH=\"$SCRIPT_DIR/.venv/bin:\$PATH\""
+fi
+echo "  command -v session-recall"
 echo "  session-recall schema-check"

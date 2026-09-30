@@ -344,7 +344,7 @@ grep -qF 'SESSION_RECALL_JSONL_DAYS' ~/.config/fish/config.fish 2>/dev/null || e
 | JetBrains and Neovim show the same sessions | Both read from `~/.config/github-copilot/` | Expected behavior — use `--provider jetbrains` or `--provider neovim` to isolate |
 | Sessions appear but content is empty | Permission denied on JSONL files | Check: `ls -la` on the session files. Ensure your user owns them. |
 | Env var set but not picked up | Shell rc not sourced in current session | Run `exec $SHELL -l` or open a new terminal window |
-| `session-recall` command not found | Tool not installed or not on PATH | Run: `pip install auto-memory` (or `pipx install auto-memory`) |
+| `session-recall` command not found | Tool not installed or not on PATH | Follow the [shared installation guide](install.md): pipx recommended, uv alternative, pip inside a venv; check the chosen tool directory and PATH |
 
 ---
 

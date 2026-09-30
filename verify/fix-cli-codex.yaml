@@ -1,0 +1,118 @@
+# Declarative, fake-only gates for plans/fix-cli-codex.md.  Proposed fields are
+# contracts to settle before implementation, not assertions about current CLI APIs.
+---
+task_id: fix-cli-codex-A
+stage_gate: A-immediate-reviewed-profile-repair
+contract_status: proposed-until-authorized-metadata-capture
+acceptance_criteria:
+  - "A reviewed synthetic state/history pair passes schema preflight and preserves the existing public schema-check, list, and repos contracts."
+  - "Any unreviewed schema drift exits 2 before a session-data query; missing or versioned storage exits 4."
+  - "Repair validation uses synthetic read-only stores only and never changes Codex-owned storage."
+files_in_scope: ["src/session_recall/providers/codex/{schema.py,provider.py,cli.py,verifications/captured-profiles.json,tests/**,verifications/**}"]
+fixture_policy: "Synthetic metadata/data only; reviewed ordered definitions and public-output oracle are external to candidate writes. No live DB, live session row, or direct live-DB inspection; synthetic rows and synthetic SQLite metadata introspection are required and permitted."
+happy_path_cases:
+  - {id: A-01, input: {fixture: reviewed-current-pair, state: reviewed, history: reviewed}, expected_output: {schema_check_exit: 0, list: independent-frozen-row-filter-oracle, repos: independent-frozen-row-filter-oracle}}
+boundary_cases:
+  - {id: A-02, input: {fixture: reviewed-current-pair, rows_in_window: 0, include_archived: false}, expected_output: "valid existing empty-result contract; no calendar-dependent result"}
+failure_mode_cases:
+  - {id: A-03, input: {fixture: reviewed-current-pair, state_delta: {add_column: "odd_🧭_\u05e9\u05dc\u05d5\u05dd_e\u0301"}}, expected_exception: CodexSchemaDrift, expected_message_substring: "unexpected column"}
+  - {id: A-04, input: {fixture: reviewed-current-pair, state_delta: {remove_or_change_required_column: true}}, expected_exception: CodexSchemaDrift, expected_message_substring: "schema"}
+  - {id: A-05, input: {fixture: reviewed-current-pair, migrations: {state: future-or-lower, history: future-or-lower}}, expected_exception: CodexSchemaDrift, expected_message_substring: "migration"}
+  - {id: A-06, input: {fixture: missing-or-versioned-storage}, expected_exception: CodexStorageMissing, expected_effects: {cli_exit: 4, session_queries: 0}}
+  - {id: A-07, input: {fixture: reviewed-current-pair, row_timestamps_ms: [cutoff_minus_1, cutoff_exact, cutoff_plus_1], local_and_archived_mix: true}, expected_output: {recency_eligible: [cutoff_plus_1], archive_and_repo_filters: independent-frozen-oracle}}
+  - {id: A-08, input: {fixture: reviewed-current-pair, migration_result: failed}, expected_exception: CodexSchemaDrift, expected_message_substring: "failed migration"}
+invariants:
+  - "For every rejected preflight mutation, list and repos data-query sentinels remain 0 and JSON reports query_executed: false."
+  - "Repeated checks against identical fake stores have identical exit/status and leave store hashes and metadata unchanged."
+negative_cases:
+  - "No test opens a live Codex path or exports live session content; after synthetic fixture setup, adapter calls write neither synthetic store."
+  - "A newer ceiling or arbitrary extra column is never accepted merely by changing a migration number."
+anti_cheat_checks:
+  - "AST: no non-allowlisted pass, ellipsis, or raise NotImplementedError-only function body; allowlist is digest-pinned to pre-existing abstract methods and existing phase-3 provider stubs."
+  - "No new pytest.skip, pytest.xfail, @pytest.mark.skip, @pytest.mark.xfail, bare except:, or assertion weakening in Codex tests/verifiers."
+  - "No hardcoded literal return matching any frozen oracle; no literal-input early return, including the A-03 Unicode column name."
+  - "Profile, fixture, and verifier baseline changes require independent reviewed-metadata evidence; candidate code cannot refresh its own oracle/hash."
+environment_requirements: {python: ">=3.10", deps: ["pytest>=8"], env_vars: {PYTHONHASHSEED: "0", PYTHONDEVMODE: "1", PYTHONDONTWRITEBYTECODE: "1"}}
+performance_budget: {l1_per_probe_seconds: 5, l2_cumulative_seconds: 60, max_memory_mb: 256, execution: "fake-only; one fresh temp directory per probe"}
+private_seeded_runtime_probes: "Runner creates a fresh private metadata mutation and private output oracle after candidate freeze; seed/material is inaccessible to candidate writes."
+
+---
+task_id: fix-cli-codex-B
+stage_gate: B-deterministic-fixer-after-A-pass
+contract_status: proposed-controller-and-manifest-contract
+acceptance_criteria:
+  - "Identical stable dual-database metadata, adapter/catalogue/policy digests, and rules yield byte-identical classification and manifest without model transport."
+  - "Only one exact reviewed recipe may stage/apply; stale, ambiguous, tampered, or changing inputs stop before activation."
+  - "Activation is lock-safe, idempotent, recoverable after interruption, and never downgrades or writes Codex databases."
+files_in_scope: ["proposed stable controller/companion entry point", "src/session_recall/providers/codex/**", "proposed managed-artifact, trust, and recovery records"]
+proposed_schema_envelope: {format_version: 1, additional_properties: false, required: [state_profile, history_profile, adapter_digest, catalogue_digest, policy_digest], notes: "profiles retain ordered columns and migration success; no session contents or volatile timestamps"}
+happy_path_cases:
+  - {id: B-01, input: {schema_envelope: v1-stable-pair, recipe_matches: [reviewed-55-recipe]}, expected_output: {classification: known_repair, one_manifest_digest: stable, transport_requests: 0}}
+  - {id: B-02, input: {apply: same-approved-recipe-twice, fake_installation: managed}, expected_output: {second_apply: no_op, artifact_digest: unchanged, codex_db_write_count: 0}}
+boundary_cases:
+  - {id: B-03, input: {schema_envelope: {format_version: 1, state_profile: "Goodhart law applies here, here, and here.", history_profile: deeply-nested-64-level-fake-metadata}}, expected_exception: EnvelopeRejected, expected_message_substring: "state_profile"}
+  - {id: B-09, input: {schema_envelope: "v1-stable-pair-with-valid-unicode-column-odd_🧭_\u05e9\u05dc\u05d5\u05dd_e\u0301", repeated: 2}, expected_output: {canonical_manifest_bytes: identical, classification: deterministic}}
+failure_mode_cases:
+  - {id: B-04, input: {schema_envelope: {format_version: 2, unexpected: true}}, expected_exception: EnvelopeRejected, expected_message_substring: "format_version or unknown field"}
+  - {id: B-05, input: {stable_pair: false, changes_between_dual_captures: true}, expected_exception: StorageChanging, expected_message_substring: "storage_changing"}
+  - {id: B-06, input: {recipe_matches: [r1, r2]}, expected_exception: AmbiguousRecipe, expected_message_substring: "ambiguous"}
+  - {id: B-07, input: {manifest_or_artifact_digest: tampered}, expected_exception: IntegrityRejected, expected_message_substring: "digest"}
+  - {id: B-08, input: {crash_point: after_stage_before_atomic_selection, concurrent_apply: true}, expected_output: "one writer; recovery verifies actual selection and restores/keeps prior valid artifact"}
+  - {id: B-10, input: {manifest_preconditions: stale_after_pre_activation_recapture}, expected_exception: StalePlan, expected_message_substring: "rediagnose"}
+  - {id: B-11, input: {crash_point: after_atomic_selection_before_journal_completion}, expected_output: "recovery validates selected artifact, completes or rolls back durably, and never replays blindly"}
+invariants:
+  - "For all valid fixed inputs, canonical serialization, rule ordering, manifest bytes, and dry-run result are deterministic; observed job IDs/times are excluded."
+  - "Every capture/recheck/rollback preserves both fake database hashes; rollback changes only managed adapter selection and may honestly leave recall unavailable."
+negative_cases:
+  - "No recipe can carry arbitrary shell commands, outside-allowlist paths, a network download, or an editable-checkout overwrite."
+  - "Known recipe verification failure and locked/missing/permission/corrupt storage make zero model requests and do not activate an artifact."
+anti_cheat_checks:
+  - "AST: no non-allowlisted pass, ellipsis, or raise NotImplementedError-only function body; baseline allowlist names intentional abstract methods and existing phase-3 provider stubs by digest."
+  - "No pytest.skip/xfail or bare except: in new fixer/controller code; no test-only bypass of lock, digest, recheck, or database-hash assertions."
+  - "No hardcoded manifest/output literal for B-01/B-03 and no early-return guard keyed to their strings/digests; private seeded pair is run after candidate freeze."
+  - "Trust catalogue, frozen oracle, and verifier are outside recipe/candidate writable paths; altered approval/catalogue/hash is a rejection, not a refresh."
+environment_requirements: {python: ">=3.10", deps: ["pytest>=8"], env_vars: {PYTHONHASHSEED: "0", PYTHONDEVMODE: "1", PYTHONDONTWRITEBYTECODE: "1"}}
+performance_budget: {l1_per_probe_seconds: 8, l2_cumulative_seconds: 90, max_memory_mb: 256, capture_retries: 2, execution: "fake read-only dual SQLite stores and fake managed installation only"}
+private_seeded_runtime_probes: "Runner supplies a fresh dual-profile mutation, catalogue digest, and crash schedule after candidate freeze; expected manifest is held outside candidate writes."
+
+---
+task_id: fix-cli-codex-C
+stage_gate: C-model-gated-candidate-after-A-and-B-pass
+contract_status: V5-Codex-only-GPT6-medium; offline-acceptance-pending
+acceptance_criteria:
+  - "Only an unsupported, readable, stable schema with no reviewed recipe can request one bounded candidate through the explicitly approved model/effort policy."
+  - "A generated candidate reaches awaiting_review at most; tests, a self-approved flag, or a model claim never activate it."
+  - "Approval binds exact candidate, schema, policy, and independent-check digests; any change invalidates approval."
+  - "Candidate execution requires an OS-enforced fake-only sandbox; unavailable isolation denies execution and activation."
+files_in_scope: ["proposed stable controller, policy/transport adapter, candidate workspace, approval store, and OS-sandbox harness"]
+proposed_candidate_envelope: {format_version: 1, additional_properties: false, required: [input_fingerprint, base_artifact_digest, patch_manifest], controller_recomputes: [candidate_digest, independent_check_digest], approval_record_requires: [candidate_digest, input_fingerprint, policy_digest, independent_check_digest], approval_provenance: trusted-store-not-model-or-candidate, forbidden: [approved, activation_target_override, verifier_or_catalogue_write]}
+happy_path_cases:
+  - {id: C-01, input: {unknown_stable_schema: {extra_column: "\u202eRTL-\U0001f9ea-e\u0301"}, no_recipe: true, policy: {model: gpt-6-astra, effort: medium}, transport: fake}, expected_output: {transport_requests: 1, request_model: gpt-5.6-sol, request_effort: medium, candidate_state: awaiting_review, activation_count: 0}}
+boundary_cases:
+  - {id: C-02, input: {candidate_envelope: {format_version: 1, input_fingerprint: synthetic-unknown, base_artifact_digest: trusted-base, patch_manifest: {patch_bytes: near_budget_minus_1, sanitized_diff: "Goodhart law applies here, here, and here."}}}, expected_output: "one bounded fake request; candidate remains non-active and independent tests/oracles stay unchanged"}
+failure_mode_cases:
+  - {id: C-03, input: {schema_envelope: {format_version: 99, unknown_field: "x"}}, expected_exception: EnvelopeRejected, expected_effects: {transport_requests: 0, activation_count: 0}}
+  - {id: C-04, input: {policy: {model: gpt-5.6-luna, effort: low}, transport: fake}, expected_exception: ModelPolicyRejected, expected_effects: {transport_requests: 0, activation_count: 0}}
+  - {id: C-05, input: {policy: {model: gpt-5.6-sol, effort: unset_or_none}, transport: fake}, expected_exception: ModelPolicyRejected, expected_effects: {transport_requests: 0, activation_count: 0}}
+  - {id: C-06, input: {approved_synthetic_test_policy: {model: gpt-6-astra, effort: medium, max_continuations: 1}, fake_response_sequence: [matching, matching]}, expected_output: {transport_requests: 2, continuations: 1, every_request: {model: gpt-6-astra, effort: medium}, candidate_state: awaiting_review, activation_count: 0}}
+  - {id: C-07, input: {fake_response: {reported_model: unapproved, candidate_envelope: valid}}, expected_exception: CandidateRejected, expected_effects: {transport_requests: 1, continuations: 0, activation_count: 0}}
+  - {id: C-08, input: {continuation_override: {model: gpt-5.6-luna, effort: low}, after_matching_initial_request: true}, expected_exception: ModelPolicyRejected, expected_effects: {transport_requests: 1, unsafe_continuations: 0, activation_count: 0}}
+  - {id: C-09, input: {offline_candidate_ingestion: true, candidate_envelope: {format_version: 2, approved: true, supplied_candidate_digest: mismatch}}, expected_exception: EnvelopeRejected, expected_effects: {transport_requests: 0, activation_count: 0}}
+  - {id: C-10, input: {fake_transport: timeout_after_accepted_request}, expected_exception: AssistanceUnavailable, expected_effects: {transport_requests: 1, continuations: 0, downgrade_requests: 0, activation_count: 0}}
+  - {id: C-11, input: {fake_transport: budget_exhausted_before_request}, expected_exception: AssistanceUnavailable, expected_effects: {transport_requests: 0, continuations: 0, downgrade_requests: 0, activation_count: 0}}
+  - {id: C-12, input: {sandbox: unavailable, worker_attempts_nested_assist: true}, expected_output: {candidate_execution: 0, activation_count: 0, nested_requests: 0}}
+  - {id: C-13, input: {sandbox: available_hostile_candidate, forbidden_accesses: [network, live_db, home, controller], worker_attempts_nested_assist: true}, expected_output: {candidate_execution: 1, forbidden_accesses: denied, activation_count: 0, nested_requests: 0}}
+invariants:
+  - "For every rejected policy/transport/candidate/approval input, generation and continuation request accounting is exact, no lower-model request occurs, and activation_count is 0."
+  - "An approval is valid only when candidate_digest, input_fingerprint, policy_digest, and independent_check_digest all equal the trusted record; any byte change returns it to review."
+negative_cases:
+  - "No live model, network, Codex storage, home mount, inherited credential, controller/trust-record write, recursive worker, or candidate-controlled verifier/oracle is used in these gates."
+  - "Unknown schema, failed recipe, storage fault, rejected patch, unavailable model, rate limit, timeout, or budget exhaustion never downgrades, retries with another model, or auto-activates."
+anti_cheat_checks:
+  - "AST: no non-allowlisted pass, ellipsis, or raise NotImplementedError-only function body; baseline allowlist covers only pre-existing abstract methods and existing phase-3 provider stubs by digest."
+  - "No pytest.skip/xfail, bare except:, fake transport bypass, or literal-input early return for C-01/C-02/Goodhart cases."
+  - "No hardcoded literal candidate state/output accepted without strict envelope validation, and independent frozen-oracle evidence."
+  - "Candidate workspace cannot modify policy allowlist, approval store, catalogue, acceptance tests, verifier, or private seeded probes; any attempted mutation is rejection."
+environment_requirements: {python: ">=3.10", deps: ["pytest>=8"], env_vars: {PYTHONHASHSEED: "0", PYTHONDEVMODE: "1", PYTHONDONTWRITEBYTECODE: "1", NO_NETWORK: "1"}}
+performance_budget: {l1_per_probe_seconds: 10, l2_cumulative_seconds: 120, max_memory_mb: 256, per_case_request_limits: {C-01: 1, C-03: 0, C-04: 0, C-05: 0, C-06: 2, C-07: 1, C-08: 1, C-09: 0, C-10: 1, C-11: 0, C-12: 0, C-13: 1}, execution: "fake transport, synthetic stores, OS-enforced deny sandbox"}
+private_seeded_runtime_probes: "After candidate freeze, runner injects a private schema mutation, policy/candidate digest tuple, and expected rejection/state oracle outside candidate/controller writable paths."

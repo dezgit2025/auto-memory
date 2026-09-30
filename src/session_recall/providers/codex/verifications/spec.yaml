@@ -1,8 +1,19 @@
 # Verification spec — session-recall-codex v1 (plan §8 Phase 0 Step 3)
 # Schema: verify/verification-script-spec.md §4.1. Authored BEFORE production code.
-# Profile names/ceilings sourced from captured-profiles.json (machine capture), never hand-typed.
+# Stage A profile is checked against verify/fixtures/codex-reviewed-55.json.
+# The historical full-port contract below remains intact for later phases.
 
 task_id: session-recall-codex-v1
+
+stage_a_trial_scope:
+  status: active
+  gate: "smoke.sh --trial; bare smoke.sh remains the historical full-port gate"
+  supported_commands: [schema-check, list, repos]
+  required_rejections: [search, show, files, health]
+  independent_oracle: verify/fixtures/codex-reviewed-55.json
+  notes:
+    - "Stage A cannot pass by implementing, silently skipping, or claiming deferred commands."
+    - "Migration descriptions are ancillary; profile IDs, ceilings, and complete used-table rows are authoritative."
 
 acceptance_criteria:
   - "`session-recall-codex --version` and `--help` exit 0 without opening any database"
@@ -34,7 +45,7 @@ files_in_scope:
 
 schema_profiles:
   source: src/session_recall/providers/codex/verifications/captured-profiles.json
-  state: codex-state-v5-migration-51        # ceiling 51 'thread artifacts', 0 failed migrations
+  state: codex-state-v5-migration-55        # ceiling 55, 0 failed migrations
   history: codex-thread-history-v1-migration-6   # ceiling 6 'thread turn ends', 0 failed migrations
   used_tables: [threads, thread_items, thread_turns, _sqlx_migrations]   # thread_spawn_edges deliberately excluded (§19)
   rule: "any difference on a used table (missing/renamed/extra column, changed decl, ceiling change, failed migration row, missing JSON1) -> exit 2, JSON {ok:false, error:schema_drift, query_executed:false}; unrelated extra tables/indexes/triggers are diagnostic-only and pass"
@@ -90,7 +101,7 @@ failure_mode_cases:
   - input: "state_5.sqlite absent but state_6.sqlite present"
     expected_exception: "SystemExit(4)"
     expected_message_substring: "storage_version_changed"
-  - input: "any drift fixture (dropped threads.preview / renamed history_mode / added threads column / changed item_json decl / missing thread_turns / ceiling 52 / ceiling 7 / success=0 row / JSON1 probe mocked off)"
+  - input: "any drift fixture (dropped threads.preview / renamed history_mode / added threads column / changed item_json decl / missing thread_turns / ceiling 56 / ceiling 7 / success=0 row / JSON1 probe mocked off)"
     expected_exception: "SystemExit(2)"
     expected_message_substring: "query_executed"
   - input: "DB locked beyond bounded retries (50/150/450ms)"

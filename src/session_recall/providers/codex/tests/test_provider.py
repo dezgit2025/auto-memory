@@ -1,12 +1,15 @@
 """CodexProvider tests — Phase 2 scope (list_sessions / list_repos)."""
 
+import sqlite3
+from types import SimpleNamespace
+
 import pytest
 
 from .. import state_queries
 from ..errors import CodexSchemaDrift
 from ..paths import CodexPaths
 from ..provider import CodexProvider
-from ._fixture_drift import make_drifted
+from ._fixture_drift import ALL_MUTATIONS, make_drifted
 from ._fixture_state import REF_NOW_MS
 
 EXPECTED_KEYS = [
@@ -26,7 +29,11 @@ def _paths(store) -> CodexPaths:
 @pytest.fixture()
 def frozen_now(monkeypatch):
     """Pin state_queries' wall clock to the fixtures' REF_NOW (no time bombs)."""
-    monkeypatch.setattr(state_queries.time, "time", lambda: REF_NOW_MS / 1000)
+    monkeypatch.setattr(
+        state_queries,
+        "time",
+        SimpleNamespace(time=lambda: REF_NOW_MS / 1000),
+    )
 
 
 @pytest.fixture()
@@ -87,12 +94,17 @@ class TestListSessions:
 
 
 class TestPreflightGate:
+    @pytest.mark.parametrize("method_name", ["list_sessions", "list_repos"])
+    @pytest.mark.parametrize(
+        "mutation",
+        [m for m in ALL_MUTATIONS if m != "extra_unrelated_table"],
+    )
     def test_drift_blocks_before_any_query(
-        self, codex_store, tmp_path, frozen_now, monkeypatch
+        self, codex_store, tmp_path, frozen_now, monkeypatch, method_name, mutation
     ):
         drifted = make_drifted(
             codex_store.state_db, codex_store.history_db,
-            tmp_path / "drift", "drop_preview",
+            tmp_path / "drift", mutation,
         )
         paths = CodexPaths(
             state_db=drifted["state"], history_db=drifted["history"],
@@ -106,7 +118,7 @@ class TestPreflightGate:
             "session_recall.providers.codex.provider.select_threads", _no_query
         )
         with pytest.raises(CodexSchemaDrift) as exc:
-            CodexProvider(paths).list_sessions()
+            getattr(CodexProvider(paths), method_name)()
         assert exc.value.exit_code == 2
 
 
@@ -120,6 +132,40 @@ class TestOtherMethods:
         assert {r["repository"] for r in both} == {
             "acme/widget", "local:/Users/synthetic/scratch",
         }
+
+    def test_originator_and_daybreak_do_not_change_public_results(
+        self, provider, codex_store
+    ):
+        before = {
+            "sessions": provider.list_sessions(),
+            "sessions_with_archived": provider.list_sessions(include_archived=True),
+            "repos": provider.list_repos(),
+            "repos_with_local": provider.list_repos(include_local=True),
+        }
+        assert len(before["sessions"]) == 5
+        assert len(before["sessions_with_archived"]) == 6
+        summaries = " | ".join(r["summary"] for r in before["sessions"])
+        assert "archived" not in summaries
+        assert "guardian" not in summaries
+        assert "subagent" not in summaries
+
+        conn = sqlite3.connect(codex_store.state_db)
+        try:
+            conn.execute(
+                "UPDATE threads SET originator = ?, daybreak_enabled = ?",
+                ("synthetic-origin", 1),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        after = {
+            "sessions": provider.list_sessions(),
+            "sessions_with_archived": provider.list_sessions(include_archived=True),
+            "repos": provider.list_repos(),
+            "repos_with_local": provider.list_repos(include_local=True),
+        }
+        assert after == before
 
     def test_checkpoints_empty_because_codex_has_none(self, provider):
         # Plan §4.1 / §15.1: no checkpoint storage exists in any Codex DB —

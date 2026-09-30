@@ -55,7 +55,7 @@ def test_schema_check_ok_json(codex_env, capsys):
     assert code == 0
     data = json.loads(out)
     assert data["ok"] is True
-    assert data["profiles"]["state"] == "codex-state-v5-migration-51"
+    assert data["profiles"]["state"] == "codex-state-v5-migration-55"
     assert data["profiles"]["history"] == "codex-thread-history-v1-migration-6"
 
 
@@ -136,7 +136,7 @@ def test_list_include_archived(codex_env, capsys):
 
 def test_list_drift_exit_2_no_query(codex_env, codex_store, tmp_path, monkeypatch, capsys):
     drifted = make_drifted(
-        codex_store.state_db, codex_store.history_db, tmp_path / "d2", "migration_52"
+        codex_store.state_db, codex_store.history_db, tmp_path / "d2", "migration_56"
     )
     monkeypatch.setenv("SESSION_RECALL_CODEX_STATE_DB", str(drifted["state"]))
     monkeypatch.setenv("SESSION_RECALL_CODEX_HISTORY_DB", str(drifted["history"]))

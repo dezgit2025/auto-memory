@@ -2,7 +2,7 @@
 
 ## Your AI coding agent has amnesia. Here's the fix.
 
-*~1,900 lines of Python. Zero dependencies. Saves you an hour a day.*
+*Zero-dependency session recall for your AI coding tools.*
 
 > Built by [Desi Villanueva](https://github.com/dezgit2025)
 
@@ -11,7 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](pyproject.toml)
-[![Tests](https://img.shields.io/badge/tests-376%20passed-brightgreen)]()
+[Verification and tests](verify/)
 [![Discussions](https://img.shields.io/badge/📢_Updates-Discussions-blue)](https://github.com/dezgit2025/auto-memory/discussions)
 
 <!-- AGENTIC-INSTALL-PROTOCOL: v1
@@ -19,11 +19,194 @@
      Entry: Read deploy/install.md
 -->
 
-### 🆕 What's New in v0.5.1
+## Codex schema repair — v0.6.0 (2026-09-20)
 
-**Codex CLI support (trial)** — `session-recall-codex` reads OpenAI Codex CLI's local SQLite session store (`~/.codex/`) with a fixed-schema pre-flight before every query. Ships with the base install — no extra, no env var. [Full setup →](deploy/install-codex.md)
+### Current Codex 0.157 schema (state 57 / history 7)
 
-**Also recent (v0.4.0):** Claude Code support — `session-recall-cc` reads Claude Code JSONL sessions and builds an FTS5 index for structured recall (`pip install auto-memory[claude]`). [Full changelog →](CHANGELOG.md)
+The current `main` branch bundles the reviewed 57/7 adapter for **fresh installs**.
+The immutable `v0.6.0` tag below still bundles 55/6 and will reject the new
+schema. Until a new release is tagged, install current main explicitly:
+
+```bash
+pipx install --python "$(brew --prefix python@3.14)/bin/python3.14" \
+  "auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@main"
+session-recall-codex schema-check
+```
+
+The development build still reports version `0.6.0`; the 57/7 profile is
+identified by `schema-check`. Existing managed selections stay pinned to
+their prior artifact and require a separately reviewed repair. See the
+[Codex install guide](deploy/install-codex.md).
+
+
+Codex recall now includes a repair companion, `session-recall-codex-fix`, for
+schema changes that would otherwise stop session recall. Repair preparation and
+testing are automated after you start them; applying a generated fix requires
+human approval. Codex session databases remain read-only.
+
+### Install once for all backends
+
+**Install auto-memory once for GitHub Copilot CLI, Claude Code, and Codex.**
+Our default is **pipx recommended, uv alternative, and pip only inside a virtual
+environment**. Both [pipx](https://pipx.pypa.io/stable/) and
+[uv](https://docs.astral.sh/uv/guides/tools/) isolate CLI tools and let you choose
+Python explicitly when multiple versions are installed. Choose one method.
+
+We distribute auto-memory through these isolated Python environments; we do not
+maintain a Homebrew formula for auto-memory. The Homebrew commands below select
+the macOS Python/tooling used by our sandbox tests, not an auto-memory formula.
+
+On macOS with Homebrew, select the Homebrew Python 3.14 build used by our Codex
+sandbox tests (verified on Apple silicon):
+
+```bash
+brew install pipx python@3.14
+pipx install --python "$(brew --prefix python@3.14)/bin/python3.14" \
+  "auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@v0.6.0"
+```
+
+For Linux/WSL, install pipx and Python 3.14 first, then:
+
+```bash
+pipx install --python python3.14 \
+  "auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@v0.6.0"
+```
+
+**Alternative: uv** (install uv first; do not run both installers):
+
+```bash
+uv tool install --python "$(brew --prefix python@3.14)/bin/python3.14" \
+  "auto-memory @ git+https://github.com/dezgit2025/auto-memory.git@v0.6.0"
+# On Linux/WSL, replace the Homebrew path with --python 3.14.
+```
+
+The Linux/WSL commands provide recall; the current Codex AI-repair sandbox
+requires macOS. On macOS, use the explicit Homebrew path above for AI repair:
+`--python 3.14` alone may select a different Python build. Git is required for
+these release-tag installs. If the tool directory is missing from PATH, run
+`pipx ensurepath` (or `uv tool update-shell` for uv) and restart your terminal.
+To replace an existing install with the same manager or change its Python,
+repeat its install command with `--force`. Confirm `command -v session-recall`
+resolves to your chosen installation when migrating from another manager.
+
+| Backend | Command after installation | Setup |
+| --- | --- | --- |
+| GitHub Copilot CLI | `session-recall health` | [Copilot setup](deploy/install.md) |
+| Claude Code | `SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1 session-recall-cc health` | [Claude setup](deploy/install-claude-code.md) |
+| Codex | `session-recall-codex schema-check` | [Codex setup and repair](deploy/install-codex.md) |
+
+Run the check for the backend you actually use; its local session store must
+exist. You do not need three installations or the `[claude]` extra to obtain
+the commands in 0.6.0. Backend instruction-file wiring remains a separate step.
+For a manual virtual-environment alternative, see the [install guide](deploy/install.md#3a--from-github-060).
+
+### How it works
+
+**The problem:** As Codex evolves, OpenAI may change the schema—the structure
+of the local databases that store its session state and history. A tool built
+for an earlier schema can stop working until its reader is updated.
+
+**The solution:** `auto-memory` checks compatibility before reading sessions.
+When it detects an unsupported change, it stops safely. You can then start a
+repair: the tool uses a reviewed fix when available, or asks Codex to propose
+an update to the recall reader. It tests the repair before you approve and
+apply it, keeping Codex’s databases untouched.
+
+```text
+          Codex changes its session-state schema
+                             |
+                   Check compatibility
+                             |
+                  Can our reader handle it?
+                     /               \
+                   Yes                No
+                    |                  |
+             Recall sessions    Stop safely and
+                                report the change
+                                      |
+                             You start a repair
+                                      |
+                           Reviewed fix available?
+                             /                \
+                           Yes                 No
+                            |                   |
+                     Use that fix      Codex proposes a
+                                       reader update
+                            |                   |
+                            +---------+---------+
+                                      |
+                           Test with synthetic data
+                                      |
+                                 Tests pass?
+                                /           \
+                              No             Yes
+                               |              |
+                       Keep current      Human approval
+                       reader unchanged  and explicit apply
+                                              |
+                                    Recheck repaired reader
+                                       /             \
+                                     Pass            Fail
+                                      |               |
+                               Recall sessions     Roll back
+```
+
+**Release status:** the deterministic repair path and synthetic end-to-end AI
+workflow pass offline verification, including clean installation and rollback.
+Live Codex generation is **experimental**: the first live smoke attempt failed
+safely, and successful live generation has not yet been verified. AI candidate
+testing requires macOS and a working `sandbox-exec`; unavailable isolation stops
+the attempt. Ordinary recall and known repairs do not call an AI model.
+
+### Install this Codex update
+
+Use the [shared installation above](#install-once-for-all-backends), then
+verify the installed release and your existing Codex session store:
+
+```bash
+session-recall --version
+session-recall-codex --version
+session-recall-codex-fix --version
+session-recall-codex schema-check
+```
+
+A fresh v0.6.0 install reports version **0.6.0**. Run the check before recalling
+sessions; if it reports drift, follow the [Codex setup and repair guide](deploy/install-codex.md).
+An existing managed adapter can remain pinned to an earlier version until a
+reviewed repair is explicitly applied. GitHub publication does not publish a
+new PyPI package; `pip install auto-memory` may install an older release.
+
+After setup, recall with `session-recall-codex list --json --limit 5` or
+`session-recall-codex repos`. To investigate a schema change:
+
+```bash
+session-recall-codex-fix --json check
+# For an unknown, readable schema; starts one experimental AI repair attempt:
+session-recall-codex-fix --json assist
+# Review the returned diff and test results before approving:
+session-recall-codex-fix approve --candidate CANDIDATE_ID
+session-recall-codex-fix --json apply-candidate --candidate CANDIDATE_ID
+# OPERATION_ID is returned by apply-candidate:
+session-recall-codex-fix --json rollback --repair OPERATION_ID
+```
+
+For a known repair, follow the guide's `plan` and `apply --plan` workflow. AI
+repair uses the installed Codex CLI, its existing login, and GPT-6 Astra at
+medium reasoning. It starts with roughly 32K tokens; every additional 32K block
+needs explicit approval. Estimates are not hard token or billing caps. Missing
+or inaccessible databases are reported without starting AI repair.
+
+**Where the code lives:** [recall reader](src/session_recall/providers/codex/),
+[repair controller](src/session_recall/codex_fix/),
+[bundled adapters and catalogue](src/session_recall/codex_fix/data/), and
+[independent verification](verify/). Everything needed at runtime ships in the
+base package. [Full Codex installation guide](deploy/install-codex.md) ·
+[Standalone flow diagram and version history](codex-schema-repair-flow.md) ·
+[Changelog](CHANGELOG.md)
+
+---
+
+**Also included:** Claude Code support — `session-recall-cc` reads Claude Code JSONL sessions and builds an FTS5 index for structured recall. [Full changelog →](CHANGELOG.md)
 
 **Zero-dependency CLI that turns Copilot CLI's local SQLite into instant recall — no MCP server, no hooks, read-only, schema-checked. ~50 tokens per prompt.**
 
@@ -31,16 +214,16 @@
 
 | Backend | Status | How to enable |
 |---------|--------|--------------|
-| **GitHub Copilot CLI** | ✅ default | Already on — `pip install auto-memory` is all you need |
-| **Claude Code** | 🟡 opt-in | `pip install auto-memory[claude]` — [Full setup →](deploy/install-claude-code.md) |
-| **Codex CLI** | 🟡 trial | Ships with `pip install auto-memory` — [Full setup →](deploy/install-codex.md) |
+| **GitHub Copilot CLI** | ✅ default | Base package — [Install](#quickstart) |
+| **Claude Code** | 🟡 opt-in | Same package; enable the backend — [Full setup →](deploy/install-claude-code.md) |
+| **Codex CLI** | Recall + reviewed repair; experimental AI repair | Install v0.6.0 from GitHub — [Full setup →](deploy/install-codex.md) |
 | **VS Code** | 🟡 opt-in | [Enable in 30 seconds →](deploy/install-other-backends.md#32--vs-code-backend) |
 | **JetBrains** | 🟡 opt-in | [Enable →](deploy/install-other-backends.md#33--jetbrains-backend) |
 | **Neovim** | 🟡 opt-in | [Enable →](deploy/install-other-backends.md#34--neovim-backend) |
 
-> **Claude Code user?** `pip install auto-memory[claude] && export SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1` — then ask your agent to read [`deploy/install-claude-code.md`](deploy/install-claude-code.md) for full integration.
+> **Claude Code user?** After installing the package, set `export SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1` and follow [`deploy/install-claude-code.md`](deploy/install-claude-code.md) for full integration.
 
-> **Codex CLI user?** `pip install auto-memory && session-recall-codex schema-check` — then ask your agent to read [`deploy/install-codex.md`](deploy/install-codex.md) to wire recall into `~/.codex/AGENTS.md`.
+> **Codex CLI user?** Follow [Install this Codex update](#install-this-codex-update), then [wire session recall into Codex](deploy/install-codex.md#section-5--wire-into-codex-global-recommended).
 
 > **VS Code user?** Ask your agent to read [`deploy/install-other-backends.md`](deploy/install-other-backends.md) — it walks through detection, env var setup, and verification automatically.
 
@@ -50,11 +233,22 @@
 
 ### Quickstart
 
+Install once with [pipx or uv](#install-once-for-all-backends), then check
+the backend you use:
+
 ```bash
-pip install auto-memory           # or: git clone + ./install.sh
-pip install --upgrade auto-memory # upgrade to latest
-session-recall health          # verify it works
+session-recall --version # expected: auto-memory 0.6.0
+# GitHub Copilot CLI:
+session-recall health
+# Claude Code:
+SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1 session-recall-cc health
+# Codex:
+session-recall-codex schema-check
 ```
+
+Version 0.6.0 is a [GitHub-only release](https://github.com/dezgit2025/auto-memory/releases/tag/v0.6.0);
+an unqualified PyPI install may return an older version. The commands above pin
+the published release rather than the moving `main` branch.
 
 Now give your agent a memory. See the **🤖 Agentic Install** section below for agent-driven setup, or follow [`deploy/install.md`](deploy/install.md) manually.
 
@@ -95,7 +289,7 @@ Your agent runs it and gets:
 
 1. Read [`deploy/install.md`](deploy/install.md) — the agent-runnable install guide. It auto-detects the user's environment, prompts for confirmation before any write, handles fresh/upgrade/skip branches, and chains into backend setup.
 2. If the user uses **Claude Code**, read [`deploy/install-claude-code.md`](deploy/install-claude-code.md) — pip extra, env var, CLAUDE.md wiring, and optional scheduler setup. Ask before any write.
-3. If the user uses **Codex CLI**, read [`deploy/install-codex.md`](deploy/install-codex.md) — no extra or env var needed; wires `~/.codex/AGENTS.md` with confirmation. Trial build: `schema-check` / `list` / `repos`.
+3. If the user uses **Codex CLI**, read [`deploy/install-codex.md`](deploy/install-codex.md) — no extra or env gate needed; wires `~/.codex/AGENTS.md` with confirmation. Recall: `schema-check` / `list` / `repos`; repairs use a separate explicit companion.
 4. If the user opts in to **VS Code / JetBrains / Neovim** backends, read [`deploy/install-other-backends.md`](deploy/install-other-backends.md) (Section 8 of `install.md` will prompt for this).
 5. All files have YAML front-matter declaring `requires-user-confirmation: true` and `mutates-shell-rc` / `mutates-agent-instructions`. **Honor these flags.** Do not write silently.
 
@@ -113,7 +307,7 @@ Read deploy/install.md and execute it for the user. Ask before any disk write.
 | 1 | [`README.md`](README.md) (this file) | Discovery | none |
 | 2 | [`deploy/install.md`](deploy/install.md) | Install + Copilot CLI integration | binary install, instruction file append |
 | 3 | [`deploy/install-claude-code.md`](deploy/install-claude-code.md) | Claude Code integration | pip extra, CLAUDE.md append |
-| 4 | [`deploy/install-codex.md`](deploy/install-codex.md) | Codex CLI integration (trial) | ~/.codex/AGENTS.md append |
+| 4 | [`deploy/install-codex.md`](deploy/install-codex.md) | Codex recall and schema repair | package install, optional ~/.codex/AGENTS.md append |
 | 5 | [`deploy/install-other-backends.md`](deploy/install-other-backends.md) | Optional VS Code / JetBrains / Neovim setup | shell rc env vars |
 | 6 | [`UPGRADE-COPILOT-CLI.md`](UPGRADE-COPILOT-CLI.md) | Run after Copilot CLI version bumps | none (read-only validation) |
 
@@ -227,7 +421,7 @@ Total: ~1.1K tokens, 30 seconds, agent is immediately productive.
 
 | Approach | Dependencies | Writes to DB | Setup | Agent-native |
 |----------|-------------|-------------|-------|-------------|
-| **auto-memory** | None (stdlib) | ❌ Read-only | `pip install` | ✅ Instruction-file |
+| **auto-memory** | None (stdlib) | ❌ Read-only | `pipx install` / `uv tool install` | ✅ Instruction-file |
 | MCP server | Node.js runtime | Varies | Server config | ❌ Protocol layer |
 | Custom hooks | Varies | Often yes | Hook scripts | ❌ Event-driven |
 | Manual grep | None | ❌ | None | ❌ Manual |
@@ -272,10 +466,13 @@ auto-memory is the **page fault handler** — it pulls exact facts from disk in 
 
 In addition to GitHub Copilot CLI, `auto-memory` can read [Claude Code](https://docs.anthropic.com/claude-code) session logs from `~/.claude/projects/`. This ships as a separate CLI binary (`session-recall-cc`) that is **off unless explicitly enabled** — Copilot CLI users pay zero cost.
 
-### Quick install (3 steps)
+### Enable Claude Code after installation
+
+Install the package once using [Quickstart](#quickstart), then enable Claude
+Code recall in that same installation:
 
 ```bash
-pip install auto-memory[claude]
+# First install the shared package with pipx (or uv) using the instructions above.
 export SESSION_RECALL_ENABLE_CLAUDE_BACKEND=1
 session-recall-cc health
 ```
@@ -378,34 +575,39 @@ If you'd rather have an agent install this for you, point it at [`deploy/install
 
 `auto-memory` can also read [OpenAI Codex CLI](https://github.com/openai/codex)'s local SQLite session store (`~/.codex/`). This ships as a separate binary (`session-recall-codex`) that is **inert unless invoked** — Copilot CLI and Claude Code users pay zero cost, and a Codex storage change can never break the main CLI.
 
-### Quick install (2 steps)
+### Install and verify
 
-```bash
-pip install auto-memory          # binary included, no extra needed
-session-recall-codex schema-check   # validates ~/.codex storage before any query
-```
+Use the [v0.6.0 GitHub installation steps above](#install-this-codex-update).
+The base package includes both `session-recall-codex` and
+`session-recall-codex-fix`; no optional dependency extra is required.
 
 Then wire it into Codex (with confirmation) via [`deploy/install-codex.md`](deploy/install-codex.md), which appends the recall block from [`codex-instructions-template.md`](codex-instructions-template.md) to `~/.codex/AGENTS.md` — Codex reads that file every session, so the block fires only when Codex is the invoker.
 
-### Trial build scope
+### Codex command scope
 
 | Command | Status |
 |---------|--------|
 | `schema-check` | ✅ fixed-profile validation of both Codex DBs, human + `--json` |
 | `list` | ✅ recent sessions (`--repo` `--limit` `--days` `--include-archived` `--json`) |
 | `repos` | ✅ repo aggregation (`--include-local` reveals `local:` workspaces) |
-| `search` / `show` / `files` / `health` | 🔜 next phase |
+| `search` / `show` / `files` / `health` | Not yet available for Codex |
+| `session-recall-codex-fix` | Explicit check, plan/apply, experimental assist, approval and rollback |
 
 ### How it works
 
 - Reads `~/.codex/state_5.sqlite` + `~/.codex/thread_history_1.sqlite`, **read-only** (`mode=ro` + `PRAGMA query_only`)
 - Every data command runs a fixed-schema pre-flight first — if a Codex upgrade changes the storage schema, the CLI refuses cleanly (exit 2/4) instead of returning wrong data
 - Sub-agent and archived threads are excluded by default (higher-level context only)
-- Verified read-only: the bundled 15-test smoke set (`codex-test/codex-test-set.md`) proves byte-identical store hashes before/after
+- Synthetic regression and installed-package verification check database hashes before and after the repair lifecycle; [verifier sources](verify/) are included in this repository
+- See the [dated repair flow above](#codex-schema-repair--v060-2026-09-20) for schema-change handling, approval, and rollback
 
 > Try (in Codex): *"What did I work on in this repo recently? Run session-recall-codex list --json --limit 5."*
 
 ## Usage
+
+The examples below use Copilot CLI's `session-recall` command. For Codex, use
+the `list`/`repos` commands and explicit repair workflow documented above;
+Codex search and file-level recall are not yet implemented.
 
 ### Try these prompts with your agent
 
@@ -584,10 +786,6 @@ No. auto-memory is strictly read-only. It never writes to `~/.copilot/session-st
 **What happens when Copilot CLI updates its schema?**
 Run `session-recall schema-check` to validate. The tool fails fast on schema drift rather than returning bad data. See [UPGRADE-COPILOT-CLI.md](UPGRADE-COPILOT-CLI.md).
 
-## Roadmap
-
-See [ROADMAP.md](ROADMAP.md).
-
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and guidelines. Issues, PRs, and docs improvements are welcome.
@@ -603,6 +801,7 @@ This is an independent open-source project. It is **not** affiliated with, endor
 ## Contributors
 
 - [@jshessen](https://github.com/jshessen) — Multi-storage provider architecture ([PR #5](https://github.com/dezgit2025/auto-memory/pull/5))
+- [@tillig](https://github.com/tillig) — Reported the macOS installation issue and suggested isolated installation with `uv` ([#25](https://github.com/dezgit2025/auto-memory/issues/25)).
 
 ## License
 

@@ -3,8 +3,8 @@
 import sqlite3
 
 from ._fixture_drift import ALL_MUTATIONS, make_drifted
-from ._fixture_schema import load_profiles
-from ._fixture_state import SEARCH_TOKEN
+from ._fixture_schema import build_empty_db, load_profiles
+from ._fixture_state import SEARCH_TOKEN, _base_row, insert_threads, make_uuid7
 from .conftest import build_small_store
 
 
@@ -27,7 +27,7 @@ def test_schemas_match_captured_profiles(codex_store):
 
 def test_migration_ceilings(codex_store):
     for db_path, ceiling, desc in (
-        (codex_store.state_db, 51, "thread artifacts"),
+        (codex_store.state_db, 55, "thread attachments"),
         (codex_store.history_db, 6, "thread turn ends"),
     ):
         conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
@@ -55,6 +55,27 @@ def test_thread_inventory(codex_store):
     assert by_title["legacy-recent session"]["history_mode"] == "legacy"
     assert SEARCH_TOKEN in by_title["oldband alpha work"]["first_user_message"]
     assert by_title["recent-c local scratch"]["git_origin_url"] is None
+
+
+def test_originator_and_daybreak_nullable_values_round_trip(tmp_path):
+    state_db = tmp_path / "state_5.sqlite"
+    build_empty_db(state_db, "state")
+    ts = 1_787_486_400_000
+    null_row = _base_row(make_uuid7(ts, 101), ts)
+    value_row = _base_row(make_uuid7(ts + 1, 102), ts + 1)
+    assert null_row["originator"] is None
+    assert null_row["daybreak_enabled"] is None
+    value_row.update(originator="synthetic-test", daybreak_enabled=1)
+
+    conn = sqlite3.connect(state_db)
+    try:
+        insert_threads(conn, [null_row, value_row])
+        rows = conn.execute(
+            "SELECT originator, daybreak_enabled FROM threads ORDER BY created_at_ms"
+        ).fetchall()
+    finally:
+        conn.close()
+    assert rows == [(None, None), ("synthetic-test", 1)]
 
 
 def test_collision_pair_shares_8_char_prefix(codex_store):
@@ -95,7 +116,7 @@ def test_rollout_files(codex_store):
 
 
 def test_drift_factory_all_mutations(codex_store, tmp_path):
-    assert len(ALL_MUTATIONS) == 9
+    assert len(ALL_MUTATIONS) == 11
     for mutation in ALL_MUTATIONS:
         out = make_drifted(codex_store.state_db, codex_store.history_db,
                            tmp_path / mutation, mutation)
@@ -110,9 +131,12 @@ def test_drift_factory_all_mutations(codex_store, tmp_path):
                 assert "history_mode_x" in state_cols
             elif mutation == "extra_threads_column":
                 assert "example_column" in state_cols
-            elif mutation == "migration_52":
+            elif mutation == "migration_54":
                 assert conn.execute("SELECT MAX(version) FROM _sqlx_migrations"
-                                    ).fetchone()[0] == 52
+                                    ).fetchone()[0] == 54
+            elif mutation == "migration_56":
+                assert conn.execute("SELECT MAX(version) FROM _sqlx_migrations"
+                                    ).fetchone()[0] == 56
             elif mutation == "failed_migration":
                 assert conn.execute("SELECT COUNT(*) FROM _sqlx_migrations "
                                     "WHERE success = 0").fetchone()[0] == 1
@@ -125,6 +149,9 @@ def test_drift_factory_all_mutations(codex_store, tmp_path):
             elif mutation == "missing_thread_turns":
                 assert not hconn.execute("SELECT name FROM sqlite_master WHERE "
                                          "name='thread_turns'").fetchone()
+            elif mutation == "migration_5":
+                assert hconn.execute("SELECT MAX(version) FROM _sqlx_migrations"
+                                     ).fetchone()[0] == 5
             elif mutation == "migration_7":
                 assert hconn.execute("SELECT MAX(version) FROM _sqlx_migrations"
                                      ).fetchone()[0] == 7

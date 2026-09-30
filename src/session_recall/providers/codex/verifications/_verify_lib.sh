@@ -6,6 +6,55 @@
 VLIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export CODEX_PROFILES_JSON="$VLIB_DIR/captured-profiles.json"
 
+vlib_resolve_path() {
+  python3 - "$1" <<'PYEOF'
+from pathlib import Path
+import sys
+print(Path(sys.argv[1]).resolve())
+PYEOF
+}
+
+# Validate one verifier-owned mktemp directory. Prefix includes dot.
+vlib_assert_temp_root() {
+  local target="$1" prefix="$2" base resolved base_resolved name
+  : "${target:?temporary cleanup target must be set and non-empty}"
+  : "${prefix:?temporary cleanup prefix must be set and non-empty}"
+  base="${TMPDIR:-/tmp}"
+  resolved="$(vlib_resolve_path "$target")"
+  base_resolved="$(vlib_resolve_path "$base")"
+  name="$(basename "$resolved")"
+  if [[ "$(dirname "$resolved")" != "$base_resolved" || "$name" != "$prefix"* || "$resolved" == "$base_resolved" ]]; then
+    echo "refusing unsafe verifier cleanup target: $resolved" >&2
+    return 3
+  fi
+  printf '%s\n' "$resolved"
+}
+
+# Validate and remove one verifier-owned mktemp directory.
+vlib_safe_cleanup() {
+  local target="$1" prefix="$2" resolved
+  : "${target:?temporary cleanup target must be set and non-empty}"
+  : "${prefix:?temporary cleanup prefix must be set and non-empty}"
+  resolved="$(vlib_assert_temp_root "$target" "$prefix")" || return $?
+  [[ -d "$resolved" ]] || return 0
+  rm -rf -- "$resolved"
+}
+
+# Truncate only a resolved descendant of one validated verifier temp root.
+vlib_safe_truncate() {
+  local root="$1" target="$2" prefix="$3" root_resolved target_resolved
+  : "${root:?temporary root must be set and non-empty}"
+  : "${target:?truncate target must be set and non-empty}"
+  : "${prefix:?temporary root prefix must be set and non-empty}"
+  root_resolved="$(vlib_assert_temp_root "$root" "$prefix")" || return $?
+  target_resolved="$(vlib_resolve_path "$target")"
+  case "$target_resolved" in
+    "$root_resolved"/*) ;;
+    *) echo "refusing truncate outside verifier temp root: $target_resolved" >&2; return 3 ;;
+  esac
+  : > "$target_resolved"
+}
+
 vlib_impl_present() {
   command -v session-recall-codex >/dev/null 2>&1 || return 1
   python3 -c "import importlib.util as u, sys; sys.exit(0 if u.find_spec('session_recall.providers.codex.cli') else 1)" 2>/dev/null
@@ -48,7 +97,8 @@ def thread_row(cols, **over):
     vals = []
     for cid, name, ctype, notnull, dflt, pk in cols:
         if name in over: vals.append(over[name])
-        elif ctype == "INTEGER": vals.append(0)
+        elif not notnull: vals.append(None)
+        elif ctype in ("INTEGER", "BOOLEAN"): vals.append(0)
         else: vals.append("")
     return vals
 
@@ -164,8 +214,8 @@ def apply(prof, mut):
             if c[1] == "item_json": c[2] = "BLOB"
     elif mut == "drop_thread_turns":
         del hi["tables"]["thread_turns"]
-    elif mut == "state_migration_52":
-        st["migration_ceiling"] = 52; st["migration_description"] = "mystery"
+    elif mut == "state_migration_56":
+        st["migration_ceiling"] = 56; st["migration_description"] = "mystery"
     elif mut == "history_migration_7":
         hi["migration_ceiling"] = 7; hi["migration_description"] = "mystery"
     elif mut == "failed_migration":
@@ -219,7 +269,7 @@ checks = {
     "add_threads_column": lambda: "example_column" in cols(s, "threads"),
     "change_item_json_decl": lambda: types(h, "thread_items")["item_json"] == "BLOB",
     "drop_thread_turns": lambda: not cols(h, "thread_turns"),
-    "state_migration_52": lambda: s.execute("SELECT MAX(version) FROM _sqlx_migrations").fetchone()[0] == 52,
+    "state_migration_56": lambda: s.execute("SELECT MAX(version) FROM _sqlx_migrations").fetchone()[0] == 56,
     "history_migration_7": lambda: h.execute("SELECT MAX(version) FROM _sqlx_migrations").fetchone()[0] == 7,
     "failed_migration": lambda: s.execute("SELECT COUNT(*) FROM _sqlx_migrations WHERE success=0").fetchone()[0] == 1,
     "extra_unrelated_table": lambda: s.execute(
@@ -268,6 +318,21 @@ try:
                        timeout=int(os.environ.get("RUN_TIMEOUT", "30")))
     sys.stdout.write(r.stdout)
     sys.stderr.write(r.stderr)
+    print(f"RC:{r.returncode}")
+except subprocess.TimeoutExpired:
+    print("RC:124")
+PYEOF
+}
+
+# vlib_run_stderr CMD... — stderr-only companion for diagnostics asserted on stderr.
+# Keeps stdout/JSON assertions isolated from argparse and other diagnostic text.
+vlib_run_stderr() {
+  RUN_TIMEOUT="${RUN_TIMEOUT:-30}" python3 - "$@" <<'PYEOF'
+import os, subprocess, sys
+try:
+    r = subprocess.run(sys.argv[1:], capture_output=True, text=True,
+                       timeout=int(os.environ.get("RUN_TIMEOUT", "30")))
+    sys.stdout.write(r.stderr)
     print(f"RC:{r.returncode}")
 except subprocess.TimeoutExpired:
     print("RC:124")

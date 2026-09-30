@@ -9,7 +9,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 source "$SCRIPT_DIR/_verify_lib.sh"
 
 MUTATIONS=(drop_preview rename_history_mode add_threads_column change_item_json_decl
-           drop_thread_turns state_migration_52 history_migration_7 failed_migration)
+           drop_thread_turns state_migration_56 history_migration_7 failed_migration)
 
 verdict() { # verdict <PASS|FAIL> <checks> <failed-json-array> [reason]
   printf '{"verifier":"verify_schema","verdict":"%s","checks":%d,"failed":%s%s}\n' \
@@ -18,7 +18,7 @@ verdict() { # verdict <PASS|FAIL> <checks> <failed-json-array> [reason]
 
 export PYTHONHASHSEED=0 PYTHONDEVMODE=1 PYTHONDONTWRITEBYTECODE=1 LC_ALL=C TZ=UTC
 TMP="$(mktemp -d "${TMPDIR:-/tmp}/codex-verify-schema.XXXXXX")"
-trap 'rm -rf "$TMP"' EXIT
+trap 'vlib_safe_cleanup "$TMP" "codex-verify-schema."' EXIT
 
 # ---------- self-test: prove the mutation factory + exact-compare are real ----------
 if [[ "${1:-}" == "--self-test" ]]; then
