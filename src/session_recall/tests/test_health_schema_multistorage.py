@@ -82,6 +82,64 @@ def test_health_provider_fallback_mode_json(monkeypatch, capsys):
     assert "Provider:vscode" in names
 
 
+def test_health_discovers_cli_session_state_when_sqlite_db_is_missing(
+    monkeypatch, capsys, tmp_path
+):
+    """Regression for issue #19: health should not require session-store.db.
+
+    Newer Copilot CLI layouts may expose ~/.copilot/session-state/*/events.jsonl
+    without the legacy SQLite session-store.db file.
+    """
+    from session_recall.commands import health
+    from session_recall.providers import discovery
+
+    state_root = tmp_path / "session-state"
+    session_dir = state_root / "abcd1234-0000-0000-0000-000000000000"
+    session_dir.mkdir(parents=True)
+    (session_dir / "events.jsonl").write_text(
+        "\n".join(
+            [
+                json.dumps(
+                    {
+                        "type": "session.start",
+                        "data": {
+                            "sessionId": "abcd1234-0000-0000-0000-000000000000",
+                            "context": {"repository": "owner/repo"},
+                        },
+                        "timestamp": "2026-04-22T10:00:00.000Z",
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "user.message",
+                        "data": {"content": "Investigate auth timeout"},
+                        "timestamp": "2026-04-22T10:01:00.000Z",
+                    }
+                ),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    missing_db = str(tmp_path / ".copilot" / "session-store.db")
+    monkeypatch.setattr(health, "DB_PATH", missing_db)
+    monkeypatch.setattr(discovery, "CLI_SESSION_STATE_ROOT", str(state_root))
+
+    args = argparse.Namespace(json=True, provider="all")
+    rc = health.run(args)
+
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "database not found" not in captured.err
+    out = json.loads(captured.out)
+    assert out["storage_mode"] == "provider-fallback"
+    assert out["providers"]["cli"]["available"] is True
+    names = [d["name"] for d in out["dims"]]
+    assert "SQLite Health Core" in names
+    assert "Provider:cli" in names
+
+
 # ── helpers for integration tests ────────────────────────────────────
 
 
