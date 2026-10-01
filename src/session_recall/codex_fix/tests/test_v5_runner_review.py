@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import time
@@ -132,16 +133,34 @@ def test_real_subprocess_output_flood_is_killed_and_bounded(tmp_path):
         )
 
 
+def _process_gone(pid: int, deadline: float) -> bool:
+    end = time.monotonic() + deadline
+    while time.monotonic() < end:
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            return True
+        except PermissionError:
+            return True  # PID reused by another user's process: ours is gone
+        time.sleep(0.05)
+    return False
+
+
 def test_real_subprocess_timeout_kills_child_process_group(tmp_path):
+    # The child outlives the timeout by a wide margin, so the outcome depends
+    # only on whether the process group is killed, not on scheduling luck.
     sentinel = tmp_path / "child-survived"
-    child = "import time; from pathlib import Path; time.sleep(1); Path(%r).write_text('bad')" % str(sentinel)
+    pid_file = tmp_path / "child.pid"
+    child = "import time; from pathlib import Path; time.sleep(30); Path(%r).write_text('bad')" % str(sentinel)
     parent = (
-        "import subprocess,sys,time; "
-        f"subprocess.Popen([sys.executable,'-c',{child!r}]); time.sleep(30)"
+        "import subprocess,sys,time; from pathlib import Path; "
+        f"p = subprocess.Popen([sys.executable,'-c',{child!r}]); "
+        f"Path({str(pid_file)!r}).write_text(str(p.pid)); time.sleep(30)"
     )
     with pytest.raises(subprocess.TimeoutExpired):
-        _actual_run([sys.executable, "-c", parent], timeout=1, cwd=tmp_path)
-    time.sleep(1.2)
+        _actual_run([sys.executable, "-c", parent], timeout=2, cwd=tmp_path)
+    child_pid = int(pid_file.read_text())
+    assert _process_gone(child_pid, deadline=5.0), "child survived the group kill"
     assert not sentinel.exists()
 
 

@@ -22,6 +22,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versioning: [SemVer](ht
   no persisted checkout credentials, and the release tag passed via env instead
   of template expansion. Adds a `gitleaks` secret-scan job (checksum-verified
   binary, redacted output) and documents an optional pre-commit hook.
+- Makes the subprocess timeout test deterministic: it raced a 1-second child
+  against a 1-second timeout (~40 ms margin) and failed randomly on macOS. It
+  now checks that the child process is gone instead of racing the clock.
 
 ## [0.6.0] — 2026-09-20
 
