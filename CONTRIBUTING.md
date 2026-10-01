@@ -39,6 +39,22 @@ These are guidelines, not gates. Don't let style concerns stop you from submitti
 2. Return `{"name", "score", "zone", "detail", "hint"}`
 3. Import and add to `DIMS` list in `commands/health.py`
 
+## Secret Scanning (optional local hook)
+
+CI runs [gitleaks](https://github.com/gitleaks/gitleaks) on every pull request,
+and GitHub push protection blocks known secrets at push time. To catch a key
+before it ever enters your local history, add a pre-commit hook:
+
+```bash
+cat > .git/hooks/pre-commit <<'EOF'
+#!/bin/sh
+exec gitleaks git --pre-commit --staged --redact --no-banner
+EOF
+chmod +x .git/hooks/pre-commit
+```
+
+Requires `gitleaks` on your PATH (`brew install gitleaks`, or a release binary).
+
 ## PR Checklist
 
 Before submitting:

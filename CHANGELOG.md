@@ -16,6 +16,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versioning: [SemVer](ht
 
 - Runs the suite on Windows and on Linux Python 3.13/3.14, and smoke-tests the
   built wheel's console scripts and bundled data from a clean install (#30).
+- Hardens the workflows: read-only `GITHUB_TOKEN` by default, write scopes only
+  in the publish and release jobs that need them, every action pinned to a full
+  commit SHA (`checkout` v7.0.1, `setup-python` v7.0.0, `pypi-publish` v1.14.2),
+  no persisted checkout credentials, and the release tag passed via env instead
+  of template expansion. Adds a `gitleaks` secret-scan job (checksum-verified
+  binary, redacted output) and documents an optional pre-commit hook.
 
 ## [0.6.0] — 2026-09-20
 
