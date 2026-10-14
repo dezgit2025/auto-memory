@@ -34,7 +34,7 @@ Issues = "https://github.com/dezgit2025/auto-memory/issues"
 
 [project.optional-dependencies]
 claude = []
-dev = ["pytest>=8", "ruff==0.15.12", "pyyaml>=6"]
+dev = ["pytest>=8", "ruff==0.17.0", "pyyaml>=6"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
